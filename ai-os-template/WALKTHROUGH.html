@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Engineering OS — Walkthrough</title>
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --panel: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #5a5a5a;
+    --line: #e4e0d8;
+    --accent: #7a4a1a;
+    --accent-bg: #fdf6ec;
+    --dedup: #4a5a2a;
+    --dedup-bg: #f2f5e8;
+    --decision: #6a2a2a;
+    --decision-bg: #fbeceb;
+    --code-bg: #f4f1ec;
+    --code-ink: #2a2a2a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    font-size: 15.5px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    max-width: 1180px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  nav.toc {
+    padding: 32px 20px 40px 28px;
+    border-right: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    font-size: 13.5px;
+  }
+  nav.toc h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 20px 0 8px;
+  }
+  nav.toc h2:first-child { margin-top: 0; }
+  nav.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  nav.toc a {
+    display: block;
+    padding: 4px 0;
+    color: var(--ink);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    padding-left: 8px;
+  }
+  nav.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+  main {
+    padding: 40px 56px 96px;
+    max-width: 100%;
+    min-width: 0;
+  }
+  h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    letter-spacing: -0.005em;
+  }
+  h2:first-of-type { border-top: none; padding-top: 0; margin-top: 24px; }
+  h3 {
+    font-size: 17px;
+    margin: 28px 0 8px;
+  }
+  h4 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 20px 0 6px;
+  }
+  p { margin: 0 0 12px; }
+  ul, ol { padding-left: 22px; margin: 6px 0 14px; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13.2px;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 12px 14px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.8px;
+    line-height: 1.5;
+    margin: 8px 0 16px;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0 18px;
+    font-size: 13.8px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-weight: 600;
+    background: #f0ece4;
+    font-size: 13px;
+  }
+  .lede {
+    font-size: 16.5px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .callout {
+    border-left: 4px solid;
+    padding: 12px 16px;
+    margin: 14px 0 20px;
+    border-radius: 0 4px 4px 0;
+    font-size: 14.5px;
+  }
+  .callout .tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .judgment {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .judgment .tag { color: var(--accent); }
+  .dedup {
+    border-color: var(--dedup);
+    background: var(--dedup-bg);
+  }
+  .dedup .tag { color: var(--dedup); }
+  .decision {
+    border-color: var(--decision);
+    background: var(--decision-bg);
+  }
+  .decision .tag { color: var(--decision); }
+  .decisions-list {
+    counter-reset: decision;
+    padding-left: 0;
+    list-style: none;
+    margin: 12px 0 24px;
+  }
+  .decisions-list li {
+    counter-increment: decision;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--decision);
+    padding: 14px 18px 14px 46px;
+    margin: 10px 0;
+    border-radius: 0 4px 4px 0;
+    position: relative;
+  }
+  .decisions-list li::before {
+    content: "D" counter(decision);
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    font-weight: 700;
+    color: var(--decision);
+    font-size: 13px;
+  }
+  .decisions-list .q {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .decisions-list .body { font-size: 14px; color: var(--muted); }
+  .decisions-list .body strong { color: var(--ink); }
+  .file-tree {
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 4px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.8px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .status-good { color: #2a6a3a; font-weight: 600; }
+  .status-pending { color: var(--decision); font-weight: 600; }
+  .kbd {
+    background: #eeeae2;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+  }
+  header.title {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc">
+    <h2>Walkthrough</h2>
+    <ol>
+      <li><a href="#intro">1 · How to use this page</a></li>
+      <li><a href="#idea">2 · The core idea</a></li>
+      <li><a href="#loop">3 · System architecture</a></li>
+      <li><a href="#docs">4 · Doc layer model</a></li>
+      <li><a href="#workflows">5 · Workflow backbone</a></li>
+      <li><a href="#quality">6 · Quality system</a></li>
+      <li><a href="#contracts">7 · Contracts</a></li>
+      <li><a href="#routing">8 · Model routing</a></li>
+      <li><a href="#agents">9 · Subagent roster</a></li>
+      <li><a href="#skills">10 · Skills &amp; plugins</a></li>
+      <li><a href="#instantiation">11 · Instantiation</a></li>
+      <li><a href="#instances">12 · Instance status</a></li>
+    </ol>
+    <h2>Review</h2>
+    <ol>
+      <li><a href="#decisions">13 · Decisions — resolved 2026-07-12</a></li>
+      <li><a href="#judgment-log">14 · Judgment call log</a></li>
+      <li><a href="#dedup-log">15 · Dedupe log</a></li>
+      <li><a href="#nextsteps">16 · Next steps</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="title">
+      <h1>AI Engineering OS — Walkthrough</h1>
+      <p class="meta">Template v0.2 · Built 2026-07-08 · Revised 2026-07-12 after Jake's review · Source of truth: <code>ai-os-template/DESIGN-MEMO.md</code></p>
+    </header>
+
+    <section id="intro">
+      <p class="lede">This is a guided read of the AI Engineering OS: what each component is, how it works alone, and how the pieces compose. Judgment calls I made without asking are flagged, deduped content is called out, and pending decisions are collected in §13.</p>
+
+      <div class="callout judgment">
+        <span class="tag">How the callouts work</span>
+        <p><strong>Amber</strong> = a judgment call I made without pausing to ask (based on the packet, existing repos, or design principles). <strong>Green</strong> = content I merged/deduped instead of preserving multiple copies. <strong>Red</strong> = a decision that still needs you.</p>
+      </div>
+
+      <p>You can read straight through, or jump to §13 first to see what still needs you, then read the rest for context.</p>
+    </section>
+
+    <section id="idea">
+      <h2>2 · The core idea</h2>
+      <p>The OS packages seven things into one reusable template that gets <em>instantiated</em> into real repos:</p>
+      <ol>
+        <li>Root instruction files (<code>AGENTS.md</code>, <code>CLAUDE.md</code>)</li>
+        <li>Repo-resident docs/memory system</li>
+        <li>Workflow specs</li>
+        <li>Hook specs (Claude Code events)</li>
+        <li>Slash command specs</li>
+        <li>Subagent role definitions</li>
+        <li>Model routing rubric</li>
+      </ol>
+
+      <p>The design targets four recurring failure modes: <strong>repeated context loss</strong>, <strong>low-quality agent behavior</strong>, <strong>missed verification</strong>, and <strong>inconsistent planning</strong>. Everything downstream should be traceable to one of those four.</p>
+
+      <h3>Six principles the template is built on</h3>
+      <table>
+        <tr><th>Principle</th><th>What it means in practice</th></tr>
+        <tr><td>Concrete abstraction</td><td>Every recommendation maps to a file, hook, command, workflow, skill, agent, routing rule, verification gate, or convention. Nothing ships as advice-only.</td></tr>
+        <tr><td>Orchestrator, not laborer</td><td>Fable owns framing, judgment, synthesis. Codex + cheaper models do research, drafting, mechanical implementation, verification, doc maintenance under bounded contracts.</td></tr>
+        <tr><td>Repo-resident memory</td><td>Models forget; the repo persists. Everything an agent needs is in the repo or explicitly mapped from it.</td></tr>
+        <tr><td>Proportional ceremony</td><td>Solo path lighter than a production-team path — but never below the floor of inspect-before-edit, plan-proportional-to-risk, run verification, leave clean handoff.</td></tr>
+        <tr><td>Merge, don't bulldoze</td><td>Instantiation adapts to a repo's existing conventions via a manifest. The template never silently overwrites or renames what a repo already has.</td></tr>
+        <tr><td>Claude/Fable-first, Codex-portable</td><td>Harness-neutral content in <code>AGENTS.md</code> (Codex reads that natively); Claude-specific mechanics in a thin <code>CLAUDE.md</code> adapter.</td></tr>
+      </table>
+    </section>
+
+    <section id="loop">
+      <h2>3 · System architecture — how the loop actually runs</h2>
+      <p>The operating loop has six elements. Each is a concrete artifact somewhere in the template:</p>
+
+      <table>
+        <tr><th>Loop element</th><th>Concrete artifact</th><th>Why it exists</th></tr>
+        <tr><td>Automations</td><td><code>hooks/</code></td><td>Fire at Claude Code events; classified by authority (blocking / advisory / delegating / automatic-maintenance) so you know what will interrupt vs. just remind.</td></tr>
+        <tr><td>Worktrees</td><td>Conventions in <code>AGENTS.md</code> + <code>init</code> workflow</td><td>Parallel agents don't collide; risky work is isolated; logs are worktree-local and disposable.</td></tr>
+        <tr><td>Skills</td><td><code>INVENTORY.md</code> + skill-activation hook</td><td>Reusable how-to guidance the agent should default to instead of guessing. Auto-activation solves "the agent didn't remember to use the available skill."</td></tr>
+        <tr><td>Connectors</td><td>Tool inventory cache (<code>.ai/tools.md</code>) + routing rules</td><td>Don't rediscover stable tools every session.</td></tr>
+        <tr><td>Subagents</td><td><code>agents/</code> + delegation contract</td><td>Cheaper models do bounded work; the implementer is never the sole reviewer of its own work.</td></tr>
+        <tr><td>Memory</td><td>Doc system (§4) + task-local docs + <code>PROJECT-STATUS.md</code></td><td>Session-to-session continuity without noisy churn.</td></tr>
+      </table>
+
+      <div class="callout judgment">
+        <span class="tag">Judgment · #A1</span>
+        <p>The packet phrased memory as "on disk" and left worktree scope open. I bound it to <strong>three tiers</strong>: shared durable docs (in the repo), task-scoped disposable docs (<code>dev/active/&lt;task&gt;/</code>), and worktree-local logs (never durable). This is what prevents worktree-cleanup from erasing project memory and what stops task docs from polluting <code>SPEC.md</code>.</p>
+      </div>
+    </section>
+
+    <section id="docs">
+      <h2>4 · Doc layer model</h2>
+      <p>Six layers, each with a clearly-scoped write authority. The tier tells you (and hooks and agents) who is allowed to edit it and how often.</p>
+
+      <table>
+        <tr><th>Layer</th><th>File(s)</th><th>Write tier</th><th>Rule</th></tr>
+        <tr><td>Root instructions</td><td><code>AGENTS.md</code>, <code>CLAUDE.md</code></td><td>Tier C</td><td>Staged review only — never auto-edited.</td></tr>
+        <tr><td>Durable intent</td><td><code>SPEC.md</code></td><td>Tier B</td><td>Guarded automatic; only stable facts and links; every edit records a one-line reason.</td></tr>
+        <tr><td>Deep knowledge</td><td><code>docs/</code></td><td>Tier B</td><td>Same rule as SPEC.</td></tr>
+        <tr><td>Checkpoint / handoff</td><td><code>PROJECT-STATUS.md</code></td><td>Tier A</td><td>Fully automatic; idempotent overwrite; NEVER a ledger.</td></tr>
+        <tr><td>Change ledger</td><td><code>CHANGELOG.md</code></td><td>Tier A (draft section)</td><td>Hooks maintain <code>## Unreleased</code>; git history is the commit ledger.</td></tr>
+        <tr><td>Task memory</td><td><code>dev/active/&lt;task&gt;/</code></td><td>Task-scoped, disposable</td><td>Plan / context / tasks trio; archived on completion.</td></tr>
+        <tr><td>Tool cache</td><td><code>.ai/tools.md</code></td><td>Tier A</td><td>Refresh on config change or explicit command.</td></tr>
+        <tr><td>Optional module</td><td><code>FEATURE-LIST.json</code></td><td>Opt-in</td><td>Off by default; for greenfield/acceptance-driven builds only.</td></tr>
+      </table>
+
+      <h3>Anti-drift and anti-churn — the two rules that make this work</h3>
+      <p><strong>Anti-drift:</strong> plans live in task docs; <em>decisions</em> get promoted to global docs. Never the reverse. <code>PROJECT-STATUS.md</code> holds only the current handoff.</p>
+      <p><strong>Anti-churn (for automatic doc writes):</strong> updates fire at checkpoints, not per response; a significance check gates each write; status files are idempotent overwrites so noise cannot accumulate; every automatic edit records a one-line reason.</p>
+
+      <div class="callout judgment">
+        <span class="tag">Judgment · #A2 — the AGENTS/CLAUDE split</span>
+        <p>The packet asked whether <code>AGENTS.md</code> and <code>CLAUDE.md</code> should be mirrors, layered, or harness-siblings. I chose <strong>layered</strong>: <code>AGENTS.md</code> is canonical + harness-neutral (behavior rules, doc map, workflows, standards); <code>CLAUDE.md</code> is a thin adapter (slash commands, hooks, Claude-specific routing) that starts with <code>@AGENTS.md</code>. No generation step. Reason: mirrors drift, generation adds a build step. This matches how the lower-db overlay already works, so both instances land consistently.</p>
+      </div>
+
+      <div class="callout judgment">
+        <span class="tag">Judgment · #A3 — three write tiers</span>
+        <p>The packet said "hooks should auto-edit docs" but flagged noisy churn as a risk. I split doc-editing authority into <strong>Tier A</strong> (fully automatic — status, changelog draft, tool cache), <strong>Tier B</strong> (guarded automatic — SPEC.md, docs/ — only stable facts + recorded reason), <strong>Tier C</strong> (staged review — skills, root instructions, hooks). This is how the same principle can produce "aggressive auto-updates on status" and "never silently edit a skill."</p>
+      </div>
+    </section>
+
+    <section id="workflows">
+      <h2>5 · Workflow backbone</h2>
+      <p>Nine workflow specs in <code>workflows/</code>. Each has exactly seven sections: <em>Trigger, Inputs, Steps, Output contract, Verification, Ceremony scaling, Failure handling</em>. Steps name the actor (orchestrator vs which subagent role vs hook).</p>
+
+      <table>
+        <tr><th>Workflow</th><th>What it does</th><th>Called by</th></tr>
+        <tr><td><code>spec</code></td><td>grill-with-docs → PRD → issues → TDD plan. Accelerated grill: up to 5 user questions, ~20 self-grill with options-considered and rationale, batched review.</td><td><code>/spec</code>, or chained from another workflow that discovers ambiguity</td></tr>
+        <tr><td><code>implement-tdd</code></td><td>Failing test → minimum correct impl → focused verification → refactor only when justified → docs update.</td><td><code>/implement-tdd</code>, or chained from <code>spec</code></td></tr>
+        <tr><td><code>debug</code></td><td>Logs → reproduce → assess → plan → code → test → capture durable lesson → clear transient logs → commit.</td><td><code>/debug-mode</code></td></tr>
+        <tr><td><code>commit</code></td><td>Verify → independent review → address findings → docs/status/changelog updates → autoskill scan → focused commit.</td><td><code>/commit</code>, or chained from every implementation workflow</td></tr>
+        <tr><td><code>commit-pr</code></td><td>Commit workflow → push → PR (Summary / Why / Changes / Verification / Risks &amp; Rollback / Follow-up) → PR review → address → final status.</td><td><code>/commit-pr</code></td></tr>
+        <tr><td><code>review-pr</code></td><td>Findings first, cite file:line, prioritize bugs/regressions/security/broken contracts. Delegating sub-reviews by diff content at higher tiers.</td><td><code>/review-pr</code></td></tr>
+        <tr><td><code>wrap-session</code></td><td>Overwrite status, docs if needed, changelog if meaningful, autoskill scan, record next action, list verification done AND skipped.</td><td><code>/wrap-session</code></td></tr>
+        <tr><td><code>init</code></td><td>Initializer creates doc skeleton, seed status, <code>init.sh</code>, tool cache, baseline verification; verifies app boots, env access works, smoke passes.</td><td>Once per repo; once per new worktree</td></tr>
+        <tr><td><code>experiment</code></td><td>Hypothesis-driven comparison of LLMs/prompts/setups against the same bounded task; identical acceptance checks per arm; lab-notebook entry; feeds routing matrix.</td><td><code>/experiment</code> or from <code>spec</code>/<code>debug</code></td></tr>
+      </table>
+
+      <p>Experimentation is a first-class methodology and the routing matrix's evidence engine.</p>
+
+      <div class="callout judgment">
+        <span class="tag">Judgment · #A4 — accelerated grill</span>
+        <p>The packet said "possible pattern: 5 questions with user, 20 self-questions, then review." I codified that as the <strong>spec workflow's step 4–5</strong> and made options-considered + selected-option rationale <em>required</em> for each self-grill question. The user only gets asked when answers would materially change the plan. This is the primary way solo work stays disciplined without the full team-production grill.</p>
+      </div>
+    </section>
+
+    <section id="quality">
+      <h2>6 · Quality system — complexity tiers and audit lenses</h2>
+      <p>Every non-trivial task is classified before starting. The tier drives planning depth, audit lenses, review independence, and model routing.</p>
+
+      <table>
+        <tr><th>Tier</th><th>Looks like</th><th>Plan</th><th>Audit</th><th>Review</th></tr>
+        <tr><td>Simple</td><td>Single file, known pattern, easily reversible, no data/security surface.</td><td>Inline intent</td><td>One combined pass (adversarial+steelman+neutral baked in)</td><td>Self-review OK</td></tr>
+        <tr><td>Medium</td><td>Multi-file, new behavior, or user-facing.</td><td>Written plan in task docs</td><td>Three lens passes by one auditor subagent</td><td>Reviewer independent of implementer</td></tr>
+        <tr><td>High</td><td>Architecture, auth/security/payments/data migration, cross-repo, low reversibility.</td><td>Full plan + rollback</td><td>Three independent lens subagents; orchestrator synthesizes</td><td>Independent reviewer + specialist lenses</td></tr>
+      </table>
+
+      <p><strong>Promotion rule:</strong> a single High on <em>risk, reversibility, or blast radius</em> makes the task High regardless of size. When in doubt between tiers, take the higher one — the extra ceremony is one audit pass, not a process tax.</p>
+
+      <p><strong>Review independence</strong> is the non-negotiable core: the coding agent is never the sole reviewer of its own work. This is what most of the routing and delegation rules are protecting.</p>
+    </section>
+
+    <section id="contracts">
+      <h2>7 · Contracts — the four rules everything else depends on</h2>
+
+      <h3>7.1 · Delegation contract</h3>
+      <p>Every subagent task must specify: <em>goal · repo/paths · files to inspect · excluded areas · expected output artifact · allowed tools · model preference · verification requirement · quality bar · stop condition</em>. If you can't write those ten, you're not ready to delegate.</p>
+
+      <p><strong>Subagents may not:</strong> perform unbounded repo-wide rewrites, make irreversible external changes without permission, touch secrets, self-approve their own work, or substitute passing tests for understanding.</p>
+
+      <h3>7.2 · Return packet</h3>
+      <p>Every subagent result must contain: <em>task assigned · files/docs inspected · facts found · decisions made · output artifact or patch summary · verification run · risks · open questions · recommended next action</em>. Concise packet, not a transcript.</p>
+
+      <h3>7.3 · Hook classification</h3>
+      <table>
+        <tr><th>Class</th><th>Uses</th><th>Guidance</th></tr>
+        <tr><td>Blocking</td><td>Secrets exposure, client-side API keys, destructive git ops without permission, failed build/typecheck on code changes</td><td>Sparse. Documented local override for non-production work.</td></tr>
+        <tr><td>Advisory</td><td>Missing docs/tests consideration, error-handling reminders, architecture concerns</td><td>Notice; agent decides.</td></tr>
+        <tr><td>Delegating</td><td>Type errors → fix-types; large diff → architecture reviewer; frontend diff → UX reviewer; docs drift → doc maintainer</td><td>Hand off instead of pushing through.</td></tr>
+        <tr><td>Automatic maintenance</td><td><code>PROJECT-STATUS.md</code>, changelog draft, tool cache, generated docs</td><td>Fire at checkpoints; significance-gated; anti-churn rules apply.</td></tr>
+      </table>
+
+      <div class="callout judgment">
+        <span class="tag">Judgment · #A5 — blocking hooks conservatively scoped</span>
+        <p>The packet said "aggressive blocking hooks are frustrating." I limited blocking to <strong>four cases</strong>: secrets exposure, client-side model API keys, destructive git ops on the main branch without in-conversation permission, and failed build/typecheck on code changes. Everything softer (type-error volume, large diff, missing tests) becomes delegating or advisory. The blocking-hook override convention is documented so local non-production work isn't gated by a hook you'd have to fight.</p>
+      </div>
+
+      <h3>7.4 · Doc write tiers</h3>
+      <p>See §4 above. This is the same rule set expressed as write authority — Tier A auto, Tier B guarded, Tier C staged.</p>
+    </section>
+
+    <section id="routing">
+      <h2>8 · Model routing — Codex-first</h2>
+      <p><strong>v0.3 prime directive:</strong> Fable is the scarcest resource. Use it conservatively for orchestration, conflict resolution, final decisions, synthesis, and the reviews that matter. Codex Sol is the workhorse for heavy and long-horizon work; even bounded architectural exploration offloads to Sol for Fable to review and decide.</p>
+
+      <p>The matrix in <code>routing/model-routing.md</code> separates verified routes from work that is decided but not yet built or verified. It is date-stamped and versioned because model quality and pricing change.</p>
+
+      <h3>Verified routes today</h3>
+      <table>
+        <tr><th>Role</th><th>Binding</th></tr>
+        <tr><td>Orchestrator</td><td>Fable (Claude Code main session)</td></tr>
+        <tr><td>Heavy build, multi-file, long-horizon; bounded architectural exploration; high-tier independent/security review; computer-use verification</td><td>Codex Sol (<code>gpt-5.6-sol</code>)</td></tr>
+        <tr><td>Scoped implementation; first-pass code review; research sweeps</td><td>Codex Terra (<code>gpt-5.6-terra</code>)</td></tr>
+        <tr><td>High-volume light tasks: summaries, extraction, classification, inventory</td><td>Codex Luna (<code>gpt-5.6-luna</code>) — <strong>never</strong> long-context codebase synthesis; documented recall cliff</td></tr>
+        <tr><td>Fast bounded builds with clear requirements</td><td>Composer 2.5 via <code>cursor-agent</code> and the <code>composer-implementation</code> worker contract</td></tr>
+        <tr><td>Offloaded web research</td><td>GLM-5 via the <code>research</code> skill (Z.ai API — zero Claude/Codex tokens)</td></tr>
+        <tr><td>Written content / prose</td><td>Claude Sonnet subagent</td></tr>
+        <tr><td>Frontend design &amp; UX judgment</td><td>Impeccable skill on Claude</td></tr>
+        <tr><td>Small in-session lookups</td><td>Claude Haiku — <em>only</em> when an external round-trip costs more than it saves</td></tr>
+      </table>
+
+      <h3>Pending — decided, not yet built or verified</h3>
+      <table>
+        <tr><th>Role</th><th>Binding</th><th>Status</th></tr>
+        <tr><td>Bounded frontend patches</td><td>GLM via the <code>glm-frontend-patch</code> shell skill</td><td class="status-pending">Decided and queued; first use requires a GLM vs Composer vs Sol experiment on the same slice</td></tr>
+      </table>
+
+      <div class="callout dedup">
+        <span class="tag">Dedupe · #M1</span>
+        <p>The packet listed "GLM-5.2 for frontend design/coding" as a default. I split that: <strong>frontend design judgment</strong> stays on Impeccable+Claude (verified working, quality-sensitive); <strong>frontend coding</strong> will use a bounded shell skill, now specified and queued for implementation plus experiment validation. The working GLM route today remains the read-only research skill.</p>
+      </div>
+    </section>
+
+    <section id="agents">
+      <h2>9 · Subagent roster (10 roles)</h2>
+      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter (<code>name</code>, <code>description</code>, <code>tools</code>, <code>model</code>) so it's drop-in ready for <code>.claude/agents/</code>. The frontmatter <code>model:</code> is the Claude-side fallback; the routing matrix is authoritative.</p>
+
+      <table>
+        <tr><th>Role</th><th>Default route</th><th>What it does</th></tr>
+        <tr><td>Initializer</td><td>Codex Sol (codex-implementation pattern)</td><td>First-time repo/worktree scaffold; proves the app boots.</td></tr>
+        <tr><td>Researcher</td><td>Codex Terra read-only packet; GLM research skill for offloaded web sweeps</td><td>One bounded question, evidence with confidence.</td></tr>
+        <tr><td>Research consolidator</td><td>Sonnet</td><td>Merges multiple researcher packets; preserves disagreement.</td></tr>
+        <tr><td>Implementer</td><td>Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical)</td><td>Executes the planned change test-first. Also the fix-types/fix-build delegating-hook target.</td></tr>
+        <tr><td>Frontend designer</td><td>Impeccable-on-Claude for judgment; Composer/Sol for build-out; GLM patch skill pending</td><td>Design judgment on Impeccable+Claude; bounded build-out through the matrix.</td></tr>
+        <tr><td>Verifier</td><td>Sol (codex-computer-use for runtime/browser)</td><td>Exercises the flow itself; passing tests are evidence, not proof.</td></tr>
+        <tr><td>Reviewer</td><td>Terra first-pass; Sol for high-tier/security; Fable reviews the diff itself at High</td><td>Findings first, cite file:line. Focused invocations (architecture / security / UX / tests / simplification).</td></tr>
+        <tr><td>Auditor</td><td>Terra lenses; Claude steelman; orchestrator synthesis at High</td><td>Audits <em>plans</em> through adversarial / steelman / unbiased lenses.</td></tr>
+        <tr><td>Doc maintainer</td><td>Luna or Haiku</td><td>Tier A/B files only; anti-churn significance check; never touches Tier C.</td></tr>
+        <tr><td>Autoskill improver</td><td>Sonnet</td><td>Stages proposals in <code>dev/skill-proposals/</code>; never applies changes.</td></tr>
+      </table>
+
+      <div class="callout dedup">
+        <span class="tag">Dedupe · #M2 — 20 candidate roles → 10</span>
+        <p>The braindump had 20 candidate roles. I collapsed sub-cases into named invocations of existing roles:</p>
+        <ul>
+          <li><em>type fixer, build-error resolver</em> → <strong>implementer</strong> invoked by the verify-on-change hook</li>
+          <li><em>route tester, app/browser verification agent</em> → <strong>verifier</strong> with browser or route scope</li>
+          <li><em>plan reviewer, strategic plan architect, architecture confirmer</em> → orchestrator + <strong>auditor</strong> lenses</li>
+          <li><em>code architecture reviewer, simplifier/refactor reviewer, PR reviewer</em> → <strong>reviewer</strong> with a named focus</li>
+          <li><em>web research specialist</em> → <strong>researcher</strong> (may offload to external route)</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2>10 · Skills &amp; plugins — inventory verdicts</h2>
+      <p>Full verdicts in <code>INVENTORY.md</code>. Summary:</p>
+
+      <table>
+        <tr><th>Family / Skill</th><th>Count</th><th>Verdict</th><th>Why</th></tr>
+        <tr><td>matt-pocock</td><td>7</td><td>Adopt</td><td>Spec backbone (grill → PRD → issues → TDD) originates here.</td></tr>
+        <tr><td>convex</td><td>6</td><td>Keep</td><td>Both first instances are Convex-backed. Self-contained vertical.</td></tr>
+        <tr><td>impeccable</td><td>1 (62 files)</td><td>Keep</td><td>The frontend design route in the routing matrix.</td></tr>
+        <tr><td>marketingskills</td><td>17</td><td>Keep, fenced</td><td>Lives with the parallel GTM swarm. Engineering OS borrows only copy/landing/conversion via a <code>docs/gtm/</code> handoff interface.</td></tr>
+        <tr><td>bmad</td><td>44</td><td class="status-pending">Experiment / hold</td><td>A complete competing framework. Wiring alongside the OS creates two sources of process truth. Not adopted in v1 — needs your call, see D5.</td></tr>
+        <tr><td>openspec</td><td>3</td><td>Deprecate from active path</td><td>Duplicates spec workflow + task docs.</td></tr>
+        <tr><td>gsd</td><td>1</td><td>Experiment</td><td>Autonomous build orchestrator; overlaps with orchestrator role itself.</td></tr>
+      </table>
+
+      <div class="callout dedup">
+        <span class="tag">Dedupe · #M3 — environment skill collisions</span>
+        <p>Skills that ship in the installed environment overlap with catalog skills. Canonicals I picked:</p>
+        <ul>
+          <li><code>tdd</code> (matt-pocock) canonical; <code>test-driven-development</code> deprecated</li>
+          <li>Accelerated grill inside <code>/spec</code> workflow is canonical; standalone <code>grill-me</code> retained for plan stress-tests outside spec work</li>
+          <li>OS workflow specs + <code>dev/active/</code> task docs canonical; <code>writing-plans</code> and <code>executing-plans</code> deprecated from active path</li>
+          <li>Reviewer/verifier agent roles canonical; <code>code-reviewer</code>/<code>architect-review</code> skills merged in as reviewer focuses</li>
+          <li>Codex <code>codex exec</code> canonical for research; GLM <code>research</code> skill kept as zero-token alternate route</li>
+        </ul>
+      </div>
+
+      <div class="callout judgment">
+        <span class="tag">Judgment · #A6 — Codex delegation skills generalized</span>
+        <p>The three <code>codex-implementation</code>/<code>codex-review</code>/<code>codex-computer-use</code> skills you authored for lower-db are now the canonical delegation surfaces of the OS. Codex generalized them to <code>ai-os-template/skills/</code> with lower-db-specific template bindings filled per instance. Lower dB keeps its bound copies verbatim.</p>
+      </div>
+    </section>
+
+    <section id="instantiation">
+      <h2>11 · Instantiation — how a template becomes a live repo instance</h2>
+
+      <p>Every instantiated repo gets <code>docs/ai-os-manifest.md</code>. Schema and full checklist in <code>ai-os-template/instances/MANIFEST-SCHEMA.md</code>. Summary of the procedure:</p>
+
+      <ol>
+        <li>Codex recon packet: stack, verification commands, existing doc roles, conventions, collision risks.</li>
+        <li>Fable makes binding decisions; anything unresolvable goes to you.</li>
+        <li>Isolated worktree, branch <code>codex/ai-os-instance</code> off <code>origin/main</code> — never the (possibly dirty) root checkout.</li>
+        <li>Codex writes bound files per packet; no git ops, no deletions, no renames; existing marker blocks preserved byte-identical.</li>
+        <li>Fable inspects the diff, verifies no unresolved template-binding markers survive, commits by named file.</li>
+        <li>Promote repo learnings to the template <em>only</em> when they generalize.</li>
+      </ol>
+
+      <h3>Full template layout</h3>
+      <div class="file-tree">ai-os-template/
+├── README.md                 Entry point + status
+├── DESIGN-MEMO.md            Architecture, contracts, decisions record
+├── WALKTHROUGH.html          This page
+├── INVENTORY.md              Skills/plugin verdicts (keep/adopt/adapt/merge/deprecate)
+├── root/
+│   ├── AGENTS.template.md    Canonical harness-neutral root instructions
+│   └── CLAUDE.template.md    Thin Claude adapter (imports AGENTS.md)
+├── docs-templates/
+│   ├── SPEC.template.md
+│   ├── PROJECT-STATUS.template.md
+│   ├── CHANGELOG.template.md
+│   ├── feature-doc.template.md
+│   ├── FEATURE-LIST.template.json      Optional module (off by default)
+│   ├── FEATURE-LIST.README.md
+│   └── task-docs/                       dev/active/&lt;task&gt;/ trio
+│       ├── plan.template.md
+│       ├── context.template.md
+│       └── tasks.template.md
+├── workflows/                8 specs · trigger / inputs / steps / output / verify / ceremony / failure
+│   ├── spec.md   implement-tdd.md   debug.md   commit.md
+│   └── commit-pr.md   review-pr.md   wrap-session.md   init.md
+├── commands/                 9 slash-command specs (thin adapters over workflows)
+│   ├── spec.md   research.md   prototype.md   implement-tdd.md   debug-mode.md
+│   └── commit.md   commit-pr.md   review-pr.md   wrap-session.md
+├── hooks/                    7 hook specs · settings.json snippets included
+│   ├── skill-activation.md   verify-on-change.md   secrets-guard.md
+│   ├── destructive-git-guard.md   status-checkpoint.md
+│   └── delegating-review.md   tool-cache-refresh.md
+├── agents/                   10 subagent role definitions with Claude Code frontmatter
+├── routing/
+│   ├── model-routing.md      v0.2 matrix (Codex-first, verified + pending)
+│   └── complexity-rubric.md  Task tiering rules
+├── skills/                   Generalized Codex delegation surfaces
+│   ├── codex-implementation/SKILL.template.md
+│   ├── codex-review/SKILL.template.md
+│   └── codex-computer-use/SKILL.template.md
+└── instances/
+    ├── MANIFEST-SCHEMA.md
+    └── corvo-labs-dot-com-plan.md</div>
+    </section>
+
+    <section id="instances">
+      <h2>12 · Instance status</h2>
+
+      <table>
+        <tr><th>Repo</th><th>Status</th><th>Branch</th><th>What's there</th></tr>
+        <tr><td>Lower dB</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Your repo-overlay installed verbatim (kernel + operations docs + skills) + <code>docs/ai-os-manifest.md</code> + dated changelog entry. 16 files staged by name per house rules.</td></tr>
+        <tr><td>FreshProof</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Expanded <code>AGENTS.md</code> (nextjs-agent-rules marker block preserved byte-identical), thin <code>CLAUDE.md</code> adapter, new <code>PROJECT-STATUS.md</code> + <code>CHANGELOG.md</code> (missing roles), manifest, bound Codex skills. 8 files.</td></tr>
+        <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Proving ground for the GLM frontend-coding route + FEATURE-LIST / init modules.</td></tr>
+        <tr><td>ai-os-template itself</td><td class="status-pending">Uncommitted</td><td>Currently on <code>main</code> in <code>/Volumes/rexy/GitHub/skills</code></td><td>Whole tree is untracked. Waiting for your review before commit.</td></tr>
+      </table>
+
+      <p>Neither instance branch is pushed. Review the worktree diffs at your leisure. Lower dB has its own <code>/publish-slice</code>; FreshProof can go via <code>gh pr create</code>.</p>
+    </section>
+
+    <section id="decisions">
+      <h2>13 · Decisions — resolved 2026-07-12</h2>
+      <p class="lede">All twelve were answered by Jake on 2026-07-12; each item below now shows the resolution.</p>
+
+      <ol class="decisions-list">
+        <li>
+          <span class="q">GLM frontend-coding route — how do we wire it?</span>
+          <span class="body">Currently: only the read-only <code>research</code> skill uses your Z.ai API key. Frontend design judgment sits on Impeccable+Claude, which is fine. But frontend <em>coding</em> was in your original defaults and there's no GLM coding surface in Claude Code. Options: <strong>(a)</strong> a shell skill (like the research one) that invokes GLM for a bounded frontend patch; <strong>(b)</strong> an MCP server for GLM if one exists; <strong>(c)</strong> a Codex-style plugin; <strong>(d)</strong> drop the GLM coding route and use Codex for frontend coding too (simplest — Codex is already the workhorse). Recommendation: <strong>(d)</strong> unless you have a specific GLM coding-quality reason. The corvo-labs-dot-com instance is the natural place to prove whichever you pick. <strong>RESOLVED:</strong> Shell skill; spec staged, implementation queued, validated by experiment first.</span>
+        </li>
+        <li>
+          <span class="q">BMAD — hold, adopt, or explicit reject?</span>
+          <span class="body">44 skills forming a competing framework (analysis → planning → solutioning → implementation with named agent personas). Adopting alongside the OS creates two sources of process truth. I put it on <strong>hold / experiment</strong>: not wired in v1; the OS's auditor role borrows BMAD's adversarial-elicitation idea, everything else waits. Do you want to keep it on hold, actively try it side-by-side on one project, or explicitly drop it? <strong>RESOLVED:</strong> BMAD dropped.</span>
+        </li>
+        <li>
+          <span class="q">Where does the routing matrix live long-term?</span>
+          <span class="body">Right now it's in the template repo (<code>ai-os-template/routing/</code>). Every instance references it by absolute path. For v1 that's fine. For a "shared config" that changes when model quality shifts (Opus 4.9, GLM-6, etc.), do you want (a) each instance copies it in, (b) instances symlink to a canonical location, (c) it becomes an installable plugin package? Not urgent, but decides the shape of matrix updates. <strong>RESOLVED:</strong> Manifest version-pin reference; symlink rejected because committed symlinks to local paths dangle on clone/CI (pushback accepted).</span>
+        </li>
+        <li>
+          <span class="q">FreshProof: <code>FEEDBACK_IMPLEMENTATION_COMPLETE.md</code> — archive or delete?</span>
+          <span class="body">Documents the retired feedback flow (which just got removed on <code>codex/retire-feedback-flow</code>). References an outdated absolute path and npm/Vercel instructions that contradict the pnpm/Cloudflare reality. Left in place by the recon rules ("never delete"). Owner decision on next step. <strong>RESOLVED:</strong> Archive.</span>
+        </li>
+        <li>
+          <span class="q">FreshProof: dual plan directories (<code>plans/</code> vs <code>docs/plans/</code>)</span>
+          <span class="body">Both exist. I bound task-docs to <code>plans/</code> in the manifest but flagged consolidation as a follow-up. Do you want them merged (which one wins?) or left as-is (root <code>plans/</code> for new task docs, <code>docs/plans/</code> for historical dated plans)? <strong>RESOLVED:</strong> Merge to one <code>plans/</code> directory with an <code>archive/</code> subdirectory in the next instance pass.</span>
+        </li>
+        <li>
+          <span class="q">Lower dB: same question — legacy <code>plans/</code> vs canonical <code>docs/plans/</code></span>
+          <span class="body">Manifest binds task memory to <code>docs/plans/</code> (house convention wins). Legacy root <code>plans/</code> has 8 unprefixed files. Consolidate or leave? <strong>RESOLVED:</strong> Merge to one <code>docs/plans/</code> directory with an <code>archive/</code> subdirectory in the next instance pass.</span>
+        </li>
+        <li>
+          <span class="q">FEATURE-LIST module — off by default. Change for corvo-labs?</span>
+          <span class="body">Optional module (<code>FEATURE-LIST.json</code> + <code>init</code> workflow's fuller path). Skipped for FreshProof (mature) and Lower dB (mature). corvo-labs-dot-com may be greenfield or near-greenfield — do you want it on there? Decision drives whether the <code>init</code> workflow's optional branches get wired for that instance. <strong>RESOLVED:</strong> Skip for corvo-labs.</span>
+        </li>
+        <li>
+          <span class="q">Autoskill auto-apply — never, or eventually?</span>
+          <span class="body">Currently: autoskill improver <em>proposes</em> to <code>dev/skill-proposals/</code>, never applies. You'd originally floated auto-apply for skill updates. I kept it staged in v1 because skill edits are higher-risk than doc updates. Do we plan a later "low-risk metadata updates auto-apply" policy, or keep it staged forever? <strong>RESOLVED:</strong> Graduated trust — eventual auto-apply for low-risk metadata after ~10 accepted proposals, never root instructions/hooks.</span>
+        </li>
+        <li>
+          <span class="q">Marketingskills fence — what exactly transfers into the engineering OS?</span>
+          <span class="body">I said "copywriting, landing-page, conversion for product-facing engineering work" via a <code>docs/gtm/</code> handoff interface. But I didn't enumerate which specific skills. 17 marketingskills exist. Do you want to name a subset now, or wait until the corvo-labs instance forces the question? <strong>RESOLVED:</strong> Subset named: copywriting, copy-editing, marketing-psychology, onboarding, site-architecture, product-marketing, seo-audit.</span>
+        </li>
+        <li>
+          <span class="q">Push and PR both instance branches now, or hold?</span>
+          <span class="body">Both are committed on <code>codex/ai-os-instance</code>, unpushed. Do you want to (a) push both now and open PRs for review, (b) push both, no PRs yet, (c) hold both local while we iterate on the template based on this walkthrough? <strong>RESOLVED:</strong> Instances held while the OS is refined; lower-db updated next, then weekly-digest work.</span>
+        </li>
+        <li>
+          <span class="q">Hook implementation priority when you approve</span>
+          <span class="body">Question 4 in your last message queued hooks after your review. Assuming you approve all 7, what order do you want them wired? Recommendation: <strong>secrets-guard</strong> and <strong>destructive-git-guard</strong> first (safety), then <strong>status-checkpoint</strong> and <strong>tool-cache-refresh</strong> (low risk, high value), then <strong>skill-activation</strong> and <strong>verify-on-change</strong> (need per-repo tuning), <strong>delegating-review</strong> last (needs a working reviewer subagent). <strong>RESOLVED:</strong> Recommended order stands.</span>
+        </li>
+        <li>
+          <span class="q">The template itself — commit shape</span>
+          <span class="body">Whole <code>ai-os-template/</code> tree is untracked in the skills repo, currently on <code>main</code>. Options: (a) one big "Add AI Engineering OS template v0.1" commit on main; (b) branch <code>ai-os-template/v0.1</code> and merge via PR; (c) multiple commits by phase (memo, root, docs, workflows, hooks, commands, agents, routing, skills, instances). Recommendation: <strong>(b)</strong>, since <code>fable-context/</code> and <code>ai-os-template/</code> are both untracked, one PR bundles both cleanly. <strong>RESOLVED:</strong> Branch <code>ai-os-template/v0.1</code> + PR (done this session).</span>
+        </li>
+      </ol>
+    </section>
+
+    <section id="judgment-log">
+      <h2>14 · Judgment call log</h2>
+      <p>Every judgment call I made without pausing to ask, in one place. All of these are reversible — if any feel wrong, we adjust before commit.</p>
+
+      <table>
+        <tr><th>#</th><th>Decision</th><th>Why</th></tr>
+        <tr><td>A1</td><td>Memory split into three tiers (durable / task-scoped / worktree-local)</td><td>Packet left worktree scope open; without this, cleanup erases memory or task docs pollute SPEC.</td></tr>
+        <tr><td>A2</td><td><code>AGENTS.md</code> canonical, <code>CLAUDE.md</code> thin adapter, no generation</td><td>Mirrors drift, generation adds a build step; matches how lower-db overlay already works.</td></tr>
+        <tr><td>A3</td><td>Three doc write tiers (A auto / B guarded / C staged)</td><td>Reconciles "auto-edit docs" preference with "avoid noisy churn" risk.</td></tr>
+        <tr><td>A4</td><td>Accelerated grill codified into spec workflow as required steps</td><td>Only way to make the 5-user + 20-self-grill pattern actually happen.</td></tr>
+        <tr><td>A5</td><td>Blocking hooks limited to 4 cases + documented override</td><td>"Aggressive blocking hooks are frustrating."</td></tr>
+        <tr><td>A6</td><td>Codex delegation skills generalized to template; lower-db keeps bound copies</td><td>Your repo-overlay codex-* skills are the canonical delegation surface. Codex generalized them cleanly.</td></tr>
+        <tr><td>A7</td><td>Isolated worktree branched from <code>origin/main</code> for both instances</td><td>Both root checkouts sat dirty on active <code>codex/*</code> branches; committing there would have mixed the instance with in-flight work.</td></tr>
+        <tr><td>A8</td><td>Lower dB instance = your repo-overlay verbatim + manifest + changelog</td><td>Your overlay IS the lower-db instance. Redrafting would have duplicated hours of your work and risked breaking house rituals.</td></tr>
+        <tr><td>A9</td><td>FreshProof: no new <code>SPEC.md</code>; durable intent binds to PRODUCT + CONTEXT + DESIGN + ADRs</td><td>Product intent already lives in three files. A fourth would orphan them, and CONTEXT.md's glossary is load-bearing.</td></tr>
+        <tr><td>A10</td><td>Instance branch <code>codex/ai-os-instance</code> chosen (not <code>ai-os/instance</code>)</td><td>Matches both repos' existing <code>codex/&lt;slug&gt;</code> branch convention.</td></tr>
+      </table>
+    </section>
+
+    <section id="dedup-log">
+      <h2>15 · Dedupe log</h2>
+      <table>
+        <tr><th>#</th><th>Merge</th><th>Winner</th></tr>
+        <tr><td>M1</td><td>GLM-5.2 route split</td><td>Frontend <em>design</em> = Impeccable+Claude (verified). Frontend <em>coding</em> = pending (see D1).</td></tr>
+        <tr><td>M2</td><td>20 candidate subagent roles → 10</td><td>Type-fixer/build-fixer → implementer; route/browser verifier → verifier; plan-related roles → orchestrator+auditor; architecture/simplification/PR reviewers → reviewer with focus; web research → researcher.</td></tr>
+        <tr><td>M3</td><td>Environment skill collisions</td><td><code>tdd</code> over <code>test-driven-development</code>; accelerated grill in <code>/spec</code> over standalone <code>grill-me</code> (which stays for standalone stress-tests); OS workflows over <code>writing-plans</code>/<code>executing-plans</code>; reviewer/verifier agents over <code>code-reviewer</code>/<code>architect-review</code> (merged as focuses); Codex over GLM for research (GLM kept as zero-token alternate).</td></tr>
+        <tr><td>M4</td><td>15 candidate slash commands → 9</td><td><code>/fix-types</code> became a delegating-hook target; <code>/update-docs</code> became automatic maintenance; <code>/prove</code> and <code>/publish-slice</code> stayed repo-specific (lower-db) rather than promoted to OS commands; <code>/autoskill</code> runs inside <code>/commit</code> and <code>/wrap-session</code>, not standalone.</td></tr>
+        <tr><td>M5</td><td>openspec, writing-plans, executing-plans</td><td>Deprecated from active path. Their proposal→apply→archive pipeline duplicates spec workflow + task docs.</td></tr>
+      </table>
+    </section>
+
+    <section id="nextsteps">
+      <h2>16 · Next steps</h2>
+
+      <ol>
+        <li><strong>Template v0.2 committed</strong> on <code>ai-os-template/v0.1</code> and PR opened.</li>
+        <li><strong>Hook implementation next</strong> via a Codex packet in the D11 priority order, once Jake gives the explicit go on the hook specs.</li>
+        <li><strong>Update the lower-db instance</strong> to template v0.2, including plans-directory consolidation (D6), the routing-matrix pin, and the Composer skill.</li>
+        <li><strong>Begin weekly-digest-automation feature work</strong> on lower-db using the OS.</li>
+        <li><strong>Implement the GLM frontend-patch skill</strong> and run its validation experiment.</li>
+        <li><strong>Jake audits the marketingskills subset:</strong> copywriting, copy-editing, marketing-psychology, onboarding, site-architecture, product-marketing, and seo-audit.</li>
+      </ol>
+
+      <p style="margin-top: 28px; color: var(--muted); font-size: 13px;">This walkthrough is <code>ai-os-template/WALKTHROUGH.html</code>. If it drifts from the memo or a spec, the memo/spec wins — flag drift when you find it.</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>
