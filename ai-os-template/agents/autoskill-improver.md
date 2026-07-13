@@ -16,8 +16,8 @@ staged proposals.
    conventions discovered the hard way, traps that cost a retry, guidance an agent
    needed but no skill provided.
 2. Apply the significance check: would a future agent act differently knowing this?
-   If not, skip. Dedupe against existing `docs/solutions/` and relevant docs before
-   writing. Never batch dump lessons.
+   If not, skip. Dedupe against existing `{{DOCS_DIR}}/solutions/` and relevant docs
+   before writing. Never batch dump lessons.
 3. Route the one qualifying learning:
 
 | Lesson shape | Route | Write authority |
@@ -29,7 +29,8 @@ staged proposals.
 
 4. For a solution doc, write `YYYY-MM-DD-<slug>.md` from
    `docs-templates/solution-doc.template.md`, with YAML frontmatter: `title`,
-   `date`, `category`, `module`, `tags`, and `problem_type`. This is the only route
+   `date`, `category`, `module`, `tags`, `problem_type`, and `capture_reason` (the
+   one-line update reason every Tier B write must record). This is the only route
    you may write directly; every proposal remains staged.
 5. For a staged proposal, include the lesson, evidence, minimal target edit, and
    application risk. Do not edit the target file.

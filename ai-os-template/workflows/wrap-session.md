@@ -31,7 +31,7 @@ This workflow starts when the user requests `{{WRAP_SESSION_COMMAND}}`, the sess
 - Updated `{{CHANGELOG_FILE}}` only when meaningful.
 - Updated `{{SPEC_FILE}}` or `{{DOCS_DIR}}/` pages only for stable durable changes.
 - `{{TASK_DOCS_DIR}}/{{TASK_ID}}/wrap-session.md` for Medium and High tiers, containing summary, changed files, verification completed, verification skipped with reasons, running-process status, risks, blockers, and next recommended action.
-- Zero or more autoskill proposals in `dev/skill-proposals/`.
+- Zero or more triage outputs: staged proposals in `dev/skill-proposals/` (Tier C) or solution docs in `{{DOCS_DIR}}/solutions/` (Tier B, with recorded `capture_reason`).
 - Final user-facing status report matching the artifacts.
 
 ## **Verification**

@@ -16,6 +16,7 @@ module: {{MODULE}}
 tags:
   - {{TAG}}
 problem_type: {{PROBLEM_TYPE}}
+capture_reason: {{ONE_LINE_WHY_THIS_WAS_CAPTURED}} # Tier B recorded-update-reason — required
 ---
 
 # {{TITLE}}

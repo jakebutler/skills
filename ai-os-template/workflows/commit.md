@@ -30,10 +30,10 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 ## **Output contract**
 
 - One focused commit on the current branch containing only intended changes.
-- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/commit.md`: commands run, results, review findings and dispositions, docs updates, autoskill proposals, skipped checks with reasons, and final commit hash.
+- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/commit.md`: commands run, results, review findings and dispositions, docs updates, triage outcome (route taken or explicit skip), skipped checks with reasons, and final commit hash.
 - Updated `{{PROJECT_STATUS_FILE}}` when handoff state changed.
 - Updated `{{CHANGELOG_FILE}}` when the change is meaningful to users or operators.
-- Proposals under `dev/skill-proposals/` only when autoskill scan finds durable lessons.
+- Triage outputs only when a durable lesson qualified: a staged proposal under `dev/skill-proposals/` (Tier C) or a solution doc under `{{DOCS_DIR}}/solutions/` (Tier B, with recorded `capture_reason`).
 
 ## **Verification**
 
