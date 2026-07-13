@@ -24,7 +24,7 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 8. Orchestrator: disposition each review finding as fixed, accepted-risk, deferred with owner, or rejected with reason.
 9. `implementer`: address accepted findings with scoped edits, then rerun affected verification.
 10. `doc-maintainer`: update `{{PROJECT_STATUS_FILE}}`, `{{CHANGELOG_FILE}}`, and relevant docs according to doc write tiers. Use Tier A automatic updates, Tier B guarded updates, and no Tier C direct edits.
-11. `autoskill-improver`: scan the session and diff for durable lessons; write proposals only under `dev/skill-proposals/`, never auto-apply skill, hook, `AGENTS.md`, or `CLAUDE.md` edits.
+11. `autoskill-improver`: run the four-route triage in `agents/autoskill-improver.md` (skill proposal, doc proposal, solution doc, or skip); proposals are staged, while solution docs are written directly as Tier B.
 12. Orchestrator: review the final diff and status again, then create one focused commit with message `{{COMMIT_MESSAGE}}` including only the intended files.
 
 ## **Output contract**
