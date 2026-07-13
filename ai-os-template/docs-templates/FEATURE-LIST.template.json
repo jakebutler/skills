@@ -1,0 +1,43 @@
+{
+  "_comment": "TEMPLATE: FEATURE-LIST.json — optional acceptance-criteria module, off by default (DESIGN-MEMO.md §4, §11 decision #3, §12). See FEATURE-LIST.README.md for when to use this. Delete the _comment keys after instantiating; they exist only to document the schema inline since JSON has no comment syntax.",
+  "_schema_comment": "Each feature starts status: 'failing' and flips to 'passing' only after its verification method has actually been run and observed to pass — not on completion of the implementation work.",
+  "updated": "{{TIMESTAMP}}",
+  "features": [
+    {
+      "id": "{{FEATURE_ID_1}}",
+      "name": "{{FEATURE_NAME_1}}",
+      "status": "failing",
+      "completion_criteria": "{{COMPLETION_CRITERIA_1}}",
+      "verification_method": "unit",
+      "verification_command": "{{VERIFICATION_COMMAND_1}}",
+      "notes": "{{FEATURE_NOTES_1}}"
+    },
+    {
+      "id": "{{FEATURE_ID_2}}",
+      "name": "{{FEATURE_NAME_2}}",
+      "status": "failing",
+      "completion_criteria": "{{COMPLETION_CRITERIA_2}}",
+      "verification_method": "e2e",
+      "verification_command": "{{VERIFICATION_COMMAND_2}}",
+      "notes": "{{FEATURE_NOTES_2}}"
+    },
+    {
+      "id": "{{FEATURE_ID_3}}",
+      "name": "{{FEATURE_NAME_3}}",
+      "status": "failing",
+      "completion_criteria": "{{COMPLETION_CRITERIA_3}}",
+      "verification_method": "browser",
+      "verification_command": "{{VERIFICATION_COMMAND_3}}",
+      "notes": "{{FEATURE_NOTES_3}}"
+    },
+    {
+      "id": "{{FEATURE_ID_4}}",
+      "name": "{{FEATURE_NAME_4}}",
+      "status": "failing",
+      "completion_criteria": "{{COMPLETION_CRITERIA_4}}",
+      "verification_method": "manual",
+      "verification_command": "{{MANUAL_VERIFICATION_STEPS_4}}",
+      "notes": "{{FEATURE_NOTES_4}}"
+    }
+  ]
+}
