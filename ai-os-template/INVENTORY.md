@@ -32,7 +32,7 @@
 | Session rituals | template workflows commit / commit-pr / wrap-session | `prove`, `publish-slice`, `wrap-session` **keep as repo-specific bindings** — they ARE the Lower dB instance of those workflows; the instance manifest maps to them rather than replacing them |
 | Codex delegation | **adopt + generalize**: `codex-implementation`, `codex-review`, `codex-computer-use` (from the lower-db repo-overlay) | These become template-level skills with lower-db specifics parameterized to {{PLACEHOLDER}}s — action item below |
 | Prose | `humanizer` **keep** for user-facing writing | — |
-| Autoskill | `agents/autoskill-improver.md` (proposals-only) | external autoskill plugin **experiment**. Graduated trust policy (D8, 2026-07-12): staged-only now → auto-apply for low-risk metadata (descriptions, trigger keywords) after ~10 accepted proposals with zero reverts → revisit auto-apply for skill bodies only after that holds. Auto-apply never extends to `AGENTS.md`/`CLAUDE.md`/hooks. |
+| Autoskill | `agents/autoskill-improver.md` (Tier C staged proposals; direct writes only for Tier B solution docs) | external autoskill plugin **experiment**. Graduated trust policy (D8, 2026-07-12): staged-only now → auto-apply for low-risk metadata (descriptions, trigger keywords) after ~10 accepted proposals with zero reverts → revisit auto-apply for skill bodies only after that holds. Auto-apply never extends to `AGENTS.md`/`CLAUDE.md`/hooks. |
 
 ## Action items
 

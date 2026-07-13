@@ -46,7 +46,7 @@ passing tests for understanding.
 | Reviewer | `reviewer.md` | Terra first-pass; Sol for high-tier/security; Fable reviews the diff itself at High | independent of implementer |
 | Auditor | `auditor.md` | Terra lenses; Claude steelman; orchestrator synthesis at High | independent lenses at High tier |
 | Doc maintainer | `doc-maintainer.md` | Luna or Haiku | Tier A/B files only |
-| Autoskill improver | `autoskill-improver.md` | Sonnet | proposals only, never applies |
+| Autoskill improver | `autoskill-improver.md` | Sonnet | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |
 
 The frontmatter `model:` in each definition file is the Claude-side fallback when the
 Codex route is unavailable; the routing matrix (v0.2+) is authoritative.

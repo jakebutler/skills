@@ -61,6 +61,7 @@ The core operating loop and where each element lives:
 | Root instructions | `AGENTS.md` (canonical, harness-neutral), `CLAUDE.md` (thin Claude adapter) | Tier C: staged edits only |
 | Durable intent | `SPEC.md` — product/architecture intent, stack, major stories, links out | Tier B: guarded automatic |
 | Progressive knowledge | `docs/` — feature specs, architecture, data flow, ops, troubleshooting; mapped in `AGENTS.md` | Tier B |
+| Solutions knowledge base | `{{DOCS_DIR}}/solutions/` — searchable solved-problem docs with YAML frontmatter | Tier B (autoskill-improver solutions route) |
 | Checkpoint | `PROJECT-STATUS.md` — overwritten handoff state, never a ledger | Tier A: fully automatic |
 | Ledger | `CHANGELOG.md` — checkpoint/user-facing entries; git history is the commit ledger | Tier A (draft section) |
 | Task memory | `dev/active/[task]/` — plan, context, tasks; archived on completion | Task-scoped, disposable |
@@ -139,8 +140,8 @@ patch summary · verification run · risks · open questions · recommended next
 
 ### 7.4 Doc write tiers
 - **Tier A** fully automatic: status, tool cache, changelog draft, generated docs.
-- **Tier B** guarded automatic: `SPEC.md` and `docs/` — stable facts and links only,
-  with recorded update reason.
+- **Tier B** guarded automatic: `SPEC.md`, `docs/`, and the autoskill-improver solutions
+  docs route — stable facts and links only, with recorded update reason.
 - **Tier C** staged for review: skills, `AGENTS.md`, `CLAUDE.md`, hooks. Autoskill
   proposals land as diffs in `dev/skill-proposals/` with evidence; never auto-applied in v1.
 

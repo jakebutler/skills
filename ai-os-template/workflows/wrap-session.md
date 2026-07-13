@@ -19,7 +19,7 @@ This workflow starts when the user requests `{{WRAP_SESSION_COMMAND}}`, the sess
 3. `doc-maintainer`: overwrite `{{PROJECT_STATUS_FILE}}` idempotently with current state, active task, branch, last verification, open risks, next action, and handoff notes. Do not append a history ledger.
 4. `doc-maintainer`: update `{{CHANGELOG_FILE}}` only if the session produced a meaningful user/operator-facing change.
 5. `doc-maintainer`: update `{{SPEC_FILE}}` or relevant `{{DOCS_DIR}}/` pages only if stable behavior, state, or intent changed; record one-line update reasons.
-6. `autoskill-improver`: scan the session for durable lessons, repeated corrections, discovered conventions, and recurring traps; write proposals only under `dev/skill-proposals/`.
+6. `autoskill-improver`: run the four-route triage in `agents/autoskill-improver.md` (skill proposal, doc proposal, solution doc, or skip); proposals are staged, while solution docs are written directly as Tier B.
 7. Orchestrator: confirm no unreported running processes remain by checking `{{PROCESS_CHECK_COMMAND}}` or the repo's known process list.
 8. Orchestrator: stop transient processes started only for the session when safe, or report their PID, purpose, and owner if they must remain running.
 9. Orchestrator: list verification completed and verification skipped with reasons in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/wrap-session.md` for Medium and High tiers, or in the final response for Simple tier.
@@ -31,7 +31,7 @@ This workflow starts when the user requests `{{WRAP_SESSION_COMMAND}}`, the sess
 - Updated `{{CHANGELOG_FILE}}` only when meaningful.
 - Updated `{{SPEC_FILE}}` or `{{DOCS_DIR}}/` pages only for stable durable changes.
 - `{{TASK_DOCS_DIR}}/{{TASK_ID}}/wrap-session.md` for Medium and High tiers, containing summary, changed files, verification completed, verification skipped with reasons, running-process status, risks, blockers, and next recommended action.
-- Zero or more autoskill proposals in `dev/skill-proposals/`.
+- Zero or more triage outputs: staged proposals in `dev/skill-proposals/` (Tier C) or solution docs in `{{DOCS_DIR}}/solutions/` (Tier B, with recorded `capture_reason`).
 - Final user-facing status report matching the artifacts.
 
 ## **Verification**
