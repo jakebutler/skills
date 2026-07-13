@@ -8,7 +8,9 @@ This workflow starts when the user requests `{{REVIEW_PR_COMMAND}}`, `commit-pr`
 
 - PR URL, branch, commit range, or diff command such as `{{PR_DIFF_COMMAND}}`.
 - Base branch `{{PR_TARGET_BRANCH}}` and repository path.
-- Relevant docs, contracts, tests, and task docs for the changed area.
+- Original plan plus the diff; relevant docs, contracts, tests, and task docs for the
+  changed area. Do not hand off whole files; the reviewer reads repository files as
+  needed.
 - Complexity tier from `{{RUBRIC_LOCATION}}`.
 
 ## **Steps**

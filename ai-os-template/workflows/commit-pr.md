@@ -48,7 +48,7 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 
 - Simple: commit workflow, push, PR body with required sections, one general PR review pass.
 - Medium: full commit workflow, PR review agent, review-fix loop, status update, changelog/docs verification reflected in PR.
-- High: full commit workflow, specialist PR sub-reviews based on diff content, explicit rollback plan, release notes or deployment gate, final orchestrator synthesis.
+- High: full commit workflow, specialist PR sub-reviews based on diff content, explicit rollback plan, release notes or deployment gate, final orchestrator synthesis, and quiz-before-merge: before merging, the orchestrator asks the user 3–5 pointed questions about the change (what breaks if X, why approach Y, where is Z verified). Merge proceeds only after the user engages.
 
 ## **Failure handling**
 
@@ -56,4 +56,6 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 - If push fails due to auth, branch protection, or remote mismatch, record exact error in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md` and stop before retrying destructive commands.
 - If PR creation fails, keep the branch pushed if push succeeded, record the command and error, and provide the manual PR body from `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md`.
 - If PR review finds blocking issues, loop through implementation, verification, commit, push, and PR update before final status.
+- If the quiz-before-merge surfaces a misunderstanding, resolve it (explain or revise)
+  before merge.
 - If follow-up work is real scope and not a blocker, record it in the PR `Follow-up` section and `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md`.

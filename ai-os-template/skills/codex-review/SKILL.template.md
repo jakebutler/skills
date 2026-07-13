@@ -55,6 +55,11 @@ codex -C "$PWD" review --commit <sha> - < "$PROMPT" > "$REPORT"
 
 ## Review Prompt
 
+### Prompt requirements
+
+- Provide the diff and the plan or acceptance criteria, not whole files.
+- The reviewer may read files in the repository itself as needed.
+
 Ask Codex to use a code-review stance:
 
 ```text
