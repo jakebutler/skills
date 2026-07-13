@@ -58,5 +58,5 @@ Every blocking hook supports the same local override convention:
 | `destructive-git-guard.md` | Blocking | `PreToolUse` on `Bash` |
 | `status-checkpoint.md` | Automatic maintenance | `Stop`, `SessionEnd` |
 | `delegating-review.md` | Delegating | `Stop` |
-| `tool-cache-refresh.md` | Automatic maintenance | `SessionStart`, config-change detection |
+| `tool-cache-refresh.md` | Automatic maintenance | `SessionStart` (config changes detected via fingerprint compare) |
 

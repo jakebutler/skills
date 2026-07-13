@@ -16,8 +16,8 @@ Automatic maintenance.
 
 Run at `SessionStart`. Automatic-maintenance hooks fire at checkpoints only
 (anti-churn), not per tool use. The script hashes the MCP configuration, command
-directory, and skills-directory listing, then compares that fingerprint with the
-stored fingerprint in `{{TOOL_CACHE_FILE}}`.
+directory, skills-directory listing, and agents-directory listing, then compares
+that fingerprint with the stored fingerprint in `{{TOOL_CACHE_FILE}}`.
 
 ## Action
 
@@ -61,7 +61,7 @@ not block the session.
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/tool-cache-refresh.mjs --tool-cache {{TOOL_CACHE_FILE}} --mcp-config .mcp.json --commands-dir {{COMMANDS_LOCATION}} --skills-source {{SKILLS_SOURCE}} --fingerprint-compare"
+            "command": "node .claude/hooks/tool-cache-refresh.mjs --tool-cache {{TOOL_CACHE_FILE}} --mcp-config .mcp.json --commands-dir {{COMMANDS_LOCATION}} --skills-source {{SKILLS_SOURCE}} --agents-dir {{AGENTS_LOCATION}} --fingerprint-compare"
           }
         ]
       }

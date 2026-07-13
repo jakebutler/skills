@@ -17,8 +17,8 @@ This workflow starts when the user invokes `/research` or the spec workflow need
 1. Orchestrator: define the bounded research questions, allowed sources, output location, depth, budget, and decision the research must inform.
 2. Orchestrator: fan out independent questions to `researcher` subagents when useful. Use Codex Terra for read-only research packets and the GLM research skill for offloaded web sweeps.
 3. Each `researcher`: return facts with source links or file:line evidence, confidence, contradictions, and unknowns; do not make the final decision.
-4. `research-consolidator`, who was not one of the researchers: merge the packets into the selected output file while preserving source links, confidence, disagreement, and unknowns.
-5. Orchestrator: review the consolidated packet, verify decision-critical claims against their evidence, and decide or name the remaining blocker.
+4. `research-consolidator`, who was not one of the researchers: merge the packets into one consolidated brief preserving source links, confidence, disagreement, and unknowns, and return it (the consolidator is read-only and does not write files).
+5. Orchestrator: write the consolidated brief to the selected output file, review it, verify decision-critical claims against their evidence, and decide or name the remaining blocker.
 
 ## **Output contract**
 

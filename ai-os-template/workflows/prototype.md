@@ -16,8 +16,8 @@ This workflow starts when the user invokes `/prototype` or the spec workflow nee
 1. Orchestrator: frame the uncertainty as one answerable question with done-criteria, workspace, and timebox.
 2. `frontend-designer` or `implementer`: build the cheapest thing that answers the question, using Composer for crisp scopes and Codex Sol for exploratory work.
 3. `frontend-designer` or `implementer`: exercise the prototype enough to collect evidence against the done-criteria.
-4. Orchestrator: summarize findings in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/prototype.md`: what was tested, what was learned, and what must NOT be promoted.
-5. Orchestrator: decide whether the question was answered, whether another bounded prototype is justified, or whether the production path should proceed through `implement-tdd`.
+4. Orchestrator: write `{{TASK_DOCS_DIR}}/{{TASK_ID}}/prototype.md` with the question, the done-criteria, what was tested, what was learned, the evidence collected, and what must NOT be promoted.
+5. Orchestrator: decide whether the question was answered, whether another bounded prototype is justified, or whether the production path should proceed through `implement-tdd` — and append that decision to `prototype.md`.
 
 ## **Output contract**
 
