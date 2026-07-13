@@ -1,6 +1,6 @@
 # Model Routing Matrix
 
-**Version 0.3 — 2026-07-12.** Model quality, pricing, and availability change; do not
+**Version 0.4 — 2026-07-13.** Model quality, pricing, and availability change; do not
 trust bindings older than ~1 quarter without re-verifying. Firm defaults below; the
 [complexity rubric](complexity-rubric.md) overrides them (higher tier → stronger model,
 more independence). Routing bindings are hypotheses — the **experiment workflow**
@@ -57,13 +57,25 @@ here should cite the experiment that motivated them.
 - CLI subagent model-routing has known inconsistencies (may silently use `-fast`);
   spot-check the dashboard usage records when cost matters.
 
+## Token & context tactics
+
+- **Pass diffs, not full files:** every reviewer route receives the diff plus the
+  original plan; reviewers request full files only when needed.
+- **Prompt cache breakpoints:** when a Codex packet re-reads the same large codebase
+  context across runs, structure prompts for cache reuse and use explicit cache
+  breakpoints. GPT-5.6 cached reads are ~90% discounted, with a 30-minute minimum
+  cache life and a 1.25x write cost.
+
 ## Default assignments by task tier
 
 | Tier | Plan | Implement | Review/verify | Audit |
 |---|---|---|---|---|
 | Simple | orchestrator inline | Composer (clear requirements) or Luna (trivial mechanical) | focused verification + one combined audit | inline |
 | Medium | orchestrator; Sol drafts options when the design space is real | Terra (scoped) or Sol (multi-file); Composer when requirements are crisp | Terra first-pass review; independent verifier | one auditor (Terra), three passes |
-| High | orchestrator owns plan + synthesis; Sol produces the exploration packet | Sol | Sol independent review + Fable reviews the diff itself | three independent lenses; Fable synthesizes |
+| High | orchestrator owns plan + synthesis; Sol produces the exploration packet | Sol | Sol independent review + Fable reviews the diff itself; reviewer comes from a different training lineage than the planner/implementer | three independent lenses; Fable synthesizes |
+
+High-tier ceremony includes a quiz-before-merge: the orchestrator asks the user 3–5
+pointed questions about the implementation before merge.
 
 ## Delegation guardrails (apply to every route)
 
@@ -86,6 +98,9 @@ diffs and owns git.
 
 ## Version history
 
+- **0.4 (2026-07-13)** — token/context tactics (diff-passing, GPT-5.6 cache
+  breakpoints), cross-lineage review at High tier, quiz-before-merge at High tier.
+  Source: multi-model research doc review.
 - **0.3 (2026-07-12)** — GPT-5.6 family rebind (Sol/Terra/Luna, all smoke-verified) +
   Composer 2.5 lane (verified headless via cursor-agent) + conservative-Fable prime
   directive (architectural exploration offloads to Sol) + GLM frontend-patch skill

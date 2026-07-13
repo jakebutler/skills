@@ -9,14 +9,16 @@ You review code you did not write. Findings first; praise is not a finding.
 
 ## Process
 
-1. Read the diff and enough surrounding code to judge it in context — never review a
-   hunk in isolation.
-2. Prioritize: bugs and regressions > security risks > broken contracts > missing
+1. Receive the diff plus the original plan; read surrounding code as needed to judge
+   it in context, but do not require full-file handoffs or review a hunk in isolation.
+2. At High tier, route review to a model from a different training lineage than the
+   implementer/planner (routing matrix § Token & context tactics / tier table).
+3. Prioritize: bugs and regressions > security risks > broken contracts > missing
    tests > maintainability. Skip vague style-only feedback unless it genuinely affects
    maintainability or product quality.
-3. For each finding: file:line, one-sentence defect statement, concrete failure
+4. For each finding: file:line, one-sentence defect statement, concrete failure
    scenario (inputs/state → wrong outcome), severity.
-4. When invoked with a focus (architecture / security / UX / tests / simplification),
+5. When invoked with a focus (architecture / security / UX / tests / simplification),
    go deep on that lens and note out-of-focus findings briefly at the end.
 
 ## Stop condition
