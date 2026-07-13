@@ -361,7 +361,7 @@
 
     <section id="workflows">
       <h2>5 · Workflow backbone</h2>
-      <p>Nine workflow specs in <code>workflows/</code>. Each has exactly seven sections: <em>Trigger, Inputs, Steps, Output contract, Verification, Ceremony scaling, Failure handling</em>. Steps name the actor (orchestrator vs which subagent role vs hook).</p>
+      <p>Eleven workflow specs in <code>workflows/</code>. Each has exactly seven sections: <em>Trigger, Inputs, Steps, Output contract, Verification, Ceremony scaling, Failure handling</em>. Steps name the actor (orchestrator vs which subagent role vs hook).</p>
 
       <table>
         <tr><th>Workflow</th><th>What it does</th><th>Called by</th></tr>
@@ -374,6 +374,8 @@
         <tr><td><code>wrap-session</code></td><td>Overwrite status, docs if needed, changelog if meaningful, autoskill scan, record next action, list verification done AND skipped.</td><td><code>/wrap-session</code></td></tr>
         <tr><td><code>init</code></td><td>Initializer creates doc skeleton, seed status, <code>init.sh</code>, tool cache, baseline verification; verifies app boots, env access works, smoke passes.</td><td>Once per repo; once per new worktree</td></tr>
         <tr><td><code>experiment</code></td><td>Hypothesis-driven comparison of LLMs/prompts/setups against the same bounded task; identical acceptance checks per arm; lab-notebook entry; feeds routing matrix.</td><td><code>/experiment</code> or from <code>spec</code>/<code>debug</code></td></tr>
+        <tr><td><code>research</code></td><td>Standalone cited research packet with confidence, disagreements, recommendations, and named unknowns; also callable as a spec subroutine.</td><td><code>/research</code> or from <code>spec</code></td></tr>
+        <tr><td><code>prototype</code></td><td>Quarantined throwaway exploration that answers a UI, state-machine, interaction, or uncertain-behavior question; also callable as a spec subroutine.</td><td><code>/prototype</code> or from <code>spec</code></td></tr>
       </table>
 
       <p>Experimentation is a first-class methodology and the routing matrix's evidence engine.</p>
@@ -502,7 +504,7 @@
         <tr><td>convex</td><td>6</td><td>Keep</td><td>Both first instances are Convex-backed. Self-contained vertical.</td></tr>
         <tr><td>impeccable</td><td>1 (62 files)</td><td>Keep</td><td>The frontend design route in the routing matrix.</td></tr>
         <tr><td>marketingskills</td><td>17</td><td>Keep, fenced</td><td>Lives with the parallel GTM swarm. Engineering OS borrows only copy/landing/conversion via a <code>docs/gtm/</code> handoff interface.</td></tr>
-        <tr><td>bmad</td><td>44</td><td class="status-pending">Experiment / hold</td><td>A complete competing framework. Wiring alongside the OS creates two sources of process truth. Not adopted in v1 — needs your call, see D5.</td></tr>
+        <tr><td>bmad</td><td>44</td><td>Dropped</td><td>Dropped (D2, 2026-07-12) — never routed to; files remain as reference</td></tr>
         <tr><td>openspec</td><td>3</td><td>Deprecate from active path</td><td>Duplicates spec workflow + task docs.</td></tr>
         <tr><td>gsd</td><td>1</td><td>Experiment</td><td>Autonomous build orchestrator; overlaps with orchestrator role itself.</td></tr>
       </table>
@@ -545,6 +547,7 @@
 ├── DESIGN-MEMO.md            Architecture, contracts, decisions record
 ├── WALKTHROUGH.html          This page
 ├── INVENTORY.md              Skills/plugin verdicts (keep/adopt/adapt/merge/deprecate)
+├── SECRETS.md                Secret-handling conventions
 ├── root/
 │   ├── AGENTS.template.md    Canonical harness-neutral root instructions
 │   └── CLAUDE.template.md    Thin Claude adapter (imports AGENTS.md)
@@ -559,9 +562,9 @@
 │       ├── plan.template.md
 │       ├── context.template.md
 │       └── tasks.template.md
-├── workflows/                8 specs · trigger / inputs / steps / output / verify / ceremony / failure
-│   ├── spec.md   implement-tdd.md   debug.md   commit.md
-│   └── commit-pr.md   review-pr.md   wrap-session.md   init.md
+├── workflows/                11 specs · trigger / inputs / steps / output / verify / ceremony / failure
+│   ├── spec.md   implement-tdd.md   debug.md   commit.md   commit-pr.md   review-pr.md
+│   └── wrap-session.md   init.md   experiment.md   research.md   prototype.md
 ├── commands/                 9 slash-command specs (thin adapters over workflows)
 │   ├── spec.md   research.md   prototype.md   implement-tdd.md   debug-mode.md
 │   └── commit.md   commit-pr.md   review-pr.md   wrap-session.md
@@ -571,12 +574,14 @@
 │   └── delegating-review.md   tool-cache-refresh.md
 ├── agents/                   10 subagent role definitions with Claude Code frontmatter
 ├── routing/
-│   ├── model-routing.md      v0.2 matrix (Codex-first, verified + pending)
+│   ├── model-routing.md      v0.3 matrix (Codex-first, verified + pending)
 │   └── complexity-rubric.md  Task tiering rules
 ├── skills/                   Generalized Codex delegation surfaces
 │   ├── codex-implementation/SKILL.template.md
 │   ├── codex-review/SKILL.template.md
-│   └── codex-computer-use/SKILL.template.md
+│   ├── codex-computer-use/SKILL.template.md
+│   ├── composer-implementation/SKILL.template.md
+│   └── glm-frontend-patch/SKILL.template.md
 └── instances/
     ├── MANIFEST-SCHEMA.md
     └── corvo-labs-dot-com-plan.md</div>

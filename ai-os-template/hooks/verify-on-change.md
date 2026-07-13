@@ -72,7 +72,6 @@ returns a delegating notice naming the `implementer` target and fix-types scope.
     ],
     "Stop": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
@@ -84,4 +83,3 @@ returns a delegating notice naming the `implementer` target and fix-types scope.
   }
 }
 ```
-

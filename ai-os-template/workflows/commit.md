@@ -9,6 +9,7 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 - A completed implementation or documentation slice with known scope and complexity tier.
 - Current working directory and branch context.
 - Repo-specific commands: `{{FORMAT_COMMAND}}`, `{{LINT_COMMAND}}`, `{{TYPECHECK_COMMAND}}`, `{{TEST_COMMAND}}`, `{{BUILD_COMMAND}}`.
+- Repo commit message format or template `{{COMMIT_MESSAGE}}`.
 - Any task docs under `{{TASK_DOCS_DIR}}/{{TASK_ID}}/` and status/docs/changelog rules.
 
 ## **Steps**

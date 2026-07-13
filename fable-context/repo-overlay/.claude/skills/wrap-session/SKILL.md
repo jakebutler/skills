@@ -132,7 +132,7 @@ Open AUD items in flight: [list by ID or "none"]
 
 ## Hard rules
 
-- `docs/changelog.md` is **append-only**. Prepend the new entry at the top. Never edit lines that already exist.
+- `docs/changelog.md` is **prepend-only (newest entries at the top); never edit past entries**.
 - `docs/project-status.md` is **fully overwritten** every session. Don't append — replace.
 - All dates are absolute (`2026-07-07`, never "today" or "last Tuesday").
 - If you can't determine what was accomplished (e.g., this is called mid-session by mistake), ask before writing anything.

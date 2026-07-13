@@ -86,8 +86,10 @@ options considered and rationale for the selection → batched user review → d
 Research and prototype are subroutines of `/spec` **and** standalone commands.
 
 Standard workflows (specs in `workflows/`): spec, implement-tdd, debug, commit,
-commit-pr, review-pr, wrap-session, init, **experiment**. Each spec defines trigger,
-steps, output contract, verification requirements, and failure handling.
+commit-pr, review-pr, wrap-session, init, **experiment**. Research and prototype
+additionally have standalone specs (`research.md`, `prototype.md`) since they are
+callable outside spec. Each spec defines trigger, steps, output contract, verification
+requirements, and failure handling.
 
 **Experimentation is first-class methodology** (added v0.2): Jake validates coding
 implementations by running the same bounded task across different LLMs/setups,
@@ -171,7 +173,7 @@ ai-os-template/
   root/                   — AGENTS.md and CLAUDE.md templates
   docs-templates/         — SPEC, PROJECT-STATUS, CHANGELOG, feature doc, task docs,
                             optional FEATURE-LIST.json
-  workflows/              — the eight workflow specs
+  workflows/              — the workflow specs (9 core + standalone research and prototype = 11 files)
   commands/               — slash command specs with output contracts
   hooks/                  — hook specs + example settings snippets
   agents/                 — subagent role definitions

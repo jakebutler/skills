@@ -27,6 +27,5 @@ short summary.
 
 Claude/Fable owns review synthesis and final judgment. Codex performs diff analysis,
 repo exploration, test/build verification, and browser verification. Reviewer,
-auditor, frontend-designer, verifier, or doc-maintainer roles may be delegated
+frontend-designer, verifier, or doc-maintainer roles may be delegated
 depending on PR risk and focus.
-

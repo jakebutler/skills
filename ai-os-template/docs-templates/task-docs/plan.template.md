@@ -45,7 +45,11 @@
 
 <!-- Per the complexity tier's audit lenses (DESIGN-MEMO.md §6): Simple gets one
      combined pass; Medium gets three passes from one auditor; High gets three
-     independent subagents synthesized by the orchestrator. -->
+     independent subagents synthesized by the orchestrator.
+
+     Instantiation: Simple-tier tasks collapse this table to one row named
+     "Combined audit (adversarial + steelman + neutral)". Medium/High use the full
+     three-row breakdown. -->
 
 | Lens | Finding | Resolution |
 |---|---|---|

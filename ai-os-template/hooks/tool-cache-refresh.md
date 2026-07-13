@@ -10,18 +10,18 @@ Automatic maintenance.
 
 ## Claude Code event
 
-`SessionStart` or config-change detection.
+`SessionStart`.
 
 ## Trigger condition
 
-Run at `SessionStart` and whenever configured tool, command, MCP, skill, or plugin
-metadata changes. Config-change detection may be implemented by comparing fingerprints
-of `.claude/`, skill directories, MCP configuration, command specs, and plugin
-manifest files against the last cache refresh.
+Run at `SessionStart`. Automatic-maintenance hooks fire at checkpoints only
+(anti-churn), not per tool use. The script hashes the MCP configuration, command
+directory, and skills-directory listing, then compares that fingerprint with the
+stored fingerprint in `{{TOOL_CACHE_FILE}}`.
 
 ## Action
 
-Refresh `{{TOOL_CACHE_FILE}}` with:
+When the source fingerprint differs, rewrite `{{TOOL_CACHE_FILE}}` with:
 
 - available MCP tools and connector notes
 - slash commands enabled for the repo
@@ -30,7 +30,8 @@ Refresh `{{TOOL_CACHE_FILE}}` with:
 - refresh timestamp
 - source fingerprints used to determine freshness
 
-The cache is a Tier A generated file and may be overwritten automatically.
+When the fingerprint matches, leave the cache byte-for-byte unchanged. The cache is
+a Tier A generated file and may be overwritten automatically at this checkpoint.
 
 ## Guardrails
 
@@ -38,6 +39,7 @@ The cache is a Tier A generated file and may be overwritten automatically.
   files.
 - Keep the cache deterministic and compact enough for pre-prompt lookup.
 - Include a refresh timestamp and source fingerprint summary.
+- Never refresh on `PostToolUse`; automatic maintenance runs at checkpoints only.
 - If a tool source is unavailable, record that fact instead of inventing capabilities.
 - Do not fetch remote package data unless the instantiated repo explicitly enables
   that behavior.
@@ -59,18 +61,7 @@ not block the session.
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/tool-cache-refresh.mjs --tool-cache {{TOOL_CACHE_FILE}} --commands-dir {{COMMANDS_LOCATION}} --agents-dir {{AGENTS_LOCATION}} --skills-source {{SKILLS_SOURCE}} --refresh-if-stale"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/tool-cache-refresh.mjs --tool-cache {{TOOL_CACHE_FILE}} --config-change-detection --refresh-if-changed"
+            "command": "node .claude/hooks/tool-cache-refresh.mjs --tool-cache {{TOOL_CACHE_FILE}} --mcp-config .mcp.json --commands-dir {{COMMANDS_LOCATION}} --skills-source {{SKILLS_SOURCE}} --fingerprint-compare"
           }
         ]
       }
@@ -78,4 +69,3 @@ not block the session.
   }
 }
 ```
-

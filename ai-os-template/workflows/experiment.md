@@ -21,6 +21,8 @@ workflow is how they get validated or revised.
 - The arms: which models/setups/prompts to compare (2–5; more is noise).
 - A budget cap: max spend/tokens/time per arm. Batch LLM work that can spend real
   money beyond a smoke-sized sample requires explicit user approval first.
+- Repo-bound experiment output path `{{EXPERIMENTS_DIR}}` and lab notebook file
+  `{{LAB_NOTEBOOK_FILE}}`, both bound by the instance manifest.
 
 ## Steps
 

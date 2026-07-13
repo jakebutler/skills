@@ -29,7 +29,7 @@ here should cite the experiment that motivated them.
 | Bounded architectural exploration | Codex Sol | `codex exec` read-only packet; Fable reviews + decides | same |
 | Independent review (high-tier diffs), security review, computer-use verification | Codex Sol | codex-review / codex-computer-use patterns | same |
 | Scoped implementation, first-pass code review, research sweeps | Codex Terra (`gpt-5.6-terra`) | `codex exec -m gpt-5.6-terra` | smoke + live research run 2026-07-12 |
-| High-volume light tasks: summaries, extraction, classification, inventory | Codex Luna (`gpt-5.6-luna`) | `codex exec -m gpt-5.6-luna` | smoke 2026-07-12. **Never** long-context codebase synthesis — documented recall cliff (MRCR 41.3%) |
+| High-volume light tasks: summaries, extraction, classification, inventory | Codex Luna (`gpt-5.6-luna`) | `codex exec -m gpt-5.6-luna` | smoke 2026-07-12. **Never** long-context codebase synthesis — documented recall cliff on MRCR (OpenAI's multi-round coreference long-context recall benchmark): 41.3% |
 | Fast bounded builds with clear requirements | Composer 2.5 (`composer-2.5`) | `cursor-agent -p --trust --model composer-2.5` in the target dir; wrap in the composer-implementation worker contract | smoke 2026-07-12, logged in |
 | Offloaded web research (zero Claude/Codex tokens) | GLM-5 via `research` skill | skill script | live run 2026-07-12 (note: can time out; Terra `codex exec -c tools.web_search=true` is the fallback) |
 | Written content / prose | Claude Sonnet subagent | Agent tool `model: sonnet` | prior runs |

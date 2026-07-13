@@ -10,6 +10,7 @@ This workflow starts when the user reports a bug, a verification command fails, 
 - `{{PROJECT_STATUS_FILE}}`, relevant docs in `{{DOCS_DIR}}/`, and any related task docs.
 - Safe log location `{{TRANSIENT_LOG_DIR}}` and durable task-doc location `{{TASK_DOCS_DIR}}/{{TASK_ID}}/`.
 - Repo-specific commands for boot, logs, tests, and smoke checks: `{{DEV_COMMAND}}`, `{{LOG_COMMAND}}`, `{{TEST_COMMAND}}`, `{{SMOKE_COMMAND}}`.
+- Repo-specific reproduction command `{{REPRO_COMMAND}}` and transient-log retention policy `{{LOG_RETENTION_RULE}}`.
 
 ## **Steps**
 

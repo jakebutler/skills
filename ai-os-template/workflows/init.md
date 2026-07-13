@@ -24,7 +24,8 @@ This workflow starts when the user requests `{{INIT_COMMAND}}`, a repo is first 
 8. `initializer`: write baseline verification command and worktree boot guidance into the mapped docs or `{{PROJECT_STATUS_FILE}}`.
 9. `initializer`: verify app boot with `{{DEV_COMMAND}}` or `./init.sh`, confirm env access works safely without printing secrets, confirm logs are captured under `{{TRANSIENT_LOG_DIR}}`, and run `{{SMOKE_COMMAND}}` or `{{BASELINE_VERIFICATION_COMMAND}}`.
 10. `verifier`: independently repeat baseline verification for Medium and High initialization, including boot, env-safe check, log capture, and smoke.
-11. Orchestrator: review initializer and verifier packets, resolve conflicts, then update `{{PROJECT_STATUS_FILE}}` with final initialized state and next recommended action.
+11. Orchestrator: write initializer and verifier results to `{{TASK_DOCS_DIR}}/init/verification.md`, including commands run, results, env-safety confirmation, log path, smoke result, skipped checks, and failures.
+12. Orchestrator: review initializer and verifier packets, resolve conflicts, then update `{{PROJECT_STATUS_FILE}}` with final initialized state and next recommended action.
 
 ## **Output contract**
 

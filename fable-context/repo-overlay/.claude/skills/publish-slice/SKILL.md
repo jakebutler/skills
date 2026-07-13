@@ -73,7 +73,7 @@ git push -u origin codex/<slug>
 
 ## Step 6 — Open the PR
 
-```bash
+````bash
 gh pr create \
   --title "<same as commit title>" \
   --body "$(cat <<'EOF'
@@ -88,27 +88,33 @@ gh pr create \
 ## Validation evidence
 
 **Node tests**
-\`\`\`
+```
 <command>
-\`\`\`
+```
 Result: X passed, 0 failed.
 
+**React tests**
+```
+pnpm exec vitest run -c vitest.react.config.ts <paths>
+```
+Result: X passed, 0 failed.  *(or: skipped — no tsx changes)*
+
 **Typecheck**
-\`\`\`
+```
 pnpm exec tsc --noEmit --incremental false
-\`\`\`
+```
 Result: passed.
 
 **Lint**
-\`\`\`
+```
 pnpm exec eslint --max-warnings=0 <files>
-\`\`\`
+```
 Result: passed.
 
 **Build** *(if applicable)*
-\`\`\`
+```
 pnpm build:admin
-\`\`\`
+```
 Result: passed.
 
 ## Risks
@@ -124,7 +130,7 @@ Result: passed.
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
-```
+````
 
 After creation, capture the PR URL and print it.
 

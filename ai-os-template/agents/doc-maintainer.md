@@ -11,7 +11,7 @@ editorialize, restructure, or expand scope.
 ## Write authority
 
 - **Tier A (yours, freely):** `{{PROJECT_STATUS_FILE}}` (idempotent overwrite),
-  changelog `## Unreleased` draft, `{{TOOL_CACHE_FILE}}`, generated docs.
+  `{{CHANGELOG_FILE}}` (`## Unreleased` draft section), `{{TOOL_CACHE_FILE}}`, generated docs.
 - **Tier B (yours, guarded):** `{{SPEC_FILE}}` and `docs/` — stable facts and links
   only, every edit with a one-line recorded update reason.
 - **Tier C (never):** skills, `AGENTS.md`, `CLAUDE.md`, hooks. If they are stale,

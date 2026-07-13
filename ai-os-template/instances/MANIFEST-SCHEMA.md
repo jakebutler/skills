@@ -20,7 +20,7 @@ the manifest records the winner, it never renames existing files.
    - deep knowledge (docs dir)
    - tool/command cache
    - each workflow (spec, implement-tdd, debug, commit, commit-pr, review-pr,
-     wrap-session, init) — may bind to existing repo skills
+     wrap-session, init, experiment, research, prototype) — may bind to existing repo skills
    - hooks
    - subagent roles
    - Codex delegation skills

@@ -10,6 +10,7 @@ This workflow starts when the user requests `{{WRAP_SESSION_COMMAND}}`, the sess
 - `{{PROJECT_STATUS_FILE}}`, `{{CHANGELOG_FILE}}`, `{{SPEC_FILE}}`, relevant `{{DOCS_DIR}}/` pages, and active task docs.
 - Verification commands run or intentionally skipped during the session.
 - Knowledge of running processes started by agents, including dev servers, log tails, test watchers, and browser automation.
+- Repo-specific running-process inspection command `{{PROCESS_CHECK_COMMAND}}`.
 
 ## **Steps**
 
@@ -38,7 +39,7 @@ This workflow starts when the user requests `{{WRAP_SESSION_COMMAND}}`, the sess
 - `{{PROJECT_STATUS_FILE}}` exists and reflects current state after the wrap.
 - Verification completed and skipped are both listed, with exact commands where available.
 - Changelog/docs updates pass the significance check or are explicitly skipped.
-- Autoskill scan ran and either produced proposals or recorded that none qualified.
+- Autoskill scan ran; proposal files exist when durable lessons qualified, while their absence means no durable lessons qualified. Do not write empty "none qualified" note files.
 - Orchestrator confirms no unreported running processes remain.
 
 ## **Ceremony scaling**

@@ -8,7 +8,7 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 
 - All inputs required by `commit`.
 - A branch that may be pushed to `{{REMOTE_NAME}}`, or user approval to create/use `{{FEATURE_BRANCH}}`.
-- PR target branch `{{PR_TARGET_BRANCH}}`.
+- Push command `{{PUSH_COMMAND}}`, main branch `{{MAIN_BRANCH}}`, and PR target branch `{{PR_TARGET_BRANCH}}`.
 - Repository PR tool command such as `{{PR_CREATE_COMMAND}}` and `{{PR_UPDATE_COMMAND}}`.
 - Verification and review packets from `{{TASK_DOCS_DIR}}/{{TASK_ID}}/`.
 
@@ -18,12 +18,12 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 2. Orchestrator: confirm the current branch is not `{{MAIN_BRANCH}}` unless the repo explicitly allows PRs from it; create or switch to `{{FEATURE_BRANCH}}` only with user-approved branch context.
 3. Orchestrator: push the branch to `{{REMOTE_NAME}}` with `{{PUSH_COMMAND}}`.
 4. Orchestrator: draft the PR body in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md` with the required sections: Summary, Why, Changes, Verification, Risks & Rollback, Follow-up.
-5. Orchestrator: create the PR using `{{PR_CREATE_COMMAND}}` and capture the PR URL in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md`.
-6. `reviewer`: run a PR review agent on the pushed diff; findings must be first, cite file:line, and prioritize bugs, regressions, missing tests, security risks, and broken contracts.
-7. Orchestrator: disposition reviewer findings as fix-now, accepted-risk, follow-up, or rejected with reason.
+5. Orchestrator: create the PR using `{{PR_CREATE_COMMAND}}` and capture the PR URL and commit hash or hashes in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md`.
+6. `reviewer`: run a PR review agent on the pushed diff; findings must be first, cite file:line, and prioritize bugs, regressions, missing tests, security risks, and broken contracts. Write the findings to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-review.md`.
+7. Orchestrator: disposition reviewer findings as fix-now, accepted-risk, follow-up, or rejected with reason, and write each disposition beside its finding in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-review.md`.
 8. `implementer`: address fix-now findings with scoped edits, then run focused verification.
 9. Orchestrator: run `commit` again for review fixes if any files changed.
-10. Orchestrator: push updates and update the PR body using `{{PR_UPDATE_COMMAND}}` when verification, risks, or follow-up changed.
+10. Orchestrator: push updates and update the PR body using `{{PR_UPDATE_COMMAND}}` when Changes, Verification, Risks & Rollback, or Follow-up changed.
 11. Orchestrator: write final status to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md` and update `{{PROJECT_STATUS_FILE}}` if handoff state changed.
 
 ## **Output contract**

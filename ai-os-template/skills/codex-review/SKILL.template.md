@@ -33,6 +33,8 @@ REPORT="$ARTIFACT_DIR/report.md"
 PROMPT="$ARTIFACT_DIR/prompt.md"
 ```
 
+Write a self-contained prompt to `$PROMPT`, then run:
+
 Review staged, unstaged, and untracked changes:
 
 ```bash
@@ -81,6 +83,7 @@ test gaps.
 Bind {{REPO_INVARIANTS}} from the repo's AGENTS.md/CLAUDE.md invariants section.
 Bind {{DESIGN_CONSTRAINTS}} only when the repo has UI/design-system rules.
 Bind {{VERIFICATION_SCOPING_NOTES}} from the instance manifest.
+Bind {{MAIN_BRANCH}} from the instance manifest / repo convention.
 -->
 
 Add task-specific context when useful: requirements, risky areas, expected behavior,

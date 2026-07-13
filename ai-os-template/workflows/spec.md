@@ -46,7 +46,7 @@ Research and prototype may be called from this workflow, and each may also be in
 
 ## **Verification**
 
-- Orchestrator confirms all seven required planning artifacts for the selected tier exist or are explicitly marked not applicable.
+- Orchestrator confirms all required planning artifacts for the selected tier exist or are explicitly marked not applicable (six core: context.md, questions.md, prd.md, audit.md, issues.md, tdd-plan.md; research.md and prototype.md only when those subroutines ran).
 - Orchestrator confirms every audit finding has a disposition: accepted, rejected with reason, deferred with owner, or blocked.
 - Orchestrator confirms the TDD plan names at least one failing test or executable acceptance check and the exact focused verification command placeholder, such as `{{TEST_COMMAND}}` or `{{ACCEPTANCE_CHECK_COMMAND}}`.
 - `doc-maintainer` confirms Tier B doc edits contain only stable facts and recorded update reasons.
