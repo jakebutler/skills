@@ -44,6 +44,20 @@
 | {{DECISION_1}} | {{DECISION_1_RATIONALE}} | {{DECISION_1_TARGET_DOC}} |
 | {{DECISION_2}} | {{DECISION_2_RATIONALE}} | {{DECISION_2_TARGET_DOC}} |
 
+## Route state
+
+<!-- Current task state, not a provider-account ledger. Update at phase boundaries and
+     on failure. Never record credentials, tokens, or full auth output. -->
+
+| Phase | Route | State | Evidence or checkpoint | Next action |
+|---|---|---|---|---|
+| {{PHASE_1}} | {{ROUTE_1}} | {{ROUTE_STATE_1}} | `{{CHECKPOINT_1}}` | {{ROUTE_NEXT_1}} |
+
+Provider family state: Codex {{CODEX_STATE}}; Anthropic {{ANTHROPIC_STATE}}; Z.ai
+{{ZAI_STATE}}; Cursor {{CURSOR_STATE}}.
+
+Fallback events: {{FALLBACK_EVENTS_OR_NONE}}.
+
 ## Links
 
 <!-- Issues, PRs, external references, related task docs. -->

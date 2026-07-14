@@ -28,9 +28,8 @@ implementation action.
 
 ## Model routing note
 
-Claude/Fable owns framing, conflicts, user questions, and final synthesis. Codex is
-the workhorse for repo exploration, implementation feasibility checks, research
-support, and browser verification. Cheap Claude roles may draft mechanical prose;
-high-risk architecture remains with the orchestrator plus independent auditor/reviewer
-passes per `DESIGN-MEMO.md` section 8.
-
+Codex Sol High owns framing, conflicts, user questions, and final synthesis. Terra and
+Luna handle bounded exploration and research. Fable receives a compact review packet
+only when advanced architecture or system design warrants scarce Anthropic quota.
+Provider fallback follows `routing/model-routing.md` without changing the accepted
+scope or verification gates.

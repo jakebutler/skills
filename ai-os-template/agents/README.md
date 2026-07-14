@@ -35,18 +35,19 @@ passing tests for understanding.
 
 ## Roster
 
-| Role | File | Default route (matrix v0.3) | Independence rule |
+| Role | File | Default route (matrix v0.5) | Independence rule |
 |---|---|---|---|
 | Initializer | `initializer.md` | Codex Sol (codex-implementation pattern) | — |
 | Researcher | `researcher.md` | Codex Terra read-only packet; GLM research skill for offloaded web sweeps | — |
-| Research consolidator | `research-consolidator.md` | Sonnet | not one of the researchers |
+| Research consolidator | `research-consolidator.md` | Terra; Sonnet when prose quality warrants the quota | not one of the researchers |
 | Implementer | `implementer.md` | Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical) | never sole reviewer of own work |
-| Frontend designer | `frontend-designer.md` | Impeccable-on-Claude for judgment; Composer/Sol for build-out; GLM patch skill pending | — |
+| Frontend designer | `frontend-designer.md` | Impeccable on Sol High for judgment; streamed GLM-5.2 for build-out; Terra/Composer fallback | does not self-approve visual quality |
 | Verifier | `verifier.md` | Sol (codex-computer-use for runtime/browser) | did not write the code under test |
-| Reviewer | `reviewer.md` | Terra first-pass; Sol for high-tier/security; Fable reviews the diff itself at High | independent of implementer |
-| Auditor | `auditor.md` | Terra lenses; Claude steelman; orchestrator synthesis at High | independent lenses at High tier |
-| Doc maintainer | `doc-maintainer.md` | Luna or Haiku | Tier A/B files only |
-| Autoskill improver | `autoskill-improver.md` | Sonnet | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |
+| Reviewer | `reviewer.md` | cross-family when practical; Fable only for architecture/system-design judgment | independent of implementer |
+| Auditor | `auditor.md` | Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis | independent lenses at High tier |
+| Doc maintainer | `doc-maintainer.md` | Luna; GLM/Terra fallback | Tier A/B files only |
+| Autoskill improver | `autoskill-improver.md` | Terra; Sonnet for language-sensitive proposals | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |
 
-The frontmatter `model:` in each definition file is the Claude-side fallback when the
-Codex route is unavailable; the routing matrix (v0.2+) is authoritative.
+The frontmatter `model:` in each definition file is only the Claude adapter fallback.
+It is not the primary route. The v0.5 routing matrix is authoritative and family-level
+quota failure skips all Claude frontmatter routes.

@@ -24,8 +24,7 @@ summary, verification results, and any remaining uncertainty or follow-up.
 
 ## Model routing note
 
-Claude/Fable owns triage judgment and decides when evidence is sufficient. Codex
+Codex Sol High owns triage judgment and decides when evidence is sufficient. Codex
 handles reproduction, instrumentation, code exploration, implementation, and browser
 verification. Specialized verifier or reviewer roles may be used when the fix touches
 user-facing, security, or architectural behavior.
-

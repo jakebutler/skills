@@ -8,7 +8,7 @@ description: Delegate a bounded implementation slice to Codex CLI, then inspect 
 <!-- Bind {{REPO_NAME}} and {{REPO_PATH}} from the instance manifest. -->
 
 Use Codex as a separate implementation agent for bounded code changes in
-`{{REPO_PATH}}`. Claude/Fable remains responsible for scope, invariants, diff review,
+`{{REPO_PATH}}`. Codex Sol High remains responsible for scope, invariants, diff review,
 validation, and user-facing explanation.
 
 Treat Codex's output as evidence, not authority.
@@ -26,7 +26,7 @@ Treat Codex's output as evidence, not authority.
 7. After Codex exits, inspect status and diff yourself.
 8. Run the cheapest reliable verification yourself when practical.
 9. If the work is non-trivial, run `codex-review`.
-10. Report what Codex changed, what Claude/Fable verified, and remaining risks.
+10. Report what the worker changed, what the Sol orchestrator verified, and remaining risks.
 
 ## Command Shape
 
@@ -89,7 +89,7 @@ Codex must follow:
 ## Example Prompt
 
 ```text
-You are implementing one scoped {{REPO_NAME}} slice for Claude/Fable.
+You are implementing one scoped {{REPO_NAME}} slice for a Codex Sol High orchestrator.
 
 Repository: {{REPO_PATH}}
 Artifact directory: /tmp/codex-implementation.xxxxxx

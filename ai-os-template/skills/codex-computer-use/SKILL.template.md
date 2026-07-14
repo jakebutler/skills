@@ -1,6 +1,6 @@
 ---
 name: codex-computer-use
-description: Ask Codex CLI to run local app verification that needs browser automation, screenshots, app launching, simulator or device state, or independent runtime inspection. Use when Claude/Fable needs Codex to test a flow, verify UI behavior, inspect a running app, capture screenshots, or report confirmation about implemented behavior.
+description: Ask a fresh Codex route to run local app verification that needs browser automation, screenshots, app launching, simulator or device state, or independent runtime inspection. Use when the Sol orchestrator needs an independent route to test a flow, verify UI behavior, inspect a running app, capture screenshots, or report confirmation about implemented behavior.
 ---
 
 # Codex Computer Use - {{REPO_NAME}}
@@ -9,10 +9,10 @@ description: Ask Codex CLI to run local app verification that needs browser auto
 
 Use Codex as a separate local verification agent when the task needs real UI
 interaction, screenshots, browser/device state, or an independent runtime check outside
-Claude/Fable's current context.
+the orchestrator's current context.
 
-Do not use this for ordinary code reading, typechecking, linting, or tests Claude/Fable
-can run directly. Launching local apps, simulators, or browsers to verify requested
+Do not use this for ordinary code reading, typechecking, linting, or tests that the
+orchestrator can run directly. Launching local apps, simulators, or browsers to verify requested
 work is acceptable without asking. Ask first if the run could disrupt the user's
 environment beyond that.
 

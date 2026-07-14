@@ -48,22 +48,40 @@ What to expect:
 Hooks may inject skill-activation reminders before a prompt is processed. Treat a
 named skill as a strong default, not a suggestion.
 
-## Subagent routing
+## Claude lane
 
-Delegate by default; orchestrate rather than doing all labor directly. Follow the
-delegation contract and return-packet format in `AGENTS.md` § Delegation.
+The primary control plane is Codex Sol High. A Claude Code session normally serves one
+of two bounded roles: Fable reviews an advanced architecture or system-design packet;
+Sonnet writes copy from a voice and acceptance brief. Claude becomes the fallback
+orchestrator only when the Codex family is unavailable and the user accepts Anthropic
+quota use.
+
+Follow the delegation contract and return-packet format in `AGENTS.md` § Delegation.
+Return decisions, evidence, risks, and the next action to the Sol orchestrator. Do not
+expand a consultation packet into repo-wide implementation work.
+
+When Codex launches this lane locally, use Claude Code print mode with the authenticated
+Claude subscription. Preflight `claude auth status`; invoke `claude -p --model fable`
+for architecture consultation or `--model sonnet` for copy. Do not use `--bare`, which
+does not read the subscription OAuth/keychain session. Remote and CI environments must
+not assume this local authentication exists.
 
 | Work | Route to |
 |---|---|
-| Most implementation | Codex via Codex-for-Claude-Code ({{CODEX_HEAVY_MODEL}} for real work, {{CODEX_LIGHT_MODEL}} for simple) |
-| Frontend design/coding | {{FRONTEND_MODEL_ROUTE}} |
-| Research sweeps, inventory, mechanical drafting | cheap Claude subagents (Haiku/Sonnet) |
+| Orchestration, framing, synthesis | Codex Sol High; Fable only as quota-approved fallback |
+| Most implementation | Codex (Sol for hard work, Terra for scoped work, Luna for light work) |
+| Frontend implementation | GLM-5.2 streamed; Terra, then Composer fallback |
+| Frontend design judgment | Impeccable on Sol; Fable only for a high-value critique gate |
+| Research sweeps, inventory, mechanical drafting | Terra or Luna; GLM for offloaded web research |
 | Offloaded web research | {{RESEARCH_ROUTE}} |
-| Written content | Sonnet |
-| Architecture, conflicts, synthesis, final review | orchestrator (do not delegate) |
+| Written content | Sonnet; Terra fallback |
+| Advanced architecture and system-design feedback | Fable on a compact Sol decision packet |
+| Review | different family from implementer when practical; two lenses at High tier |
 
 Full matrix and complexity rubric: {{ROUTING_LOCATION}}. The matrix is versioned —
-check its date before trusting model bindings.
+check its date before trusting model bindings. If Claude quota, auth, or model access
+fails, report the exact failure and return the packet immediately; do not retry another
+Claude model as though it were a different provider family.
 
 ## Skills
 

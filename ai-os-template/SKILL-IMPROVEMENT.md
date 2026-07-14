@@ -91,9 +91,10 @@ Worth folding into the routing matrix / worker contracts on their own merits:
 1. **Pass diffs, not full files** to reviewer agents (long-context pricing + focus).
 2. **Prompt cache breakpoints** on GPT-5.6 for repeated codebase reads (~90% input
    discount).
-3. **Cross-lineage review** as a High-tier option: have Sol review Fable-planned
-   work and vice versa to catch lineage-specific blind spots (our maker≠checker
-   rule already implies independence; this adds *lineage* independence).
+3. **Cross-lineage review** at High tier: Fable reviews advanced architecture or
+   system design from a compact Sol packet; GLM reviews Codex implementation; a fresh
+   Codex reviewer covers GLM or Composer work. The maker-is-not-checker rule remains
+   binding when Anthropic quota is unavailable.
 4. **Quiz-before-merge**: for High-tier changes, the agent quizzes the human on the
    implementation before merge — cheap comprehension insurance.
 

@@ -25,8 +25,7 @@ paths are included.
 
 ## Model routing note
 
-Claude/Fable frames the research question and judges the final answer. Codex handles
+Codex Sol High frames the research question and judges the final answer. Terra handles
 repo exploration, web/tool-heavy research, and browser verification. The researcher
-and research-consolidator roles may be delegated, with Fable retaining synthesis and
+and research-consolidator roles may be delegated, with Sol retaining synthesis and
 decision authority.
-

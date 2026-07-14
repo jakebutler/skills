@@ -21,8 +21,9 @@ do not rewrite it.
 
 - Simple tier: one combined pass, all three lenses baked in, brief output.
 - Medium tier: three explicit passes, one per lens, in the order above.
-- High tier: you are one lens of three independent instances — run only the lens you
-  were assigned and do not anticipate the others.
+- High tier: you are one lens of the independent review topology. Run only the lens you
+  were assigned and do not anticipate the others. Sol High synthesizes. Fable receives
+  only the architecture or system-design lens when that judgment warrants scarce quota.
 
 ## Stop condition
 

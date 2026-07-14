@@ -8,7 +8,7 @@ description: Delegate fast, bounded implementation with clear requirements to Cu
 <!-- Bind {{REPO_NAME}} and {{REPO_PATH}} from the instance manifest. -->
 
 Use Cursor Composer 2.5 as a separate implementation agent for a bounded change in
-`{{REPO_PATH}}`. Claude/Fable remains responsible for scope, invariants, diff review,
+`{{REPO_PATH}}`. Codex Sol High remains responsible for scope, invariants, diff review,
 validation, and user-facing explanation.
 
 Treat Composer output as evidence, not authority.

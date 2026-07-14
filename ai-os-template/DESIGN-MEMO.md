@@ -1,10 +1,10 @@
 # AI Engineering OS — Template Design Memo
 
-**Version:** 0.2 (2026-07-12)
-**Status:** Architecture approved; v0.2 incorporates Jake's walkthrough review (decisions
-D1–D12), the GPT-5.6 model family (Sol/Terra/Luna), the Composer lane, conservative
-Fable usage, and the experiment workflow.
-**Owner:** Jake Butler; orchestrated by Fable
+**Version:** 0.3 (2026-07-13)
+**Status:** Architecture approved; v0.3 rebalances the harness around Codex Sol High
+orchestration, quota-aware cross-family fallback, Fable architecture consultation,
+GLM-5.2 frontend implementation, and explicit progress visibility.
+**Owner:** Jake Butler; orchestrated by Codex Sol High
 
 ## 1. Purpose
 
@@ -23,13 +23,11 @@ verification, and inconsistent planning.
 1. **Concrete abstraction.** Every recommendation maps to a file, hook, slash command,
    workflow spec, skill, subagent, routing rule, verification gate, or repo convention.
    Nothing ships as advice-only.
-2. **Orchestrator, not laborer — and a conservative one.** The orchestrator (Fable)
-   owns framing, decomposition, judgment, conflict resolution, and synthesis, and is
-   the scarcest resource in the system: spend it only where judgment is genuinely
-   required. Bounded architectural exploration (option enumeration, trade-off
-   analysis, design-doc drafts) offloads to Codex Sol; Fable reviews and decides.
-   Cheaper models do research, drafting, mechanical implementation, verification, and
-   doc maintenance under bounded contracts.
+2. **Orchestrator, not laborer.** Codex Sol High owns framing, decomposition, task
+   state, conflict resolution, synthesis, and user updates. It delegates bounded labor
+   across Sol, Terra, Luna, GLM-5.2, Composer, and Claude Sonnet. Fable is a scarce
+   consulting route for critique of advanced architecture and system-design decisions,
+   not the always-on control plane.
 3. **Repo-resident memory.** Models forget; the repo persists. Everything an agent needs
    is in the repo or explicitly mapped from it.
 4. **Proportional ceremony.** A solo path lighter than a production-team path, but never
@@ -37,9 +35,9 @@ verification, and inconsistent planning.
    verification, update docs automatically, leave clean handoff state.
 5. **Merge, don't bulldoze.** Instantiation adapts to a repo's existing conventions via a
    manifest. The template never silently overwrites or renames what a repo already has.
-6. **Claude/Fable-first, Codex-portable.** Harness-neutral content lives in `AGENTS.md`
-   (which Codex reads natively); Claude-specific mechanics live in a thin `CLAUDE.md`
-   adapter. No abstraction that weakens the Claude v1.
+6. **Codex-first, harness-portable.** Harness-neutral content lives in `AGENTS.md`.
+   Claude-specific mechanics remain in a thin `CLAUDE.md` adapter so Fable and Sonnet
+   can be invoked when their lanes add value without owning the whole run.
 
 ## 3. System architecture
 
@@ -111,7 +109,8 @@ confirm or rebind them, with the matrix version citing the experiment.
 **Audit lenses by tier:**
 - Simple → one combined audit inline (adversarial + steelman + neutral guidance baked in).
 - Medium → three lenses as three passes by one cheap auditor subagent.
-- High → three lenses as independent subagents; Fable synthesizes.
+- High → three lenses as independent subagents; Sol High synthesizes, with a compact
+  Fable gate only when advanced architecture or system design warrants it.
 
 **Review independence:** the coding agent is never the sole reviewer of its own work.
 
@@ -153,16 +152,20 @@ research, prose) bound to currently-verified models, with a "pending verificatio
 section for routes not yet confirmed working. Date-stamped, because model quality and
 availability change.
 
-Defaults as of v0.2 (all verified locally 2026-07-12 unless marked): Fable orchestrates
-conservatively; **Codex Sol** (`gpt-5.6-sol`) for heavy build work, independent review
-of high-tier diffs, browser/computer-use verification, and bounded architectural
-exploration; **Codex Terra** (`gpt-5.6-terra`) for scoped implementation, first-pass
-code review, and research sweeps; **Codex Luna** (`gpt-5.6-luna`) for high-volume
-light tasks — summaries, extraction, inventory — but never long-context codebase
-synthesis (documented recall cliff); **Composer** (Cursor sub) for fast bounded builds
-with clear requirements (integration path pending verification); GLM via shell skills
-for offloaded research and (pending build) bounded frontend patches; Sonnet for prose;
-Impeccable-on-Claude for frontend design judgment.
+Defaults as of v0.3: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and hard-work
+route; **Codex Terra** (`gpt-5.6-terra`) owns scoped implementation, first-pass review,
+and research sweeps; **Codex Luna** (`gpt-5.6-luna`) owns high-volume light work but
+never long-context codebase synthesis; **GLM-5.2** is preferred for streamed, bounded
+frontend implementation; **Claude Sonnet** writes copy; **Fable** critiques advanced
+architecture and system design from a compact decision packet; **Composer 2.5** remains
+the optional speed lane for crisp implementation packets. Every role has a cross-family
+fallback and the same acceptance checks survive rerouting.
+
+Provider failures are modeled as state, not improvisation. Quota, auth, or invalid-model
+errors mark an entire family unavailable; transient failures get one checkpointed retry;
+then the orchestrator selects the next eligible cross-family route. The user sees the
+route, phase, evidence path, failure, and takeover. A failed command is never described
+as still running.
 
 ## 9. Template layout
 
@@ -170,6 +173,9 @@ Impeccable-on-Claude for frontend design judgment.
 ai-os-template/
   README.md               — what this is, how to instantiate
   DESIGN-MEMO.md          — this file
+  PRODUCT.md              — users, purpose, principles, and interface anti-references
+  DESIGN.md               — visual and interaction system for walkthrough artifacts
+  WALKTHROUGH.html        — interactive system guide and routing failover lab
   INVENTORY.md            — skills/plugin keep/adopt/adapt/merge/deprecate verdicts
   root/                   — AGENTS.md and CLAUDE.md templates
   docs-templates/         — SPEC, PROJECT-STATUS, CHANGELOG, feature doc, task docs,
@@ -179,6 +185,7 @@ ai-os-template/
   hooks/                  — hook specs + example settings snippets
   agents/                 — subagent role definitions
   routing/                — model-routing.md, complexity-rubric.md
+  skills/                 — Codex, Fable, GLM, and Composer worker contracts
   instances/
     MANIFEST-SCHEMA.md    — role→file mapping convention for instantiation
 ```
@@ -229,6 +236,12 @@ ai-os-template/
 | D10 | Instance branches held unpushed while the OS is refined; Lower dB gets the updated template next, then drives the weekly-digest-automation feature work |
 | D11 | Hook implementation order: safety pair first, then status/tool-cache, then skill-activation/verify-on-change, delegating-review last |
 | D12 | Template commits on branch `ai-os-template/v0.1`, merged via PR |
+| D13 | Codex Sol High replaces Fable as the primary orchestrator; Fable becomes a scarce architecture/system-design consultation lane |
+| D14 | Every role has ordered cross-family fallbacks; quota/auth failures disable the whole family for the task |
+| D15 | GLM-5.2 is the preferred streamed frontend implementation route; Terra and Composer are fallbacks |
+| D16 | Claude Sonnet owns copy; Fable quota is not spent on routine prose |
+| D17 | Medium review prefers a different family; High review requires two lenses plus verification, with Fable only when durable design judgment warrants it |
+| D18 | Status visibility is a contract: start route, phase checkpoints, immediate retry/fallback notice, evidence path, and final route ledger |
 
 ### v0.2 context additions (same session)
 
@@ -240,8 +253,25 @@ ai-os-template/
 - **Experiment workflow** added as a first-class OS component and the routing
   matrix's evidence engine; lab-notebook entry template added for public sharing.
 
+### v0.3 routing rebalance (2026-07-13)
+
+- Fable exhausted the user's Anthropic subscription quota too quickly when it owned the
+  full orchestration loop. Sol High now owns that loop.
+- Fable remains valuable as a bounded critic for advanced architecture and system
+  design, migration and rollback pre-mortems, harness policy, conflicting-review
+  adjudication, and rare flagship positioning critique. It receives compact packets
+  rather than repo-wide working context, with at most one critique and one focused
+  follow-up per decision.
+- On this machine, Codex can launch Fable through `claude -p --model fable` using the
+  authenticated Claude Pro login. This is a local external-worker route, not a native
+  Codex model binding and not an API-key route. Remote environments must preflight their
+  own authentication.
+- Frontend work uses a visible, checkpointed GLM-5.2 streaming route with immediate
+  Terra and Composer fallbacks.
+- The routing matrix now distinguishes capability escalation from provider failover and
+  makes reduced review diversity explicit when a family is unavailable.
+
 ## 12. Out of scope for v1
 
 Plugin packaging (layout stays plugin-compatible), `FEATURE-LIST.json` by default,
-autoskill auto-apply, the GTM swarm itself, Codex-native harness port (kept portable,
-not built).
+autoskill auto-apply, and the GTM swarm itself.

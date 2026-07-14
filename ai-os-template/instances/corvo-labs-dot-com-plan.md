@@ -24,10 +24,10 @@ two instances:
    codemap exists.
 2. Codex recon packet: stack, verification commands, existing doc roles, conventions,
    collision risks — same packet shape as the first two.
-3. Fable binding decisions; interview the user only on GTM-boundary questions
+3. Codex Sol High binding decisions; interview the user only on GTM-boundary questions
    (what belongs to the engineering OS vs the GTM swarm for this repo).
 4. Instantiate via Codex packet in an isolated worktree on `codex/ai-os-instance`.
-5. Fable diff review, commit by named file.
+5. Sol diff review with cross-family frontend review; commit by named file.
 
 ## Learnings to carry forward from instances 1–2
 

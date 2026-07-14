@@ -23,8 +23,7 @@ using zero Claude/Codex tokens. Never echo, log, report, or commit the key.
 endpoint buffers non-streamed responses server-side until generation completes, so
 any long generation exceeds every reasonable read timeout and dies with
 `ReadTimeout`. Use `stream: true`, accumulate deltas (each chunk resets the read
-clock), retry only transient errors (timeout/transport/429/5xx, up to 3 attempts
-with backoff), and support continuation rounds for outputs longer than one
+clock), retry a transient error once from the last checkpoint, and support continuation rounds for outputs longer than one
 completion (assistant partial + "continue exactly where you stopped", with an
 explicit end-of-file marker). A working reference implementation from the first
 live run is preserved at the template repo's experiment record for this route.
@@ -62,6 +61,12 @@ The packet must contain:
 - Never expose secrets or place the skill's `.env` in the target repository.
 - Do not run repo-wide rewrites, broad lint, or broad tests unless the packet says so.
 - Treat GLM output as evidence, not authority; the orchestrator owns decisions.
+- Quota, authentication, billing, or invalid-model errors mark the Z.ai family
+  Unavailable immediately; do not retry. Reroute the same packet to Terra, then
+  Composer, preserving partial output and acceptance checks.
+- Emit phase-boundary status: queued, streaming with continuation count, checkpointed,
+  retrying, rerouted, verifying, complete, or failed. Never report a stopped process as
+  still running.
 
 ## Required Report
 
@@ -71,6 +76,7 @@ Return only:
 - Behavioral summary.
 - Verification run and results.
 - Uncertainties, blockers, or requested out-of-scope work.
+- Route used, continuation and retry count, checkpoint path, and fallback events.
 
 After the run, the orchestrator inspects `git status` and `git diff`, confirms every
 changed path was in scope, and independently checks acceptance criteria before use.

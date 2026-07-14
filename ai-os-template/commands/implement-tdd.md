@@ -25,8 +25,7 @@ next review or commit action.
 
 ## Model routing note
 
-Claude/Fable keeps scope and acceptance criteria stable. Codex is the primary
+Codex Sol High keeps scope and acceptance criteria stable. Codex is the primary
 implementation workhorse, including test writing, code edits, repo exploration, and
 verification. Review independence is preserved through `reviewer`, `verifier`, or
 orchestrator review depending on complexity.
-

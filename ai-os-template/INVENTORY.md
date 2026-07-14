@@ -28,7 +28,7 @@
 | Plan write/execute | OS workflow specs + `dev/active/` task docs | `writing-plans`, `executing-plans` **deprecate** from the OS path |
 | Brainstorm/elicit | `brainstorming` (installed) | `bmad-brainstorming`, `bmad-advanced-elicitation` **hold** with BMAD |
 | Review | harness `code-review` / `verify` / `simplify` + the OS reviewer/verifier agents (Codex routes) | `code-reviewer`, `architect-review` skills **merge** — their stances are absorbed into `agents/reviewer.md` focuses |
-| Web research | Codex `codex exec` (routing v0.2) | `research` (GLM-5) **keep** as the alternate route; not deprecated — it burns zero Claude/Codex tokens |
+| Web research | Terra or Sol through Codex (routing v0.5) | `research` (GLM-5) **keep** as the cross-family alternate route |
 | Session rituals | template workflows commit / commit-pr / wrap-session | `prove`, `publish-slice`, `wrap-session` **keep as repo-specific bindings** — they ARE the Lower dB instance of those workflows; the instance manifest maps to them rather than replacing them |
 | Codex delegation | **adopt + generalize**: `codex-implementation`, `codex-review`, `codex-computer-use` (from the lower-db repo-overlay) | These become template-level skills with lower-db specifics parameterized to {{PLACEHOLDER}}s — action item below |
 | Prose | `humanizer` **keep** for user-facing writing | — |
@@ -47,3 +47,7 @@
    Spec: `ai-os-template/skills/glm-frontend-patch/SKILL.template.md`. First validation
    run should go through the experiment workflow (GLM vs Composer vs Sol on the same
    frontend slice).
+6. ~~Specify the local Fable consultation route~~ — done 2026-07-13 at
+   `skills/fable-consultation/SKILL.template.md`. It uses authenticated Claude Code
+   print mode, a strict ROI gate, one critique plus at most one follow-up, and
+   family-level quota fallback. Instance binding and live smoke validation remain.
