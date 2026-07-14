@@ -1159,9 +1159,9 @@
       plan.push(['Review', ...check]);
       plan.push(['Verify', ...verify]);
 
-      const blocked = plan.some((item) => /Blocked|Human gate/.test(item[1]));
-      summary.textContent = blocked
-        ? `${tier[0].toUpperCase() + tier.slice(1)} ${task}: human decision needed`
+      const requiresHuman = plan.some((item) => item[1] === 'Blocked' || /human/i.test(item[1]));
+      summary.textContent = requiresHuman
+        ? `${tier[0].toUpperCase() + tier.slice(1)} ${task}: human involvement required`
         : `${tier[0].toUpperCase() + tier.slice(1)} ${task}: route is executable`;
       steps.replaceChildren(...plan.map(([phase, route, detail]) => {
         const item = document.createElement('li');
