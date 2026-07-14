@@ -19,7 +19,8 @@ per-task packets. Never install a runtime or copy a Z.ai credential into
    architecture judgment.
 3. Confirm the task is bounded and all readable and writable paths can be named
    exhaustively.
-4. Confirm the global runner exists. If it does not, route directly to Composer.
+4. Confirm the global runner exists. If it does not, route to Composer, then Terra if
+   Composer is unavailable.
 
 ## Packet
 
