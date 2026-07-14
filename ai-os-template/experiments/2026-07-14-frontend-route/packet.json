@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "goal": "Complete the single-page frontend route console so an engineer can change provider availability and immediately understand the active frontend implementer, why it was selected, and the ordered fallback path.",
+  "read_files": [
+    "index.html"
+  ],
+  "write_files": [
+    "index.html"
+  ],
+  "acceptance_criteria": [
+    "Provide labeled native select controls for Codex, Z.ai, and Cursor. Each offers Available, Limited, and Unavailable states.",
+    "Recalculate on every select change and on initial load. Show the active route, a plain-language reason, ordered fallback routes, and a latest-event line.",
+    "Use this policy: prefer GLM-5.2 only when Z.ai is Available; otherwise prefer Terra when Codex is not Unavailable; otherwise prefer Composer when Cursor is not Unavailable; otherwise show that no implementation route is available. Include Sol High after Terra and Composer when Codex remains available.",
+    "Expose the selected route through an aria-live polite region. Every control is keyboard accessible with a visible focus state, and status meaning never depends on color alone.",
+    "Remain usable at 320 CSS pixels and 200 percent zoom. Include a structural mobile breakpoint and reduced-motion handling.",
+    "Use no external assets or dependencies. Keep all HTML, CSS, and JavaScript in index.html."
+  ],
+  "design_constraints": [
+    "Product register. The physical scene is an engineer reviewing route health on a large monitor in a normally lit workspace, so use a warm light operations-manual surface.",
+    "Use the existing OKLCH tokens and a restrained color strategy. Use system sans and monospace only for model IDs or state values.",
+    "Create clear hierarchy with spacing, rules, type, and one contained decision surface. Do not turn every section into a card or use an identical card grid.",
+    "No gradients, gradient text, glassmorphism, decorative glow, side-stripe accents, hero metrics, custom form controls, or decorative motion.",
+    "No em dashes. Keep copy calm, exact, and concise. Do not claim a process is running.",
+    "Use 150 to 220 millisecond opacity or transform transitions only where they communicate state, with prefers-reduced-motion support."
+  ],
+  "avoid": [
+    "Do not add files, packages, network calls, persistence, model invocation, architecture changes, or unrelated walkthrough content.",
+    "Do not use innerHTML, document.write, eval, or string-to-code execution.",
+    "Do not change the route policy described in the acceptance criteria."
+  ],
+  "verification_commands": [
+    "python3 verify.py index.html"
+  ]
+}

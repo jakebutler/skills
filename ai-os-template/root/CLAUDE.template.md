@@ -70,7 +70,7 @@ not assume this local authentication exists.
 |---|---|
 | Orchestration, framing, synthesis | Codex Sol High; Fable only as quota-approved fallback |
 | Most implementation | Codex (Sol for hard work, Terra for scoped work, Luna for light work) |
-| Frontend implementation | GLM-5.2 streamed; Terra, then Composer fallback |
+| Frontend implementation | Composer for a crisp bounded slice; Terra fallback; GLM-5.2 experimental only |
 | Frontend design judgment | Impeccable on Sol; Fable only for a high-value critique gate |
 | Research sweeps, inventory, mechanical drafting | Terra or Luna; GLM for offloaded web research |
 | Offloaded web research | {{RESEARCH_ROUTE}} |

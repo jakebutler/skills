@@ -1,6 +1,6 @@
 # Model Routing Matrix
 
-**Version 0.5, 2026-07-13.** Model quality, pricing, quota, and availability change.
+**Version 0.6, 2026-07-14.** Model quality, pricing, quota, and availability change.
 Re-verify bindings older than one quarter. The [complexity rubric](complexity-rubric.md)
 can promote a task to a stronger route, but it cannot remove review independence.
 Bindings are hypotheses; the [experiment workflow](../workflows/experiment.md) is the
@@ -16,9 +16,10 @@ evidence loop for changing them.
    the user decide.
 3. **Codex does most engineering work.** Sol handles hard or long-horizon work, Terra
    handles scoped work, and Luna handles high-volume light work.
-4. **GLM-5.2 is the preferred frontend implementation route.** It receives a bounded
-   design and acceptance packet and must stream long generations. Codex remains the
-   immediate fallback while the shell skill is being productized.
+4. **Composer is the bounded frontend implementation default.** The 2026-07-14
+   identical-slice experiment completed in 51.05 seconds and passed deterministic and
+   browser checks. Terra is the first fallback. GLM-5.2 remains an installed
+   experimental route after its streamed arm exceeded the ten-minute cap.
 5. **Claude Sonnet is the preferred copy route.** It writes or rewrites product,
    editorial, and marketing copy from a bounded brief. Copy does not consume Fable.
 6. **Provider failure is ordinary control flow.** Each role has an ordered fallback
@@ -39,7 +40,7 @@ to be installed in an instance.
 | Codex Luna (`gpt-5.6-luna`) | OpenAI/Codex | summaries, extraction, classification, inventory | verified locally 2026-07-12; never use for long-context codebase synthesis |
 | Fable | Anthropic | advanced architecture and system-design critique | local Claude Code CLI is authenticated to Claude Pro; quota-limited and local-only unless another environment has explicit auth |
 | Claude Sonnet | Anthropic | written copy and steelman review | same local Claude Pro route; quota-limited; do not use as an orchestration fallback unless Codex is unavailable |
-| GLM-5.2 (`glm-5.2`) | Z.ai | streamed frontend implementation, independent review, offloaded research | endpoint verified 2026-07-13; frontend shell skill integration remains conditional |
+| GLM-5.2 (`glm-5.2`) | Z.ai | experimental streamed frontend implementation, independent review, offloaded research | runner installed globally; first bounded frontend arm exceeded ten minutes on 2026-07-14, so production routing remains conditional |
 | Composer 2.5 (`composer-2.5`) | Cursor | fast bounded implementation with crisp requirements | verified headless 2026-07-12; account-pooled usage |
 
 ## Role routes and fallbacks
@@ -52,11 +53,11 @@ does not permit.
 |---|---|---|---|---|
 | Orchestration, framing, synthesis | Sol High | Fable, only if Anthropic is available and the user accepts quota use | none | stop for user direction if both Codex and Anthropic are unavailable |
 | Advanced architecture or system-design feedback | Fable on a compact Sol packet | GLM-5.2 critique, then fresh-context Terra critique | Sol self-critique with an explicit independence caveat | user remains the final gate on irreversible decisions |
-| Hard, multi-file, or long-horizon implementation | Sol High | Composer when the packet is crisp | GLM-5.2 for a bounded compatible slice | stop and re-plan if judgment is required and Codex is unavailable |
-| Scoped implementation | Terra | Composer | GLM-5.2 | promote to Sol if scope or ambiguity grows |
-| Trivial mechanical work | Luna | Terra | GLM-5.2 | never give Luna long-context synthesis |
-| Frontend implementation | GLM-5.2 streamed | Terra | Composer, then Sol for high complexity | preserve the design packet and acceptance checks across reroutes |
-| Frontend design and UX judgment | Impeccable skill on Sol High | Impeccable skill on Fable when a high-value critique gate warrants quota | Impeccable skill on Terra | GLM implements the approved direction; it does not self-approve design quality |
+| Hard, multi-file, or long-horizon implementation | Sol High | Composer when the packet is crisp | Terra for a bounded compatible slice | stop and re-plan if judgment is required and Codex is unavailable |
+| Scoped implementation | Terra | Composer | GLM-5.2 experimental | promote to Sol if scope or ambiguity grows |
+| Trivial mechanical work | Luna | Terra | Composer | never give Luna long-context synthesis |
+| Frontend implementation | Composer 2.5 for a crisp bounded slice | Terra | Sol High for high complexity; GLM-5.2 only as an explicit experiment | preserve the design packet and acceptance checks across reroutes |
+| Frontend design and UX judgment | Impeccable skill on Sol High | Impeccable skill on Fable when a high-value critique gate warrants quota | Impeccable skill on Terra | implementation workers execute the approved direction; they do not self-approve design quality |
 | Product, editorial, or marketing copy | Claude Sonnet | Terra for routine copy; Sol Standard for high-stakes copy | GLM-5.2 | preserve voice brief and human approval gate |
 | Repo research and feasibility | Terra | Sol Standard | GLM-5.2 | use cited evidence; distinguish inference from fact |
 | Web research sweeps | GLM research route | Terra with web search | Sol Standard | stop if required sources cannot be verified |
@@ -187,17 +188,20 @@ The orchestrator owns status even when another model does the labor.
 - At finish: report implementation route, reviewers, verification performed, skipped
   checks, fallback events, and residual risk.
 
-For GLM frontend work, streaming is mandatory. The endpoint buffered non-streamed long
-responses until completion and caused read timeouts in the 2026-07-13 live run. The
-streamed build completed over continuation rounds and absorbed transient retries.
+For experimental GLM frontend work, streaming is mandatory. The endpoint buffered
+non-streamed long responses until completion and caused read timeouts in the
+2026-07-13 live run. On 2026-07-14, a streamed bounded arm stayed connected but did not
+complete inside ten minutes. The installed runner now enforces a ten-minute total
+deadline, 15-second content-free heartbeats, partial-response checkpoints, at most four
+continuation rounds, and one transient retry before Composer then Terra takeover.
 
 ## Default assignments by task tier
 
 | Tier | Plan and orchestrate | Implement | Review and verify |
 |---|---|---|---|
-| Simple | Sol High inline, with a compact packet | Luna for trivial work; Terra or Composer for a crisp slice; GLM for frontend | focused verification; one combined audit |
-| Medium | Sol High; Sol Standard may draft options | Terra or GLM frontend; Sol for multi-file work | one independent reviewer, cross-family when practical; verifier for user-facing behavior |
-| High | Sol High owns plan and synthesis; Fable consults only at architecture/system-design gates | Sol High; GLM for bounded frontend slices | two review lenses plus independent verification; Fable only when the durable judgment warrants it |
+| Simple | Sol High inline, with a compact packet | Luna for trivial work; Composer for crisp frontend; Terra otherwise | focused verification; one combined audit |
+| Medium | Sol High; Sol Standard may draft options | Terra or Composer; Sol for multi-file work | one independent reviewer, cross-family when practical; verifier for user-facing behavior |
+| High | Sol High owns plan and synthesis; Fable consults only at architecture/system-design gates | Sol High; Composer for a separately bounded frontend slice | two review lenses plus independent verification; Fable only when the durable judgment warrants it |
 
 High-tier ceremony includes a quiz-before-merge: the orchestrator asks the user three
 to five pointed questions about the implementation before merge.
@@ -221,6 +225,10 @@ they request full files only when needed.
 
 ## Version history
 
+- **0.6 (2026-07-14):** first frontend-route experiment rejects GLM as the default;
+  Composer becomes the bounded frontend implementation route, Terra the first
+  fallback, and GLM an installed experiment guarded by deadline, heartbeat, partial
+  checkpoint, and automatic takeover.
 - **0.5 (2026-07-13):** Sol High becomes the primary orchestrator; Fable moves to a
   quota-conserving architecture and system-design consultation lane; GLM-5.2 becomes
   the preferred streamed frontend implementation route; Sonnet owns copy; cross-family

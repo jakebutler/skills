@@ -638,7 +638,7 @@
 
     <section id="routing">
       <h2>8 · Model routing and failover</h2>
-      <p><strong>v0.5 operating decision:</strong> Codex Sol High is the control plane. Fable is a scarce consultation route for durable architecture and system-design judgment. Codex handles most engineering work, GLM-5.2 is preferred for streamed frontend implementation, and Sonnet writes copy.</p>
+      <p><strong>v0.6 operating decision:</strong> Codex Sol High is the control plane. Fable is a scarce consultation route for durable architecture and system-design judgment. Codex handles most engineering work, Composer owns crisp bounded frontend implementation, Terra is its first fallback, GLM-5.2 remains experimental, and Sonnet writes copy.</p>
 
       <div class="route-lab" id="route-lab">
         <h3 style="margin-top: 0;">Routing lab</h3>
@@ -747,10 +747,10 @@
         <tr><th>Responsibility</th><th>Primary</th><th>Fallback</th></tr>
         <tr><td>Orchestration, framing, synthesis, status</td><td>Codex Sol High</td><td>Fable only when Codex is unavailable and the user accepts quota use</td></tr>
         <tr><td>Advanced architecture and system-design critique</td><td>Fable on a compact Sol packet</td><td>GLM-5.2 critique, then fresh-context Terra</td></tr>
-        <tr><td>Hard or long-horizon implementation</td><td>Sol High</td><td>Composer for crisp scopes; GLM-5.2 for compatible bounded slices</td></tr>
-        <tr><td>Scoped implementation and first-pass review</td><td>Terra</td><td>Composer, then GLM-5.2</td></tr>
-        <tr><td>High-volume light work</td><td>Luna</td><td>GLM-5.2, then Terra</td></tr>
-        <tr><td>Frontend implementation</td><td>GLM-5.2, streamed</td><td>Terra, then Composer; Sol for High complexity</td></tr>
+        <tr><td>Hard or long-horizon implementation</td><td>Sol High</td><td>Composer for a separately bounded crisp slice; Terra otherwise</td></tr>
+        <tr><td>Scoped implementation and first-pass review</td><td>Terra</td><td>Composer, then experimental GLM-5.2</td></tr>
+        <tr><td>High-volume light work</td><td>Luna</td><td>Terra, then Composer</td></tr>
+        <tr><td>Frontend implementation</td><td>Composer 2.5 for a crisp bounded slice</td><td>Terra; Sol for High complexity; GLM-5.2 only as an explicit experiment</td></tr>
         <tr><td>Frontend design judgment</td><td>Impeccable on Sol High</td><td>Impeccable on Terra; Fable only for rare high-value critique</td></tr>
         <tr><td>Product, editorial, and marketing copy</td><td>Claude Sonnet</td><td>Terra for routine copy; Sol Standard for high-stakes copy</td></tr>
       </table>
@@ -773,12 +773,12 @@
         <li><span><strong>Finish.</strong> Implementer, reviewers, verification, skipped checks, fallback ledger, and residual risk.</span></li>
       </ol>
 
-      <p><strong>GLM rule:</strong> long frontend generations must stream and checkpoint continuation rounds. A timeout gets one retry from the last checkpoint; quota or auth failure skips the whole Z.ai family immediately.</p>
+      <p><strong>GLM rule:</strong> the installed experimental route must stream, emit content-free heartbeats, save partial checkpoints, and stop at ten minutes. One transient failure may retry from the last checkpoint; timeout, quota, or auth failure moves the unchanged packet to Composer, then Terra.</p>
     </section>
 
     <section id="agents">
       <h2>9 · Subagent roster (10 roles)</h2>
-      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter so it remains usable from that harness, but frontmatter is only an adapter fallback. The v0.5 routing matrix is authoritative.</p>
+      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter so it remains usable from that harness, but frontmatter is only an adapter fallback. The v0.6 routing matrix is authoritative.</p>
 
       <table>
         <tr><th>Role</th><th>Default route</th><th>What it does</th></tr>
@@ -786,7 +786,7 @@
         <tr><td>Researcher</td><td>Codex Terra read-only packet; GLM research skill for offloaded web sweeps</td><td>One bounded question, evidence with confidence.</td></tr>
         <tr><td>Research consolidator</td><td>Terra; Sonnet when prose quality warrants quota</td><td>Merges multiple researcher packets; preserves disagreement.</td></tr>
         <tr><td>Implementer</td><td>Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical)</td><td>Executes the planned change test-first. Also the fix-types/fix-build delegating-hook target.</td></tr>
-        <tr><td>Frontend designer</td><td>Impeccable on Sol High for judgment; streamed GLM-5.2 for build-out; Terra/Composer fallback</td><td>Produces the design packet, coordinates implementation, and records visible checkpoints.</td></tr>
+        <tr><td>Frontend designer</td><td>Impeccable on Sol High for judgment; Composer for bounded build-out; Terra fallback; GLM-5.2 experimental</td><td>Produces the design packet, coordinates implementation, and records visible checkpoints.</td></tr>
         <tr><td>Verifier</td><td>Sol (codex-computer-use for runtime/browser)</td><td>Exercises the flow itself; passing tests are evidence, not proof.</td></tr>
         <tr><td>Reviewer</td><td>Different family from implementer when practical; two lenses at High</td><td>Findings first, cite file:line. Fable is reserved for advanced architecture or system design.</td></tr>
         <tr><td>Auditor</td><td>Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis</td><td>Audits <em>plans</em> through adversarial, steelman, and neutral lenses.</td></tr>
@@ -887,7 +887,7 @@
 │   └── delegating-review.md   tool-cache-refresh.md
 ├── agents/                   10 subagent role definitions with Claude Code frontmatter
 ├── routing/
-│   ├── model-routing.md      v0.5 matrix (quota-aware primary + fallback routes)
+│   ├── model-routing.md      v0.6 matrix (evidence-backed primary + fallback routes)
 │   └── complexity-rubric.md  Task tiering rules
 ├── skills/                   Generalized Codex delegation surfaces
 │   ├── codex-implementation/SKILL.template.md
@@ -908,8 +908,8 @@
         <tr><th>Repo</th><th>Status</th><th>Branch</th><th>What's there</th></tr>
         <tr><td>Lower dB</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Your repo-overlay installed verbatim (kernel + operations docs + skills) + <code>docs/ai-os-manifest.md</code> + dated changelog entry. 16 files staged by name per house rules.</td></tr>
         <tr><td>FreshProof</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Expanded <code>AGENTS.md</code> (nextjs-agent-rules marker block preserved byte-identical), thin <code>CLAUDE.md</code> adapter, new <code>PROJECT-STATUS.md</code> + <code>CHANGELOG.md</code> (missing roles), manifest, bound Codex skills. 8 files.</td></tr>
-        <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Proving ground for the GLM frontend-coding route + FEATURE-LIST / init modules.</td></tr>
-        <tr><td>ai-os-template itself</td><td class="status-pending">v0.3 rebalance in progress</td><td><code>ai-os-template/v0.1</code></td><td>Routing v0.5, subscription-backed Fable consultation, failover policy, and interactive walkthrough are being validated.</td></tr>
+        <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Composer is the bounded frontend default; a smaller slice may revalidate the experimental GLM route.</td></tr>
+        <tr><td>ai-os-template itself</td><td class="status-live">v0.6 runner validation complete</td><td><code>codex/ai-os-routing-v05</code></td><td>Composer won the bounded frontend experiment; GLM is installed but experimental. Results are under <code>experiments/2026-07-14-frontend-route/</code>.</td></tr>
       </table>
 
       <p>Neither instance branch is pushed. Review the worktree diffs at your leisure. Lower dB has its own <code>/publish-slice</code>; FreshProof can go via <code>gh pr create</code>.</p>
@@ -917,17 +917,17 @@
 
     <section id="decisions">
       <h2>13 · Decisions and routing rebalance</h2>
-      <p class="lede">The original twelve decisions remain below. Six routing decisions were added on 2026-07-13 after the always-on Fable control plane exhausted Claude Pro quota too quickly.</p>
+      <p class="lede">The original twelve decisions remain below. Six routing decisions were added on 2026-07-13 after the always-on Fable control plane exhausted Claude Pro quota too quickly. D19 records the first model-route experiment on 2026-07-14.</p>
 
       <div class="callout judgment">
-        <span class="tag">Routing decisions · D13–D18</span>
-        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the entire provider family for the task. <strong>D15:</strong> GLM-5.2 is the preferred streamed frontend route. <strong>D16:</strong> Sonnet writes copy. <strong>D17:</strong> review diversity scales with tier and uses multiple families when practical. <strong>D18:</strong> visible route, phase, checkpoint, failure, takeover, and final ledger are part of the output contract.</p>
+        <span class="tag">Routing decisions · D13–D19</span>
+        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the entire provider family for the task. <strong>D15:</strong> GLM-5.2 was the initial streamed frontend hypothesis. <strong>D16:</strong> Sonnet writes copy. <strong>D17:</strong> review diversity scales with tier and uses multiple families when practical. <strong>D18:</strong> visible route, phase, checkpoint, failure, takeover, and final ledger are part of the output contract. <strong>D19:</strong> the identical-slice experiment demotes GLM to experimental and makes Composer the bounded frontend default with Terra fallback.</p>
       </div>
 
       <ol class="decisions-list">
         <li>
           <span class="q">GLM frontend-coding route — how do we wire it?</span>
-          <span class="body">Currently: only the read-only <code>research</code> skill uses your Z.ai API key. Frontend design judgment sits on Impeccable+Claude, which is fine. But frontend <em>coding</em> was in your original defaults and there's no GLM coding surface in Claude Code. Options: <strong>(a)</strong> a shell skill (like the research one) that invokes GLM for a bounded frontend patch; <strong>(b)</strong> an MCP server for GLM if one exists; <strong>(c)</strong> a Codex-style plugin; <strong>(d)</strong> drop the GLM coding route and use Codex for frontend coding too (simplest — Codex is already the workhorse). Recommendation: <strong>(d)</strong> unless you have a specific GLM coding-quality reason. The corvo-labs-dot-com instance is the natural place to prove whichever you pick. <strong>RESOLVED:</strong> Shell skill; spec staged, implementation queued, validated by experiment first.</span>
+          <span class="body">The Z.ai research skill proved the credential path but not bounded code application. Options were a shell skill, MCP surface, plugin, or no GLM coding route. <strong>RESOLVED:</strong> the streamed, allowlisted shell skill is implemented globally with thin repo bindings. Its first identical-slice arm exceeded ten minutes, so D19 keeps it experimental behind a deadline and automatic Composer then Terra takeover.</span>
         </li>
         <li>
           <span class="q">BMAD — hold, adopt, or explicit reject?</span>
@@ -999,7 +999,7 @@
       <h2>15 · Dedupe log</h2>
       <table>
         <tr><th>#</th><th>Merge</th><th>Winner</th></tr>
-        <tr><td>M1</td><td>GLM-5.2 route split</td><td>Frontend <em>design judgment</em> = Impeccable on Sol High. Frontend <em>implementation</em> = streamed GLM-5.2, with Terra and Composer fallbacks.</td></tr>
+        <tr><td>M1</td><td>Frontend route split</td><td>Frontend <em>design judgment</em> = Impeccable on Sol High. Crisp bounded <em>implementation</em> = Composer, with Terra fallback. GLM-5.2 remains a deadline-bound experiment.</td></tr>
         <tr><td>M2</td><td>20 candidate subagent roles → 10</td><td>Type-fixer/build-fixer → implementer; route/browser verifier → verifier; plan-related roles → orchestrator+auditor; architecture/simplification/PR reviewers → reviewer with focus; web research → researcher.</td></tr>
         <tr><td>M3</td><td>Environment skill collisions</td><td><code>tdd</code> over <code>test-driven-development</code>; accelerated grill in <code>/spec</code> over standalone <code>grill-me</code> (which stays for standalone stress-tests); OS workflows over <code>writing-plans</code>/<code>executing-plans</code>; reviewer/verifier agents over <code>code-reviewer</code>/<code>architect-review</code> (merged as focuses); Codex over GLM for research (GLM kept as zero-token alternate).</td></tr>
         <tr><td>M4</td><td>15 candidate slash commands → 9</td><td><code>/fix-types</code> became a delegating-hook target; <code>/update-docs</code> became automatic maintenance; <code>/prove</code> and <code>/publish-slice</code> stayed repo-specific (lower-db) rather than promoted to OS commands; <code>/autoskill</code> runs inside <code>/commit</code> and <code>/wrap-session</code>, not standalone.</td></tr>
@@ -1011,13 +1011,13 @@
       <h2>16 · Next steps</h2>
 
       <ol>
-        <li><strong>Validate routing v0.5 and this walkthrough</strong>, including provider-state simulation, keyboard operation, and mobile layout.</li>
+        <li><strong>Use routing v0.6 in FreshProof</strong> for the first real implementation slice, preserving the Composer → Terra takeover packet.</li>
         <li><strong>Implement the Fable consultation wrapper</strong> around local <code>claude -p</code> with auth preflight, streaming output, quota circuit breaker, and a read-only compact packet.</li>
-        <li><strong>Implement the GLM frontend-patch skill</strong> with streaming, continuation checkpoints, and immediate Terra fallback.</li>
+        <li><strong>Revalidate GLM only after a smaller packet or diff protocol</strong>; require two consecutive sub-ten-minute passes before promotion.</li>
         <li><strong>Hook implementation next</strong> in the D11 priority order after the routing wrappers have observable status.</li>
         <li><strong>Update the lower-db instance</strong> to template v0.3, including plans-directory consolidation (D6), the routing-matrix pin, and the Composer skill.</li>
         <li><strong>Begin weekly-digest-automation feature work</strong> on lower-db using the OS.</li>
-        <li><strong>Run the frontend validation experiment</strong>: GLM-5.2 vs Terra vs Composer on the same bounded slice.</li>
+        <li><strong>Review the completed frontend experiment</strong> at <code>experiments/2026-07-14-frontend-route/</code> if routing assumptions change.</li>
         <li><strong>Jake audits the marketingskills subset:</strong> copywriting, copy-editing, marketing-psychology, onboarding, site-architecture, product-marketing, and seo-audit.</li>
       </ol>
 
@@ -1057,9 +1057,10 @@
         return ['Blocked', 'Architecture exploration has no eligible route.'];
       }
       if (task === 'frontend') {
-        if (eligible(state, 'zai')) return ['GLM-5.2 streamed', 'Preferred frontend implementation; shell integration is conditional until installed in the instance.'];
-        if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', 'Z.ai cannot take new work; the same design packet and acceptance checks move to Codex.'];
-        if (eligible(state, 'cursor')) return ['Composer 2.5', 'Use only if the frontend packet is crisp and bounded.'];
+        if (tier === 'high' && eligible(state, 'codex')) return ['Sol High', 'High-complexity frontend work stays with the orchestrator; separately bounded slices may still go to Composer.'];
+        if (eligible(state, 'cursor')) return ['Composer 2.5', 'Validated default for a crisp bounded frontend packet.'];
+        if (eligible(state, 'codex')) return ['Terra', 'Cursor cannot take new work; preserve the same design packet and acceptance checks.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2 experiment', 'Only the experimental route remains; enforce the deadline and preserve automatic takeover evidence.'];
         return ['Blocked', 'No frontend implementation route is available.'];
       }
       if (task === 'copy') {
