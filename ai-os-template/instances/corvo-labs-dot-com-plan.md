@@ -11,9 +11,10 @@ two instances:
   #9) matters more here than anywhere — expect the `docs/gtm/` handoff-packet
   convention to be load-bearing, and the fenced marketingskills subset (copywriting,
   landing-page conversion) plus Impeccable to be the dominant skill routes.
-- **Frontend-heavy** → this is the natural proving ground for wiring a GLM frontend-
-  coding route (currently "pending verification" in the routing matrix). Decide the
-  wiring (skill vs MCP) before or during this instance.
+- **Frontend-heavy** means Composer should receive crisp bounded implementation
+  packets after Impeccable/Sol design judgment, with Terra fallback. The global GLM
+  runner is already wired but remains experimental after exceeding the first
+  ten-minute validation cap; revalidate only on a deliberately smaller slice.
 - **FEATURE-LIST module: skipped** (owner decision D7, 2026-07-12). The full `init`
   workflow (initializer agent, `init.sh`, smoke check) still applies if the repo is
   greenfield.

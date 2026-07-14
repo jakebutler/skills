@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frontend route console</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: oklch(0.976 0.007 82);
+      --surface: oklch(0.992 0.004 82);
+      --ink: oklch(0.245 0.012 65);
+      --muted: oklch(0.48 0.015 65);
+      --rule: oklch(0.875 0.014 75);
+      --accent: oklch(0.47 0.09 50);
+      --focus: oklch(0.42 0.1 50);
+      --status-ok: oklch(0.38 0.06 145);
+      --status-warn: oklch(0.52 0.1 75);
+      --status-off: oklch(0.5 0.02 65);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(62rem, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2rem 0 4rem;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.5rem;
+      font-size: 0.8125rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 650;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0 0 2rem;
+      max-width: 38rem;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .controls-panel {
+      padding: 0;
+    }
+
+    .controls-panel h2 {
+      margin: 0 0 0.25rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .controls-panel > p {
+      margin: 0 0 1.25rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .control-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .control-field {
+      display: grid;
+      gap: 0.375rem;
+    }
+
+    .control-field label {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .control-field select {
+      width: 100%;
+      max-width: 20rem;
+      padding: 0.5rem 2rem 0.5rem 0.625rem;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.4;
+      appearance: auto;
+      cursor: pointer;
+    }
+
+    .control-field select:focus {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+      border-color: var(--accent);
+    }
+
+    .control-field select:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    .control-field select:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+      border-color: var(--accent);
+    }
+
+    .state-hint {
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .state-hint .state-value {
+      font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+      font-size: 0.75rem;
+      text-transform: capitalize;
+    }
+
+    .decision-surface {
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      background: var(--surface);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .decision-surface h2 {
+      margin: 0 0 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .route-active {
+      margin: 0 0 1rem;
+    }
+
+    .route-active .label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .route-active .value {
+      font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+      font-size: 1.375rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .route-active .value.none {
+      font-family: inherit;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--status-off);
+    }
+
+    .route-reason {
+      margin: 0 0 1.25rem;
+      padding: 0.75rem 0 0;
+      border-top: 1px solid var(--rule);
+      font-size: 0.9375rem;
+    }
+
+    .route-reason .label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .fallback-block {
+      margin: 0 0 1.25rem;
+    }
+
+    .fallback-block .label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .fallback-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .fallback-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      padding: 0.375rem 0;
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.9375rem;
+    }
+
+    .fallback-list li:last-child {
+      border-bottom: none;
+    }
+
+    .fallback-rank {
+      flex-shrink: 0;
+      width: 1.5rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .fallback-id {
+      font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .fallback-empty {
+      margin: 0;
+      font-size: 0.9375rem;
+      color: var(--muted);
+      font-style: normal;
+    }
+
+    .event-line {
+      margin: 0;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--rule);
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .event-line strong {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 40rem) {
+      .layout {
+        grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+        align-items: start;
+      }
+
+      main {
+        padding: 4rem 0;
+      }
+    }
+
+    @media (max-width: 20rem) {
+      main {
+        width: calc(100% - 1rem);
+        padding: 1.5rem 0 2rem;
+      }
+
+      .decision-surface {
+        padding: 1rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .decision-surface {
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .route-active .value {
+        transition: opacity 180ms ease;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">AI Engineering OS / route control</p>
+    <h1>Frontend implementation</h1>
+    <p class="lede">Choose provider states to inspect the active route and takeover order.</p>
+
+    <div class="layout">
+      <section class="controls-panel" aria-labelledby="controls-heading">
+        <h2 id="controls-heading">Provider availability</h2>
+        <p>Set each provider to Available, Limited, or Unavailable.</p>
+
+        <div class="control-grid">
+          <div class="control-field">
+            <label for="codex-state">Codex</label>
+            <select id="codex-state" name="codex-state">
+              <option value="available">Available</option>
+              <option value="limited">Limited</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+            <p class="state-hint" id="codex-hint">Current state: <span class="state-value" id="codex-hint-value">available</span></p>
+          </div>
+
+          <div class="control-field">
+            <label for="zai-state">Z.ai</label>
+            <select id="zai-state" name="zai-state">
+              <option value="available">Available</option>
+              <option value="limited">Limited</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+            <p class="state-hint" id="zai-hint">Current state: <span class="state-value" id="zai-hint-value">available</span></p>
+          </div>
+
+          <div class="control-field">
+            <label for="cursor-state">Cursor</label>
+            <select id="cursor-state" name="cursor-state">
+              <option value="available">Available</option>
+              <option value="limited">Limited</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+            <p class="state-hint" id="cursor-hint">Current state: <span class="state-value" id="cursor-hint-value">available</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="decision-surface" aria-labelledby="decision-heading">
+        <h2 id="decision-heading">Route decision</h2>
+
+        <div class="route-active">
+          <span class="label" id="active-route-label">Active route</span>
+          <p class="value" id="active-route" aria-live="polite" aria-atomic="true" aria-labelledby="active-route-label">GLM-5.2</p>
+        </div>
+
+        <div class="route-reason">
+          <span class="label" id="reason-label">Selection reason</span>
+          <p id="route-reason" aria-labelledby="reason-label"></p>
+        </div>
+
+        <div class="fallback-block">
+          <span class="label" id="fallback-label">Fallback order</span>
+          <ol class="fallback-list" id="fallback-list" aria-labelledby="fallback-label"></ol>
+          <p class="fallback-empty" id="fallback-empty" hidden>No fallback routes are available.</p>
+        </div>
+
+        <p class="event-line" id="event-line" aria-live="polite" aria-atomic="true"></p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var codexSelect = document.getElementById('codex-state');
+      var zaiSelect = document.getElementById('zai-state');
+      var cursorSelect = document.getElementById('cursor-state');
+      var activeRouteEl = document.getElementById('active-route');
+      var reasonEl = document.getElementById('route-reason');
+      var fallbackListEl = document.getElementById('fallback-list');
+      var fallbackEmptyEl = document.getElementById('fallback-empty');
+      var eventLineEl = document.getElementById('event-line');
+      var hintValues = {
+        codex: document.getElementById('codex-hint-value'),
+        zai: document.getElementById('zai-hint-value'),
+        cursor: document.getElementById('cursor-hint-value')
+      };
+
+      var providerLabels = {
+        codex: 'Codex',
+        zai: 'Z.ai',
+        cursor: 'Cursor'
+      };
+
+      var stateLabels = {
+        available: 'Available',
+        limited: 'Limited',
+        unavailable: 'Unavailable'
+      };
+
+      var lastEvent = 'Console loaded with default provider states.';
+
+      function isNotUnavailable(state) {
+        return state !== 'unavailable';
+      }
+
+      function isAvailable(state) {
+        return state === 'available';
+      }
+
+      function describeState(provider, state) {
+        if (state === 'available') {
+          return providerLabels[provider] + ' is available';
+        }
+        if (state === 'limited') {
+          return providerLabels[provider] + ' is limited';
+        }
+        return providerLabels[provider] + ' is unavailable';
+      }
+
+      function buildFallbackOrder(states) {
+        var order = [];
+        if (isAvailable(states.zai)) {
+          order.push('GLM-5.2');
+        }
+        if (isNotUnavailable(states.codex)) {
+          order.push('Terra');
+        }
+        if (isNotUnavailable(states.cursor)) {
+          order.push('Composer');
+        }
+        if (isNotUnavailable(states.codex)) {
+          order.push('Sol High');
+        }
+        return order;
+      }
+
+      function computeRoute(states) {
+        var active = null;
+        var reason = '';
+
+        if (isAvailable(states.zai)) {
+          active = 'GLM-5.2';
+          reason = 'GLM-5.2 is preferred because Z.ai is available.';
+        } else if (isNotUnavailable(states.codex)) {
+          active = 'Terra';
+          if (states.zai === 'limited') {
+            reason = 'Terra is preferred because Z.ai is limited, not available, and Codex is not unavailable.';
+          } else {
+            reason = 'Terra is preferred because Z.ai is not available and Codex is not unavailable.';
+          }
+        } else if (isNotUnavailable(states.cursor)) {
+          active = 'Composer';
+          reason = 'Composer is preferred because Z.ai is not available, Codex is unavailable, and Cursor is not unavailable.';
+        } else {
+          active = null;
+          reason = 'No implementation route is available. Z.ai is not available, Codex is unavailable, and Cursor is unavailable.';
+        }
+
+        var fallbackOrder = buildFallbackOrder(states);
+        var fallbacks = [];
+        var i;
+        for (i = 0; i < fallbackOrder.length; i += 1) {
+          if (fallbackOrder[i] !== active) {
+            fallbacks.push(fallbackOrder[i]);
+          }
+        }
+
+        return {
+          active: active,
+          reason: reason,
+          fallbacks: fallbacks
+        };
+      }
+
+      function clearElement(el) {
+        while (el.firstChild) {
+          el.removeChild(el.firstChild);
+        }
+      }
+
+      function renderFallbacks(fallbacks) {
+        clearElement(fallbackListEl);
+
+        if (fallbacks.length === 0) {
+          fallbackListEl.hidden = true;
+          fallbackEmptyEl.hidden = false;
+          return;
+        }
+
+        fallbackListEl.hidden = false;
+        fallbackEmptyEl.hidden = true;
+
+        var index;
+        for (index = 0; index < fallbacks.length; index += 1) {
+          var li = document.createElement('li');
+          var rank = document.createElement('span');
+          var id = document.createElement('span');
+
+          rank.className = 'fallback-rank';
+          rank.textContent = String(index + 1) + '.';
+
+          id.className = 'fallback-id';
+          id.textContent = fallbacks[index];
+
+          li.appendChild(rank);
+          li.appendChild(id);
+          fallbackListEl.appendChild(li);
+        }
+      }
+
+      function render(states, eventText) {
+        var result = computeRoute(states);
+
+        if (result.active) {
+          activeRouteEl.textContent = result.active;
+          activeRouteEl.classList.remove('none');
+        } else {
+          activeRouteEl.textContent = 'No route available';
+          activeRouteEl.classList.add('none');
+        }
+
+        reasonEl.textContent = result.reason;
+        renderFallbacks(result.fallbacks);
+
+        hintValues.codex.textContent = states.codex;
+        hintValues.zai.textContent = states.zai;
+        hintValues.cursor.textContent = states.cursor;
+
+        if (eventText) {
+          lastEvent = eventText;
+        }
+
+        eventLineEl.textContent = '';
+        var prefix = document.createElement('strong');
+        prefix.textContent = 'Latest event: ';
+        eventLineEl.appendChild(prefix);
+        eventLineEl.appendChild(document.createTextNode(lastEvent));
+      }
+
+      function readStates() {
+        return {
+          codex: codexSelect.value,
+          zai: zaiSelect.value,
+          cursor: cursorSelect.value
+        };
+      }
+
+      function handleChange(provider) {
+        var states = readStates();
+        var eventText = providerLabels[provider] + ' set to ' + stateLabels[states[provider]] + '.';
+        render(states, eventText);
+      }
+
+      codexSelect.addEventListener('change', function () {
+        handleChange('codex');
+      });
+
+      zaiSelect.addEventListener('change', function () {
+        handleChange('zai');
+      });
+
+      cursorSelect.addEventListener('change', function () {
+        handleChange('cursor');
+      });
+
+      render(readStates(), null);
+    })();
+  </script>
+</body>
+</html>

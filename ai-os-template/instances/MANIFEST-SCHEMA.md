@@ -34,7 +34,7 @@ the manifest records the winner, it never renames existing files.
 The canonical routing matrix lives in the template repo
 (`ai-os-template/routing/model-routing.md`). Instances **reference** it in the
 manifest's role-bindings row with a **version pin** (e.g. "routing → template repo,
-matrix v0.5"). When the canonical matrix bumps, the next session in an instance repo
+matrix v0.6"). When the canonical matrix bumps, the next session in an instance repo
 updates the pin deliberately.
 
 Symlinks were considered and rejected: a committed symlink to an absolute local path
