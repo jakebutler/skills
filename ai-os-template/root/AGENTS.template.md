@@ -73,7 +73,11 @@ Rules of the road:
 
 ## Workflows
 
-Standard workflows for this repo (full specs: {{WORKFLOWS_LOCATION}}):
+Standard workflows for this repo are summarized below. Optional detailed specs resolve
+from `{{WORKFLOWS_LOCATION}}`. That binding must be repo-relative or use the documented
+`AI_OS_HOME` environment variable; never bind it to an author's absolute checkout. If
+the optional shared specs are unavailable, this table is the usable fallback and work
+must not block.
 
 | Workflow | Use when |
 |---|---|
@@ -119,9 +123,11 @@ regardless of size.
 
 ## Model routing and provider failure
 
-The current matrix at `{{ROUTING_LOCATION}}` is authoritative. Codex Sol High is the
-default orchestrator. Model workers receive bounded contracts; decision authority does
-not transfer merely because a route is stronger or cheaper.
+The current matrix at `{{ROUTING_LOCATION}}` is authoritative when that optional
+portable binding is available. Otherwise use the routing summary installed in this repo
+and the version pin in its instance manifest. Codex Sol High is the default
+orchestrator. Model workers receive bounded contracts; decision authority does not
+transfer merely because a route is stronger or cheaper.
 
 Treat availability at the provider-family level:
 

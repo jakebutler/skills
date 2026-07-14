@@ -198,9 +198,14 @@ ai-os-template/
    stay; template roles bind to them). Only roles with no counterpart get new files.
 3. Merge root instructions: preserve existing content, layer in OS sections, flag
    conflicts rather than resolving silently.
-4. Wire hooks/commands appropriate to the repo's stack and verification commands.
-5. Land on a feature branch (`ai-os/instance`), commit with clear messages, never main.
-6. Promote repo learnings back into the template only when they generalize.
+4. Vendor shared specs or bind them through `AI_OS_HOME` plus a portable source URL.
+   Never install an author's absolute checkout path; root docs must remain usable when
+   the optional shared checkout is absent.
+5. Wire hooks/commands appropriate to the repo's stack and verification commands.
+6. Verify no placeholders or host-specific absolute paths survive, with `AI_OS_HOME`
+   unset for the fallback check.
+7. Land on a feature branch (`ai-os/instance`), commit with clear messages, never main.
+8. Promote repo learnings back into the template only when they generalize.
 
 ## 11. Decisions record
 
@@ -227,7 +232,7 @@ ai-os-template/
 |---|---|
 | D1 | GLM frontend coding uses a user-global streamed shell skill with thin repo bindings; implemented 2026-07-14 |
 | D2 | BMAD explicitly dropped — never routed to; files may remain as reference |
-| D3 | Routing matrix distribution: canonical copy in the template repo; instances *reference* it in their manifest with a version pin (symlinks rejected — they break on clone/CI/other machines; see MANIFEST-SCHEMA) |
+| D3 | Routing matrix distribution: canonical copy in the template repo; instances reference it with a version pin, portable source URL, optional `AI_OS_HOME`, and a repo-local summary fallback (absolute symlinks and checkout paths rejected; see MANIFEST-SCHEMA) |
 | D4 | FreshProof `FEEDBACK_IMPLEMENTATION_COMPLETE.md` → archive (apply in next instance pass) |
 | D5/D6 | Both repos: consolidate to one `plans/` (FreshProof) / `docs/plans/` (Lower dB) with an `archive/` subdirectory (apply in next instance pass) |
 | D7 | corvo-labs-dot-com: skip the FEATURE-LIST module |

@@ -39,12 +39,13 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Write a self-contained prompt to `$PROMPT`, then run:
 
 ```bash
-codex exec -C "$PWD" --add-dir "$ARTIFACT_DIR" -s workspace-write -o "$REPORT" - < "$PROMPT"
+codex -a on-request -s workspace-write exec -C "$PWD" \
+  --add-dir "$ARTIFACT_DIR" -o "$REPORT" - < "$PROMPT"
 ```
 
-Use `-s workspace-write` by default.
-
-Use `-s danger-full-access` only when the implementation truly needs access outside the repo, app launch automation, simulator work, package-manager global state, or other machine-level operations. Never use it for convenience.
+Keep `workspace-write` and `on-request` approval enabled. If the task needs access
+outside the repository, approve only the specific action Codex requests. Stop if the
+headless run cannot request that approval; do not pre-authorize blanket machine access.
 
 ## Prompt requirements
 

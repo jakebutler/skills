@@ -15,7 +15,12 @@ Everything in `AGENTS.md` applies. This file adds Claude Code mechanics only.
 
 ## Slash commands
 
-<!-- Keep only the commands wired for this repo. Specs: {{COMMANDS_LOCATION}} -->
+Keep only slash-command adapters actually installed in this repo. If adapters are
+deferred, the names below are workflow labels rather than executable slash commands.
+Optional detailed specs resolve from `{{COMMANDS_LOCATION}}`; the self-contained
+summaries below remain the fallback when that portable binding is unavailable.
+
+<!-- {{COMMANDS_LOCATION}} must be repo-relative or use the documented AI_OS_HOME variable. -->
 
 | Command | Purpose |
 |---|---|
@@ -31,7 +36,8 @@ Everything in `AGENTS.md` applies. This file adds Claude Code mechanics only.
 
 ## Hooks
 
-This repo's hooks are configured in `.claude/settings.json` (specs: {{HOOKS_LOCATION}}).
+This repo's installed hooks are configured in `.claude/settings.json`. Optional hook
+specs resolve from `{{HOOKS_LOCATION}}`; their absence does not imply hooks are wired.
 What to expect:
 
 - **Automatic maintenance** (no approval needed): `{{PROJECT_STATUS_FILE}}` overwrite,
@@ -78,10 +84,12 @@ not assume this local authentication exists.
 | Advanced architecture and system-design feedback | Fable on a compact Sol decision packet |
 | Review | different family from implementer when practical; two lenses at High tier |
 
-Full matrix and complexity rubric: {{ROUTING_LOCATION}}. The matrix is versioned —
-check its date before trusting model bindings. If Claude quota, auth, or model access
-fails, report the exact failure and return the packet immediately; do not retry another
-Claude model as though it were a different provider family.
+Optional full matrix and complexity rubric: {{ROUTING_LOCATION}}. The binding must be
+repo-relative or use the documented `AI_OS_HOME` variable. When it is unavailable, use
+the installed routing summary and manifest version pin. Check the matrix date before
+trusting model bindings. If Claude quota, auth, or model access fails, report the exact
+failure and return the packet immediately; do not retry another Claude model as though
+it were a different provider family.
 
 ## Skills
 

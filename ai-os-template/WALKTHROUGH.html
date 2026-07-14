@@ -850,7 +850,8 @@
         <li>Codex Sol High makes binding decisions; anything unresolvable goes to you.</li>
         <li>Isolated worktree, branch <code>codex/ai-os-instance</code> off <code>origin/main</code> — never the (possibly dirty) root checkout.</li>
         <li>Codex writes bound files per packet; no git ops, no deletions, no renames; existing marker blocks preserved byte-identical.</li>
-        <li>Codex Sol High inspects the diff, verifies no unresolved template-binding markers survive, and commits by named file.</li>
+        <li>Shared specs are vendored or resolved through <code>AI_OS_HOME</code> plus a portable source URL. Author-specific absolute checkout paths are forbidden, and root-doc summaries remain usable without the optional shared checkout.</li>
+        <li>Codex Sol High inspects the diff, verifies no unresolved template-binding markers or host-specific paths survive, checks the fallback with <code>AI_OS_HOME</code> unset, and commits by named file.</li>
         <li>Promote repo learnings to the template <em>only</em> when they generalize.</li>
       </ol>
 

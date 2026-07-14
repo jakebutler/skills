@@ -5,7 +5,7 @@ description: Ask a fresh Codex route to run local app verification that needs br
 
 # Codex Computer Use - {{REPO_NAME}}
 
-<!-- Bind {{REPO_NAME}} and {{REPO_PATH}} from the instance manifest. -->
+<!-- Bind {{REPO_NAME}} from the instance manifest. Resolve the active worktree at runtime. -->
 
 Use Codex as a separate local verification agent when the task needs real UI
 interaction, screenshots, browser/device state, or an independent runtime check outside
@@ -24,7 +24,7 @@ environment beyond that.
 3. Name forbidden actions, especially send-class actions, live external mutations,
    destructive actions, or production account actions.
 4. Create a temporary artifact directory for screenshots and the report.
-5. Run `codex exec` with computer-use permissions.
+5. Run `codex exec` in the workspace sandbox with on-request approvals.
 6. Inspect the report, screenshots, console output, and runtime errors yourself.
 7. Summarize confirmed observations, uncertainty, and whether the behavior satisfies
    the requirements.
@@ -32,6 +32,10 @@ environment beyond that.
 ## Command Shape
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-computer-use.XXXXXX")"
 REPORT="$ARTIFACT_DIR/report.md"
 PROMPT="$ARTIFACT_DIR/prompt.md"
@@ -40,11 +44,15 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Write a self-contained prompt to `$PROMPT`, then run:
 
 ```bash
-codex exec -C "$PWD" --add-dir "$ARTIFACT_DIR" -s danger-full-access -o "$REPORT" "$(cat "$PROMPT")"
+codex -a on-request -s workspace-write exec -C "$REPO_ROOT" \
+  --add-dir "$ARTIFACT_DIR" -o "$REPORT" "$(cat "$PROMPT")"
 ```
 
-Computer-use tasks normally require `danger-full-access` because they may need to
-launch browsers, inspect local apps, or access machine resources outside the repository.
+Start every run in `workspace-write` with `on-request` approval. Approve only the
+specific browser, app, simulator, or machine action Codex requests. Never relaunch with
+blanket `danger-full-access` unless the user explicitly authorizes it and the run is
+externally isolated. If a headless run cannot request the needed approval, stop and
+report the blocked action instead of bypassing the gate.
 
 ## Prompt Requirements
 
@@ -95,7 +103,7 @@ Codex must not:
 ```text
 You are independently verifying a {{REPO_NAME}} implementation.
 
-Repository: {{REPO_PATH}}
+Repository/worktree: <value of $REPO_ROOT>
 Artifact directory: /tmp/codex-computer-use.xxxxxx
 
 Goal:
