@@ -31,5 +31,5 @@ implementation action.
 Codex Sol High owns framing, conflicts, user questions, and final synthesis. Terra and
 Luna handle bounded exploration and research. Fable receives a compact review packet
 only when advanced architecture or system design warrants scarce Anthropic quota.
-Provider fallback follows `routing/model-routing.md` without changing the accepted
+Provider fallback follows `../routing/model-routing.md` without changing the accepted
 scope or verification gates.

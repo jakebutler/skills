@@ -39,7 +39,9 @@ This workflow starts when the user requests `{{WRAP_SESSION_COMMAND}}`, the sess
 - `{{PROJECT_STATUS_FILE}}` exists and reflects current state after the wrap.
 - Verification completed and skipped are both listed, with exact commands where available.
 - Changelog/docs updates pass the significance check or are explicitly skipped.
-- Autoskill scan ran; proposal files exist when durable lessons qualified, while their absence means no durable lessons qualified. Do not write empty "none qualified" note files.
+- Autoskill scan ran; a staged proposal or Tier B solution doc exists when a durable
+  lesson qualified for that route, while the absence of both matches an explicit skip
+  in the return packet. Do not write empty "none qualified" note files.
 - Orchestrator confirms no unreported running processes remain.
 
 ## **Ceremony scaling**

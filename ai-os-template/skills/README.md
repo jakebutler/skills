@@ -11,7 +11,7 @@ matrix v0.5:
   through local Claude Code subscription auth, with GLM/Terra fallback.
 - `glm-frontend-patch/` defines the streamed frontend implementation route; its
   skill-owned runner is still queued.
-- `composer-implementation/` handles fast bounded builds with crisp requirements.
+- `composer-implementation/` delegates bounded implementation to Cursor Composer.
 
 Each `SKILL.template.md` is copied into the target repo's supported skill directory
 during instantiation. Fill `{{PLACEHOLDER}}` markers from the instance manifest and

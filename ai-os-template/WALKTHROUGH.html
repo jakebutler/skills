@@ -240,6 +240,7 @@
   }
   a:focus-visible,
   button:focus-visible,
+  input:focus-visible,
   select:focus-visible {
     outline: 3px solid color-mix(in oklch, var(--focus) 55%, transparent);
     outline-offset: 2px;
@@ -302,6 +303,37 @@
   .provider span {
     font-size: 12px;
     color: var(--muted);
+  }
+  .control-help {
+    max-width: 68ch;
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .gate-list {
+    display: grid;
+    margin-top: 8px;
+  }
+  .gate-check {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 9px;
+    align-items: start;
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .gate-check:first-child { border-top: 0; }
+  .gate-check input { margin: 3px 0 0; }
+  .gate-check strong {
+    display: block;
+    font-size: 13px;
+  }
+  .gate-check small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
   }
   .route-output {
     background: var(--info-bg);
@@ -610,7 +642,7 @@
 
       <div class="route-lab" id="route-lab">
         <h3 style="margin-top: 0;">Routing lab</h3>
-        <p>Choose a task, risk tier, and simulated provider state. The plan below recalculates from the same rules as <code>routing/model-routing.md</code>.</p>
+        <p>Choose a task, risk tier, and simulated provider state. Confirm the Fable gate only when all four conditions are known. The plan below recalculates from the same rules as <code>routing/model-routing.md</code>.</p>
         <div class="route-lab-grid">
           <div>
             <div class="control-grid">
@@ -674,6 +706,29 @@
                   </select>
                   <span>Composer bounded-build lane.</span>
                 </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Fable ROI gate</legend>
+              <p class="control-help">All four confirmations are required before the lab schedules Anthropic consultation. Leave any uncertain condition unchecked.</p>
+              <div class="gate-list">
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="durable">
+                  <span><strong>Durable decision</strong><small>The choice is high-leverage, costly, or difficult to reverse.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="compact-packet">
+                  <span><strong>Compact packet ready</strong><small>Sol can provide the decision, constraints, options, evidence, and exact questions.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="material-critique">
+                  <span><strong>Critique could change the decision</strong><small>An outside model family could expose a material risk or change the chosen option.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="recorded-result">
+                  <span><strong>Result will be recorded</strong><small>The response will become a plan, ADR, review disposition, or routing experiment.</small></span>
+                </label>
               </div>
             </fieldset>
           </div>
@@ -975,6 +1030,7 @@
     const taskSelect = document.querySelector('#task-type');
     const tierSelect = document.querySelector('#task-tier');
     const providerSelects = [...document.querySelectorAll('[data-provider]')];
+    const fableGateChecks = [...document.querySelectorAll('[data-fable-gate]')];
     const summary = document.querySelector('#route-summary');
     const steps = document.querySelector('#route-steps');
     const note = document.querySelector('#availability-note');
@@ -982,106 +1038,128 @@
     const providerState = () => Object.fromEntries(
       providerSelects.map((select) => [select.dataset.provider, select.value])
     );
-    const usable = (state, family) => state[family] !== 'unavailable';
-    const open = (state, family) => state[family] === 'available';
+    const fableGateState = () => ({
+      confirmed: fableGateChecks.filter((check) => check.checked).length,
+      required: fableGateChecks.length,
+    });
+    const eligible = (state, family) => state[family] === 'available';
 
     function orchestrator(state) {
-      if (usable(state, 'codex')) return ['Sol High', 'Owns task state, routing, synthesis, and status.'];
-      if (usable(state, 'anthropic')) return ['Fable fallback', 'Codex is unavailable; use only with explicit quota acceptance.'];
+      if (eligible(state, 'codex')) return ['Sol High', 'Owns task state, routing, synthesis, and status.'];
+      if (eligible(state, 'anthropic')) return ['Fable fallback', 'Codex cannot take new work; use only with explicit quota acceptance.'];
       return ['Blocked', 'No eligible control-plane family is available. Stop for user direction.'];
     }
 
     function implementation(task, tier, state) {
       if (task === 'architecture') {
-        if (usable(state, 'codex')) return ['Sol High exploration', 'Produces options and evidence; no production implementation yet.'];
-        if (usable(state, 'zai')) return ['GLM-5.2 exploration', 'Bounded option generation only; it does not receive decision authority.'];
+        if (eligible(state, 'codex')) return ['Sol High exploration', 'Produces options and evidence; no production implementation yet.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2 exploration', 'Bounded option generation only; it does not receive decision authority.'];
         return ['Blocked', 'Architecture exploration has no eligible route.'];
       }
       if (task === 'frontend') {
-        if (usable(state, 'zai')) return ['GLM-5.2 streamed', 'Preferred frontend implementation; shell integration is conditional until installed in the instance.'];
-        if (usable(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', 'Z.ai is unavailable; the same design packet and acceptance checks move to Codex.'];
-        if (usable(state, 'cursor')) return ['Composer 2.5', 'Use only if the frontend packet is crisp and bounded.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2 streamed', 'Preferred frontend implementation; shell integration is conditional until installed in the instance.'];
+        if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', 'Z.ai cannot take new work; the same design packet and acceptance checks move to Codex.'];
+        if (eligible(state, 'cursor')) return ['Composer 2.5', 'Use only if the frontend packet is crisp and bounded.'];
         return ['Blocked', 'No frontend implementation route is available.'];
       }
       if (task === 'copy') {
-        if (open(state, 'anthropic') || (state.anthropic === 'limited' && tier === 'high')) return ['Claude Sonnet', 'Writes from the approved voice and acceptance brief.'];
-        if (usable(state, 'codex')) return [tier === 'high' ? 'Sol Standard' : 'Terra', 'Anthropic is limited or unavailable; preserve the voice brief and human approval gate.'];
-        if (usable(state, 'zai')) return ['GLM-5.2', 'Last cross-family copy fallback.'];
+        if (eligible(state, 'anthropic')) return ['Claude Sonnet', 'Writes from the approved voice and acceptance brief.'];
+        if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol Standard' : 'Terra', 'Anthropic cannot take new work; preserve the voice brief and human approval gate.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2', 'Last cross-family copy fallback.'];
         return ['Blocked', 'No copy route is available.'];
       }
       if (task === 'research') {
-        if (usable(state, 'codex')) return ['Terra', 'Primary repo and feasibility research route.'];
-        if (usable(state, 'zai')) return ['GLM research route', 'Offloaded research fallback with cited evidence.'];
+        if (eligible(state, 'codex')) return ['Terra', 'Primary repo and feasibility research route.'];
+        if (eligible(state, 'zai')) return ['GLM research route', 'Offloaded research fallback with cited evidence.'];
         return ['Blocked', 'Required evidence cannot be gathered by an eligible route.'];
       }
       if (task === 'docs') {
-        if (usable(state, 'codex')) return ['Luna', 'High-volume light work after the significance check.'];
-        if (usable(state, 'zai')) return ['GLM-5.2', 'Documentation fallback; stable facts only.'];
+        if (eligible(state, 'codex')) return ['Luna', 'High-volume light work after the significance check.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2', 'Documentation fallback; stable facts only.'];
         return ['Blocked', 'No documentation route is available.'];
       }
-      if (usable(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', tier === 'high' ? 'Hard or durable implementation stays on Sol.' : 'Scoped backend work is a Terra lane.'];
-      if (usable(state, 'cursor')) return ['Composer 2.5', 'Codex is unavailable; use only with a fully specified packet.'];
-      if (usable(state, 'zai')) return ['GLM-5.2', 'Bounded compatible-slice fallback.'];
+      if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', tier === 'high' ? 'Hard or durable implementation stays on Sol.' : 'Scoped backend work is a Terra lane.'];
+      if (eligible(state, 'cursor')) return ['Composer 2.5', 'Codex cannot take new work; use only with a fully specified packet.'];
+      if (eligible(state, 'zai')) return ['GLM-5.2', 'Bounded compatible-slice fallback.'];
       return ['Blocked', 'No eligible implementation route is available.'];
     }
 
-    function consultation(task, tier, state) {
-      const fableEligible = task === 'architecture' || (tier === 'high' && task === 'frontend');
-      if (!fableEligible) return ['Not scheduled', 'This task does not pass the Fable ROI gate.'];
-      if (usable(state, 'anthropic')) return ['Fable critique', 'One compact review, plus at most one focused follow-up.'];
-      if (usable(state, 'zai')) return ['GLM-5.2 critique', 'Anthropic is unavailable; use an independent cross-family critic.'];
-      if (usable(state, 'codex')) return ['Fresh-context Terra', 'Reduced lineage diversity is disclosed in the final packet.'];
+    function consultation(state, gate) {
+      if (gate.confirmed < gate.required) {
+        return ['Not scheduled', `${gate.confirmed} of ${gate.required} ROI conditions confirmed. Fable remains unscheduled until every condition is known.`];
+      }
+      if (eligible(state, 'anthropic')) return ['Fable critique', 'The ROI gate passed. Run one compact review, plus at most one focused follow-up.'];
+      if (eligible(state, 'zai')) return ['GLM-5.2 critique', 'The ROI gate passed, but Anthropic cannot take new work. Use an independent cross-family critic.'];
+      if (eligible(state, 'codex')) return ['Fresh-context Terra', 'The ROI gate passed, but Anthropic and Z.ai cannot take new work. Disclose reduced lineage diversity.'];
       return ['Human gate', 'No model route can supply an independent architecture critique.'];
     }
 
-    function review(task, tier, state, implementer) {
+    function review(tier, state, implementer, consultationRoute) {
       const codexWorker = /Sol|Terra|Luna/.test(implementer);
       const glmWorker = /GLM/.test(implementer);
       if (tier === 'simple') {
-        if (codexWorker && usable(state, 'zai')) return ['GLM combined audit', 'One focused cross-family pass.'];
-        if (usable(state, 'codex')) return ['Terra combined audit', 'One focused pass, independent when practical.'];
+        if (codexWorker && eligible(state, 'zai')) return ['GLM combined audit', 'One focused cross-family pass.'];
+        if (eligible(state, 'codex')) return ['Terra combined audit', 'One focused pass, independent when practical.'];
         return ['Focused human review', 'No eligible independent model reviewer.'];
       }
       if (tier === 'medium') {
-        if (codexWorker && usable(state, 'zai')) return ['GLM independent review', 'Different family from the Codex implementer.'];
-        if ((glmWorker || /Composer/.test(implementer)) && usable(state, 'codex')) return ['Terra independent review', 'Different route from the implementer.'];
-        if (usable(state, 'codex')) return ['Fresh-context Terra', 'Independence retained; lineage diversity may be reduced.'];
+        if (codexWorker && eligible(state, 'zai')) return ['GLM independent review', 'Different family from the Codex implementer.'];
+        if ((glmWorker || /Composer/.test(implementer)) && eligible(state, 'codex')) return ['Terra independent review', 'Different route from the implementer.'];
+        if (eligible(state, 'codex')) return ['Fresh-context Terra', 'Independence retained; lineage diversity may be reduced.'];
         return ['Human review required', 'No eligible independent reviewer.'];
       }
       const lenses = [];
-      if (task === 'architecture' && usable(state, 'anthropic')) lenses.push('Fable architecture');
-      if (usable(state, 'zai') && !glmWorker) lenses.push('GLM');
-      if (usable(state, 'codex')) lenses.push(codexWorker ? 'fresh-context Terra' : 'Sol High');
-      if (lenses.length < 2 && usable(state, 'anthropic') && !lenses.some((item) => item.includes('Fable'))) lenses.push('Fable specialist');
+      const consultationLens = {
+        'Fable critique': 'Fable consultation',
+        'GLM-5.2 critique': 'GLM consultation',
+        'Fresh-context Terra': 'fresh-context Terra consultation',
+      }[consultationRoute];
+      const consultationMatchesImplementer = consultationRoute === 'GLM-5.2 critique' && glmWorker;
+      if (consultationLens && !consultationMatchesImplementer) lenses.push(consultationLens);
+      if (eligible(state, 'zai') && !glmWorker && consultationRoute !== 'GLM-5.2 critique') lenses.push('GLM');
+      if (lenses.length < 2 && eligible(state, 'codex')) {
+        if (codexWorker) {
+          if (consultationRoute !== 'Fresh-context Terra') lenses.push('fresh-context Terra');
+        } else {
+          if (consultationRoute !== 'Fresh-context Terra') lenses.push('Terra');
+          if (lenses.length < 2) lenses.push('Sol High');
+        }
+      }
+      const reviewDetail = consultationLens && !consultationMatchesImplementer
+        ? `The ${consultationLens} counts as one lens; do not request it again. Sol synthesizes.`
+        : consultationMatchesImplementer
+          ? 'The GLM consultation does not count as independent from GLM implementation. Two Codex lenses review with a diversity caveat.'
+          : 'Two independent lenses; Sol synthesizes and records any diversity caveat.';
       return lenses.length >= 2
-        ? [`${lenses.slice(0, 2).join(' + ')}`, 'Two independent lenses; Sol synthesizes and records any diversity caveat.']
+        ? [`${lenses.slice(0, 2).join(' + ')}`, reviewDetail]
         : ['Human gate required', 'High-tier review does not have two eligible independent lenses.'];
     }
 
     function verification(task, state, implementer) {
-      if (usable(state, 'codex')) return [/Sol/.test(implementer) ? 'Fresh-context Terra verifier' : 'Sol verifier', task === 'frontend' ? 'Browser and interaction checks, independent of implementation.' : 'Runs the scoped checks and inspects behavior.'];
-      if (usable(state, 'cursor')) return ['Deterministic Composer checks', 'Scripted checks only; human verification remains required.'];
-      return ['Human verification', 'Codex verification route is unavailable.'];
+      if (eligible(state, 'codex')) return [/Sol/.test(implementer) ? 'Fresh-context Terra verifier' : 'Sol verifier', task === 'frontend' ? 'Browser and interaction checks, independent of implementation.' : 'Runs the scoped checks and inspects behavior.'];
+      if (eligible(state, 'cursor')) return ['Deterministic Composer checks', 'Scripted checks only; human verification remains required.'];
+      return ['Human verification', 'Codex cannot take new verification work.'];
     }
 
     function render() {
       const task = taskSelect.value;
       const tier = tierSelect.value;
       const state = providerState();
+      const gate = fableGateState();
       const plan = [];
       const control = orchestrator(state);
       const work = implementation(task, tier, state);
-      const consult = consultation(task, tier, state);
-      const check = review(task, tier, state, work[0]);
+      const consult = consultation(state, gate);
+      const check = review(tier, state, work[0], consult[0]);
       const verify = verification(task, state, work[0]);
 
       plan.push(['Orchestrate', ...control]);
-      if (consult[0] !== 'Not scheduled') plan.push(['Consult', ...consult]);
+      plan.push(['Consult', ...consult]);
       plan.push([task === 'architecture' ? 'Explore' : 'Implement', ...work]);
       plan.push(['Review', ...check]);
       plan.push(['Verify', ...verify]);
 
-      const blocked = plan.some((item) => /Blocked|Human gate required/.test(item[1]));
+      const blocked = plan.some((item) => /Blocked|Human gate/.test(item[1]));
       summary.textContent = blocked
         ? `${tier[0].toUpperCase() + tier.slice(1)} ${task}: human decision needed`
         : `${tier[0].toUpperCase() + tier.slice(1)} ${task}: route is executable`;
@@ -1100,15 +1178,18 @@
         return item;
       }));
 
-      const constrained = Object.entries(state)
-        .filter(([, value]) => value !== 'available')
-        .map(([family, value]) => `${family}: ${value}`);
+      const limited = Object.entries(state).filter(([, value]) => value === 'limited').map(([family]) => family);
+      const unavailable = Object.entries(state).filter(([, value]) => value === 'unavailable').map(([family]) => family);
+      const constrained = [
+        limited.length ? `Limited, held for current work: ${limited.join(', ')}` : '',
+        unavailable.length ? `Unavailable: ${unavailable.join(', ')}` : '',
+      ].filter(Boolean);
       note.textContent = constrained.length
-        ? `Simulated constraints: ${constrained.join(', ')}. Acceptance checks do not change when a route changes.`
+        ? `Simulated constraints: ${constrained.join('. ')}. This lab plans new work, so Limited families are excluded. Acceptance checks do not change when a route changes.`
         : 'All families are available. The router still conserves Fable unless the ROI gate passes.';
     }
 
-    [taskSelect, tierSelect, ...providerSelects].forEach((control) => control.addEventListener('change', render));
+    [taskSelect, tierSelect, ...providerSelects, ...fableGateChecks].forEach((control) => control.addEventListener('change', render));
     render();
   })();
 </script>

@@ -24,7 +24,17 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 8. `implementer`: address fix-now findings with scoped edits, then run focused verification.
 9. Orchestrator: run `commit` again for review fixes if any files changed.
 10. Orchestrator: push updates and update the PR body using `{{PR_UPDATE_COMMAND}}` when Changes, Verification, Risks & Rollback, or Follow-up changed.
-11. Orchestrator: write final status to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md` and update `{{PROJECT_STATUS_FILE}}` if handoff state changed.
+11. Orchestrator: for High-tier work, once the PR is otherwise ready to merge, run the
+    quiz-before-merge and record each question, the user's answer, any unresolved
+    misunderstanding, and the quiz state in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md`.
+    The state is `pending` until the user responds substantively to every question. It
+    becomes `engaged` once they have done so, including explicitly identifying
+    uncertainty, and `resolved` only when the answers show sufficient understanding
+    and every misunderstanding is explained or the change is revised.
+12. Orchestrator: write final status to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md`,
+    recording `not-required` for a Simple or Medium quiz or `pending` when a High-tier
+    PR has not reached the merge gate, and update `{{PROJECT_STATUS_FILE}}` if handoff
+    state changed.
 
 ## **Output contract**
 
@@ -33,7 +43,9 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 - PR body includes exactly these top-level sections: `Summary`, `Why`, `Changes`, `Verification`, `Risks & Rollback`, `Follow-up`.
 - `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md`: PR body, PR URL, commit hashes, verification summary, risks, rollback, and follow-up items.
 - `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-review.md`: PR review agent findings and dispositions.
-- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md`: final branch, PR URL, review state, remaining risks, and next recommended action.
+- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-status.md`: final branch, PR URL, review state,
+  remaining risks, next recommended action, and quiz questions, answers, unresolved
+  misunderstandings, and state (`not-required`, `pending`, `engaged`, or `resolved`).
 
 ## **Verification**
 
@@ -43,12 +55,14 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 - PR review agent ran after PR creation or after the pushed diff was available.
 - All blocking review findings were addressed or explicitly accepted by the orchestrator with reason.
 - Updated PR body reflects final verification and known risks.
+- For High-tier work at the merge gate, quiz questions and answers are recorded and
+  the state is `resolved`; Simple and Medium work record `not-required`.
 
 ## **Ceremony scaling**
 
 - Simple: commit workflow, push, PR body with required sections, one general PR review pass.
 - Medium: full commit workflow, PR review agent, review-fix loop, status update, changelog/docs verification reflected in PR.
-- High: full commit workflow, specialist PR sub-reviews based on diff content, explicit rollback plan, release notes or deployment gate, final orchestrator synthesis, and quiz-before-merge: before merging, the orchestrator asks the user 3–5 pointed questions about the change (what breaks if X, why approach Y, where is Z verified). Merge proceeds only after the user engages.
+- High: full commit workflow, specialist PR sub-reviews based on diff content, explicit rollback plan, release notes or deployment gate, final orchestrator synthesis, and quiz-before-merge: before merging, the orchestrator asks the user 3–5 pointed questions about the change (what breaks if X, why approach Y, where is Z verified). Merge proceeds only when the recorded quiz state is `resolved`.
 
 ## **Failure handling**
 
