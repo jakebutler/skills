@@ -31,7 +31,8 @@ here should cite the experiment that motivated them.
 | Scoped implementation, first-pass code review, research sweeps | Codex Terra (`gpt-5.6-terra`) | `codex exec -m gpt-5.6-terra` | smoke + live research run 2026-07-12 |
 | High-volume light tasks: summaries, extraction, classification, inventory | Codex Luna (`gpt-5.6-luna`) | `codex exec -m gpt-5.6-luna` | smoke 2026-07-12. **Never** long-context codebase synthesis — documented recall cliff on MRCR (OpenAI's multi-round coreference long-context recall benchmark): 41.3% |
 | Fast bounded builds with clear requirements | Composer 2.5 (`composer-2.5`) | `cursor-agent -p --trust --model composer-2.5` in the target dir; wrap in the composer-implementation worker contract | smoke 2026-07-12, logged in |
-| Offloaded web research (zero Claude/Codex tokens) | GLM-5 via `research` skill | skill script | live run 2026-07-12 (note: can time out; Terra `codex exec -c tools.web_search=true` is the fallback) |
+| Offloaded web research (zero Claude/Codex tokens) | GLM via `research` skill | skill script | live run 2026-07-12 (note: can time out; Terra `codex exec -c tools.web_search=true` is the fallback) |
+| Bounded frontend generation | GLM-5.2 (`glm-5.2`) via Z.ai coding endpoint, streamed | direct API packet (glm-frontend-patch pattern); **must stream** — the endpoint buffers non-streamed responses until generation completes, so long outputs always hit ReadTimeout | model probe 200 on 2026-07-13; non-streamed long generation confirmed to ReadTimeout the same day; streamed build completed the same day (64KB HTML over 2 continuation rounds, retries absorbed 2 transient errors) |
 | Written content / prose | Claude Sonnet subagent | Agent tool `model: sonnet` | prior runs |
 | Frontend design & UX judgment | Impeccable skill on Claude | Skill | plugin installed |
 | Audit lens passes | Terra (adversarial/unbiased), Claude for steelman-with-taste; Fable synthesis at High tier | — | — |
