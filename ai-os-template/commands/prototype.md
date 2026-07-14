@@ -24,8 +24,7 @@ what should be kept or discarded, and the recommended production path.
 
 ## Model routing note
 
-Claude/Fable defines the uncertainty and decides whether the prototype answers it.
-Codex builds the prototype, explores code constraints, and performs runtime/browser
-verification. Frontend judgment may delegate to `frontend-designer`; implementation
-mechanics remain Codex-heavy.
-
+Codex Sol High defines the uncertainty and decides whether the prototype answers it.
+Codex explores constraints and performs runtime or browser verification. Frontend
+judgment delegates to `frontend-designer`; implementation follows the GLM-5.2, Terra,
+Composer, and Sol order in the routing matrix.

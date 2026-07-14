@@ -1,8 +1,8 @@
 # Command Specs
 
 The v1 slash command set has exactly ten commands (`/experiment` added in template
-v0.2). They are thin Claude Code adapters over workflow specs, not replacements for
-the workflows.
+v0.2). They are thin harness adapters over workflow specs, not replacements for the
+workflows.
 
 | Command | Workflow |
 |---|---|
@@ -35,4 +35,3 @@ Excluded candidates stay out of v1 for clear ownership reasons:
 
 Command specs must reference workflow filenames and define invocation, output, and
 model routing only. Workflow steps live in `../workflows/`.
-

@@ -34,7 +34,7 @@ the manifest records the winner, it never renames existing files.
 The canonical routing matrix lives in the template repo
 (`ai-os-template/routing/model-routing.md`). Instances **reference** it in the
 manifest's role-bindings row with a **version pin** (e.g. "routing → template repo,
-matrix v0.3"). When the canonical matrix bumps, the next session in an instance repo
+matrix v0.5"). When the canonical matrix bumps, the next session in an instance repo
 updates the pin deliberately.
 
 Symlinks were considered and rejected: a committed symlink to an absolute local path
@@ -45,12 +45,12 @@ behavior with an explicit, reviewable update step instead of silent drift.
 ## Instantiation checklist
 
 1. Recon packet from codemap + existing docs (Codex, read-only).
-2. Fable makes binding decisions; anything unresolvable goes to the user.
+2. Codex Sol High makes binding decisions; anything unresolvable goes to the user.
 3. Isolated worktree, branch `codex/ai-os-instance` off `origin/main` — never the
    (possibly dirty) root checkout.
 4. Codex writes the bound files per packet; no git ops, no deletions, no renames;
    marker blocks and imports in existing files preserved byte-identical.
-5. Fable inspects the diff, verifies no `{{PLACEHOLDER}}` survivors, commits by
+5. Codex Sol High inspects the diff, verifies no `{{PLACEHOLDER}}` survivors, commits by
    named file.
 6. Promote repo learnings to the template only when they generalize (decision #12).
 

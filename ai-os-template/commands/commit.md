@@ -24,8 +24,7 @@ autoskill proposal status, and any uncommitted work intentionally left behind.
 
 ## Model routing note
 
-Claude/Fable owns final commit judgment and message quality. Codex performs
-verification, diff inspection, mechanical fixes, and repo checks. Reviewer,
+Codex Sol High owns final commit judgment and message quality. Independent routes
+perform verification, diff inspection, mechanical fixes, and repo checks. Reviewer,
 doc-maintainer, and autoskill-improver roles may run under bounded contracts before
 the orchestrator approves the final commit.
-

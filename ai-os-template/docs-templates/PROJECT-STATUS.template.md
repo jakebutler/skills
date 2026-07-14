@@ -44,6 +44,17 @@
 | {{CHECK_NAME_1}} | `{{COMMAND_1}}` | {{RESULT_1}} |
 | {{CHECK_NAME_2}} | `{{COMMAND_2}}` | {{RESULT_2}} |
 
+## Active route
+
+<!-- Keep this compact. It exists so a resumed agent does not mistake a failed external
+     process for in-flight work or repeat a provider call after quota failure. -->
+
+- Phase: {{ACTIVE_PHASE}}
+- Route and state: {{ACTIVE_ROUTE_AND_STATE}}
+- Last evidence or checkpoint: `{{LAST_ROUTE_CHECKPOINT}}`
+- Provider constraints: {{PROVIDER_CONSTRAINTS_OR_NONE}}
+- Fallback or retry: {{FALLBACK_OR_RETRY_STATE}}
+
 ## Known issues
 
 <!-- Open defects or gaps discovered but not yet fixed. Delete this section's rows

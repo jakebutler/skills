@@ -10,7 +10,7 @@ description: Ask Codex CLI for an independent code review of uncommitted changes
 Use Codex as an independent reviewer when the user wants a second-pass review or the
 change is broad enough that another agent's perspective is useful.
 
-Prefer Claude/Fable's normal review process for small local checks. Do not delegate
+Prefer the Sol orchestrator's normal review process for small local checks. Do not delegate
 review just to avoid reading the code yourself. Treat Codex's output as evidence, not
 authority.
 
@@ -55,6 +55,11 @@ codex -C "$PWD" review --commit <sha> - < "$PROMPT" > "$REPORT"
 
 ## Review Prompt
 
+### Prompt requirements
+
+- Provide the diff and the plan or acceptance criteria, not whole files.
+- The reviewer may read files in the repository itself as needed.
+
 Ask Codex to use a code-review stance:
 
 ```text
@@ -87,7 +92,7 @@ Bind {{MAIN_BRANCH}} from the instance manifest / repo convention.
 -->
 
 Add task-specific context when useful: requirements, risky areas, expected behavior,
-relevant tests, ADRs, or files Claude/Fable is unsure about.
+relevant tests, ADRs, or files the Sol orchestrator is unsure about.
 
 ## Reporting Back
 

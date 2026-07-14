@@ -16,12 +16,14 @@ Automatic maintenance.
 
 At response stop and session end, after verification hooks have had a chance to run.
 The hook writes only when the checkpoint significance check finds that behavior,
-state, intent, risk, next action, or user-visible progress changed since the last
+state, intent, risk, active route, provider availability, next action, or user-visible progress changed since the last
 checkpoint. It fires at most once for the same checkpoint id.
 
 ## Action
 
-Overwrite `{{PROJECT_STATUS_FILE}}` with the current handoff state and update the
+Overwrite `{{PROJECT_STATUS_FILE}}` with the current handoff state, including the
+active phase, route, last evidence checkpoint, and any family marked Limited or
+Unavailable. Then update the
 `## Unreleased` draft section in the changelog. Each write records a one-line update
 reason, for example:
 
@@ -42,6 +44,8 @@ captures user-facing or operationally relevant changes at checkpoint granularity
 - Preserve existing changelog structure and touch only the configured unreleased
   section.
 - Record a single update reason for every automatic write.
+- Never infer that a background process is running. Record only process state confirmed
+  by a live handle, poll, stream, or completed artifact.
 
 ## Failure behavior
 
@@ -79,4 +83,3 @@ already ran for the checkpoint id, exit successfully without writing.
   }
 }
 ```
-

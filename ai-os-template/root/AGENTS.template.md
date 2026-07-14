@@ -117,6 +117,27 @@ Classify each task before starting (full rubric: {{RUBRIC_LOCATION}}):
 Any single high-risk dimension (security, data loss, irreversibility) promotes the tier
 regardless of size.
 
+## Model routing and provider failure
+
+The current matrix at `{{ROUTING_LOCATION}}` is authoritative. Codex Sol High is the
+default orchestrator. Model workers receive bounded contracts; decision authority does
+not transfer merely because a route is stronger or cheaper.
+
+Treat availability at the provider-family level:
+
+- quota, billing, authentication, or invalid-model failure marks the whole family
+  unavailable for the current task; do not try a sibling model as a false fallback
+- transient timeout, dropped stream, or server error gets one checkpointed retry, then
+  the same packet moves to the first eligible cross-family fallback
+- acceptance criteria, review independence, and stop conditions never weaken on reroute
+- preserve partial output, exact failure, last verified checkpoint, and fallback route
+  in task context
+
+The orchestrator reports the chosen route and next checkpoint at start, every phase
+boundary with evidence, every retry or fallback immediately, and the final implementer,
+reviewers, verification, skipped checks, fallback events, and residual risk. A failed
+command is never described as still running.
+
 ## Delegation
 
 When work is delegated to subagents, every delegation must specify: goal, paths, files
@@ -124,6 +145,9 @@ to inspect, excluded areas, expected output artifact, allowed tools, verificatio
 requirement, and stop condition. Every subagent returns a packet: files inspected,
 facts found, decisions made, output summary, verification run, risks, open questions,
 recommended next action.
+
+The return packet also includes the route used, provider-family state changes,
+continuation or retry count, checkpoint path, and any reduction in review diversity.
 
 Subagents must not: perform unbounded repo-wide rewrites, make irreversible external
 changes without permission, touch secrets, self-approve their own work, or substitute

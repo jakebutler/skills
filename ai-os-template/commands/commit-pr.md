@@ -24,8 +24,7 @@ summary, review status, unresolved risks, and requested reviewer action.
 
 ## Model routing note
 
-Claude/Fable owns PR framing, final review readiness, and conflict resolution. Codex
-handles implementation cleanup, verification, browser checks, and PR mechanics where
-allowed. Independent reviewer/verifier/doc-maintainer roles are used when risk or diff
-size warrants them.
-
+Codex Sol High owns PR framing, final review readiness, and conflict resolution.
+Bounded routes handle implementation cleanup, verification, browser checks, and PR
+mechanics where allowed. Independent reviewer, verifier, and doc-maintainer roles are
+used when risk or diff size warrants them.

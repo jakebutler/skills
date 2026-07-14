@@ -25,8 +25,7 @@ next session.
 
 ## Model routing note
 
-Claude/Fable owns the final handoff narrative and decides what is durable. Codex
-gathers repo state, runs verification, updates Tier A/B docs through configured
-maintenance paths, and prepares artifacts. Doc-maintainer and autoskill-improver roles
+Codex Sol High owns the final handoff narrative and decides what is durable. Bounded
+routes gather repo state, run verification, update Tier A/B docs through configured
+maintenance paths, and prepare artifacts. Doc-maintainer and autoskill-improver roles
 may run, with autoskill changes proposed rather than auto-applied.
-

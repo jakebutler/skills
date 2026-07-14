@@ -6,19 +6,22 @@
 <title>AI Engineering OS — Walkthrough</title>
 <style>
   :root {
-    --bg: #fbfaf7;
-    --panel: #ffffff;
-    --ink: #1a1a1a;
-    --muted: #5a5a5a;
-    --line: #e4e0d8;
-    --accent: #7a4a1a;
-    --accent-bg: #fdf6ec;
-    --dedup: #4a5a2a;
-    --dedup-bg: #f2f5e8;
-    --decision: #6a2a2a;
-    --decision-bg: #fbeceb;
-    --code-bg: #f4f1ec;
-    --code-ink: #2a2a2a;
+    --bg: oklch(0.976 0.007 82);
+    --panel: oklch(0.992 0.004 82);
+    --ink: oklch(0.245 0.012 65);
+    --muted: oklch(0.48 0.015 65);
+    --line: oklch(0.875 0.014 75);
+    --accent: oklch(0.47 0.09 50);
+    --accent-bg: oklch(0.955 0.025 63);
+    --dedup: oklch(0.48 0.075 142);
+    --dedup-bg: oklch(0.958 0.022 142);
+    --decision: oklch(0.48 0.095 25);
+    --decision-bg: oklch(0.955 0.025 25);
+    --info: oklch(0.48 0.07 245);
+    --info-bg: oklch(0.958 0.022 245);
+    --code-bg: oklch(0.945 0.01 76);
+    --code-ink: oklch(0.29 0.014 65);
+    --focus: oklch(0.58 0.12 245);
   }
   * { box-sizing: border-box; }
   body {
@@ -64,10 +67,10 @@
     padding: 4px 0;
     color: var(--ink);
     text-decoration: none;
-    border-left: 2px solid transparent;
+    border-radius: 4px;
     padding-left: 8px;
   }
-  nav.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+  nav.toc a:hover { color: var(--accent); background: var(--accent-bg); }
   main {
     padding: 40px 56px 96px;
     max-width: 100%;
@@ -133,7 +136,7 @@
   }
   th {
     font-weight: 600;
-    background: #f0ece4;
+    background: oklch(0.925 0.012 76);
     font-size: 13px;
   }
   .lede {
@@ -142,10 +145,10 @@
     margin-bottom: 24px;
   }
   .callout {
-    border-left: 4px solid;
+    border: 1px solid;
     padding: 12px 16px;
     margin: 14px 0 20px;
-    border-radius: 0 4px 4px 0;
+    border-radius: 6px;
     font-size: 14.5px;
   }
   .callout .tag {
@@ -182,10 +185,10 @@
     counter-increment: decision;
     background: var(--panel);
     border: 1px solid var(--line);
-    border-left: 4px solid var(--decision);
+    border-color: color-mix(in oklch, var(--decision) 45%, var(--line));
     padding: 14px 18px 14px 46px;
     margin: 10px 0;
-    border-radius: 0 4px 4px 0;
+    border-radius: 6px;
     position: relative;
   }
   .decisions-list li::before {
@@ -217,7 +220,7 @@
   .status-good { color: #2a6a3a; font-weight: 600; }
   .status-pending { color: var(--decision); font-weight: 600; }
   .kbd {
-    background: #eeeae2;
+    background: oklch(0.925 0.012 76);
     border: 1px solid var(--line);
     border-bottom-width: 2px;
     border-radius: 3px;
@@ -234,6 +237,208 @@
     color: var(--muted);
     font-size: 13px;
     margin-top: 6px;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 3px solid color-mix(in oklch, var(--focus) 55%, transparent);
+    outline-offset: 2px;
+  }
+  .route-lab {
+    margin: 18px 0 28px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+  .route-lab-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .control-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .field {
+    display: grid;
+    gap: 5px;
+  }
+  .field label,
+  .control-group legend {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  select {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 32px 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+  }
+  .control-group {
+    border: 0;
+    padding: 0;
+    margin: 18px 0 0;
+  }
+  .provider-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .provider {
+    display: grid;
+    gap: 4px;
+  }
+  .provider span {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .control-help {
+    max-width: 68ch;
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .gate-list {
+    display: grid;
+    margin-top: 8px;
+  }
+  .gate-check {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 9px;
+    align-items: start;
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .gate-check:first-child { border-top: 0; }
+  .gate-check input { margin: 3px 0 0; }
+  .gate-check strong {
+    display: block;
+    font-size: 13px;
+  }
+  .gate-check small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .route-output {
+    background: var(--info-bg);
+    border: 1px solid color-mix(in oklch, var(--info) 35%, var(--line));
+    border-radius: 7px;
+    padding: 16px;
+  }
+  .route-output h4 {
+    color: var(--info);
+    margin-top: 0;
+  }
+  .route-summary {
+    font-weight: 650;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .route-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .route-steps li {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px solid color-mix(in oklch, var(--info) 18%, var(--line));
+  }
+  .route-steps li:first-child { border-top: 0; }
+  .route-phase {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .route-note {
+    display: block;
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-top: 2px;
+  }
+  .availability-note {
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .status-sequence {
+    list-style: none;
+    padding: 0;
+    counter-reset: status-step;
+  }
+  .status-sequence li {
+    counter-increment: status-step;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    margin: 10px 0;
+  }
+  .status-sequence li::before {
+    content: counter(status-step);
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  @media (max-width: 840px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc {
+      position: relative;
+      height: auto;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 20px;
+      columns: 2;
+    }
+    nav.toc h2 { break-after: avoid; }
+    main { padding: 28px 22px 72px; }
+    .route-lab-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    nav.toc { columns: 1; }
+    .control-grid,
+    .provider-grid { grid-template-columns: 1fr; }
+    .route-steps li { grid-template-columns: 1fr; gap: 2px; }
+    table { display: block; overflow-x: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
   }
 </style>
 </head>
@@ -257,7 +462,7 @@
     </ol>
     <h2>Review</h2>
     <ol>
-      <li><a href="#decisions">13 · Decisions — resolved 2026-07-12</a></li>
+      <li><a href="#decisions">13 · Decisions and routing rebalance</a></li>
       <li><a href="#judgment-log">14 · Judgment call log</a></li>
       <li><a href="#dedup-log">15 · Dedupe log</a></li>
       <li><a href="#nextsteps">16 · Next steps</a></li>
@@ -267,18 +472,18 @@
   <main>
     <header class="title">
       <h1>AI Engineering OS — Walkthrough</h1>
-      <p class="meta">Template v0.2 · Built 2026-07-08 · Revised 2026-07-12 after Jake's review · Source of truth: <code>ai-os-template/DESIGN-MEMO.md</code></p>
+      <p class="meta">Template v0.3 · Routing rebalance 2026-07-13 · Source of truth: <code>ai-os-template/DESIGN-MEMO.md</code> and <code>routing/model-routing.md</code></p>
     </header>
 
     <section id="intro">
-      <p class="lede">This is a guided read of the AI Engineering OS: what each component is, how it works alone, and how the pieces compose. Judgment calls I made without asking are flagged, deduped content is called out, and pending decisions are collected in §13.</p>
+      <p class="lede">This is a guided read of the AI Engineering OS: what each component owns, how a task moves through the system, which model works each phase, and what happens when a provider runs out of quota.</p>
 
       <div class="callout judgment">
         <span class="tag">How the callouts work</span>
-        <p><strong>Amber</strong> = a judgment call I made without pausing to ask (based on the packet, existing repos, or design principles). <strong>Green</strong> = content I merged/deduped instead of preserving multiple copies. <strong>Red</strong> = a decision that still needs you.</p>
+        <p><strong>Amber</strong> marks an architectural judgment. <strong>Green</strong> marks merged or deduped content. <strong>Red</strong> marks a decision or route that needs attention. Every label is written out, so color is never the only signal.</p>
       </div>
 
-      <p>You can read straight through, or jump to §13 first to see what still needs you, then read the rest for context.</p>
+      <p>Read straight through for the operating model, or jump to §8 and change provider availability in the routing lab to see the fallback logic execute.</p>
     </section>
 
     <section id="idea">
@@ -300,11 +505,11 @@
       <table>
         <tr><th>Principle</th><th>What it means in practice</th></tr>
         <tr><td>Concrete abstraction</td><td>Every recommendation maps to a file, hook, command, workflow, skill, agent, routing rule, verification gate, or convention. Nothing ships as advice-only.</td></tr>
-        <tr><td>Orchestrator, not laborer</td><td>Fable owns framing, judgment, synthesis. Codex + cheaper models do research, drafting, mechanical implementation, verification, doc maintenance under bounded contracts.</td></tr>
+        <tr><td>Orchestrator, not laborer</td><td>Codex Sol High owns task state, framing, delegation, synthesis, and user updates. Terra, Luna, GLM-5.2, Composer, Sonnet, and Fable do bounded work under contracts.</td></tr>
         <tr><td>Repo-resident memory</td><td>Models forget; the repo persists. Everything an agent needs is in the repo or explicitly mapped from it.</td></tr>
-        <tr><td>Proportional ceremony</td><td>Solo path lighter than a production-team path — but never below the floor of inspect-before-edit, plan-proportional-to-risk, run verification, leave clean handoff.</td></tr>
+        <tr><td>Proportional ceremony</td><td>The solo path is lighter than a production-team path, but never below the floor of inspect before edit, plan proportional to risk, run verification, and leave a clean handoff.</td></tr>
         <tr><td>Merge, don't bulldoze</td><td>Instantiation adapts to a repo's existing conventions via a manifest. The template never silently overwrites or renames what a repo already has.</td></tr>
-        <tr><td>Claude/Fable-first, Codex-portable</td><td>Harness-neutral content in <code>AGENTS.md</code> (Codex reads that natively); Claude-specific mechanics in a thin <code>CLAUDE.md</code> adapter.</td></tr>
+        <tr><td>Codex-first, harness-portable</td><td>Harness-neutral content lives in <code>AGENTS.md</code>. A thin <code>CLAUDE.md</code> adapter exposes subscription-backed Fable and Sonnet lanes without making Claude the control plane.</td></tr>
       </table>
     </section>
 
@@ -432,53 +637,161 @@
     </section>
 
     <section id="routing">
-      <h2>8 · Model routing — Codex-first</h2>
-      <p><strong>v0.3 prime directive:</strong> Fable is the scarcest resource. Use it conservatively for orchestration, conflict resolution, final decisions, synthesis, and the reviews that matter. Codex Sol is the workhorse for heavy and long-horizon work; even bounded architectural exploration offloads to Sol for Fable to review and decide.</p>
+      <h2>8 · Model routing and failover</h2>
+      <p><strong>v0.5 operating decision:</strong> Codex Sol High is the control plane. Fable is a scarce consultation route for durable architecture and system-design judgment. Codex handles most engineering work, GLM-5.2 is preferred for streamed frontend implementation, and Sonnet writes copy.</p>
 
-      <p>The matrix in <code>routing/model-routing.md</code> separates verified routes from work that is decided but not yet built or verified. It is date-stamped and versioned because model quality and pricing change.</p>
+      <div class="route-lab" id="route-lab">
+        <h3 style="margin-top: 0;">Routing lab</h3>
+        <p>Choose a task, risk tier, and simulated provider state. Confirm the Fable gate only when all four conditions are known. The plan below recalculates from the same rules as <code>routing/model-routing.md</code>.</p>
+        <div class="route-lab-grid">
+          <div>
+            <div class="control-grid">
+              <div class="field">
+                <label for="task-type">Task</label>
+                <select id="task-type">
+                  <option value="frontend">Frontend feature</option>
+                  <option value="architecture">Architecture decision</option>
+                  <option value="backend">Backend implementation</option>
+                  <option value="copy">Product or marketing copy</option>
+                  <option value="research">Research packet</option>
+                  <option value="docs">Docs and inventory</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="task-tier">Complexity</label>
+                <select id="task-tier">
+                  <option value="simple">Simple</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+            </div>
 
-      <h3>Verified routes today</h3>
+            <fieldset class="control-group">
+              <legend>Provider state</legend>
+              <div class="provider-grid">
+                <div class="provider">
+                  <label for="provider-codex">Codex</label>
+                  <select id="provider-codex" data-provider="codex">
+                    <option value="available">Available</option>
+                    <option value="limited">Limited</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                  <span>Sol, Terra, and Luna share this family state.</span>
+                </div>
+                <div class="provider">
+                  <label for="provider-anthropic">Anthropic</label>
+                  <select id="provider-anthropic" data-provider="anthropic">
+                    <option value="available">Available</option>
+                    <option value="limited">Limited</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                  <span>Fable and Sonnet share the Claude Pro quota.</span>
+                </div>
+                <div class="provider">
+                  <label for="provider-zai">Z.ai</label>
+                  <select id="provider-zai" data-provider="zai">
+                    <option value="available">Available</option>
+                    <option value="limited">Limited</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                  <span>GLM-5.2 frontend and research routes.</span>
+                </div>
+                <div class="provider">
+                  <label for="provider-cursor">Cursor</label>
+                  <select id="provider-cursor" data-provider="cursor">
+                    <option value="available">Available</option>
+                    <option value="limited">Limited</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                  <span>Composer bounded-build lane.</span>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Fable ROI gate</legend>
+              <p class="control-help">All four confirmations are required before the lab schedules Anthropic consultation. Leave any uncertain condition unchecked.</p>
+              <div class="gate-list">
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="durable">
+                  <span><strong>Durable decision</strong><small>The choice is high-leverage, costly, or difficult to reverse.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="compact-packet">
+                  <span><strong>Compact packet ready</strong><small>Sol can provide the decision, constraints, options, evidence, and exact questions.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="material-critique">
+                  <span><strong>Critique could change the decision</strong><small>An outside model family could expose a material risk or change the chosen option.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="recorded-result">
+                  <span><strong>Result will be recorded</strong><small>The response will become a plan, ADR, review disposition, or routing experiment.</small></span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="route-output" aria-live="polite" aria-atomic="true">
+            <h4>Selected route</h4>
+            <p class="route-summary" id="route-summary"></p>
+            <ol class="route-steps" id="route-steps"></ol>
+            <p class="availability-note" id="availability-note"></p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Default lanes</h3>
       <table>
-        <tr><th>Role</th><th>Binding</th></tr>
-        <tr><td>Orchestrator</td><td>Fable (Claude Code main session)</td></tr>
-        <tr><td>Heavy build, multi-file, long-horizon; bounded architectural exploration; high-tier independent/security review; computer-use verification</td><td>Codex Sol (<code>gpt-5.6-sol</code>)</td></tr>
-        <tr><td>Scoped implementation; first-pass code review; research sweeps</td><td>Codex Terra (<code>gpt-5.6-terra</code>)</td></tr>
-        <tr><td>High-volume light tasks: summaries, extraction, classification, inventory</td><td>Codex Luna (<code>gpt-5.6-luna</code>) — <strong>never</strong> long-context codebase synthesis; documented recall cliff</td></tr>
-        <tr><td>Fast bounded builds with clear requirements</td><td>Composer 2.5 via <code>cursor-agent</code> and the <code>composer-implementation</code> worker contract</td></tr>
-        <tr><td>Offloaded web research</td><td>GLM-5 via the <code>research</code> skill (Z.ai API — zero Claude/Codex tokens)</td></tr>
-        <tr><td>Written content / prose</td><td>Claude Sonnet subagent</td></tr>
-        <tr><td>Frontend design &amp; UX judgment</td><td>Impeccable skill on Claude</td></tr>
-        <tr><td>Small in-session lookups</td><td>Claude Haiku — <em>only</em> when an external round-trip costs more than it saves</td></tr>
+        <tr><th>Responsibility</th><th>Primary</th><th>Fallback</th></tr>
+        <tr><td>Orchestration, framing, synthesis, status</td><td>Codex Sol High</td><td>Fable only when Codex is unavailable and the user accepts quota use</td></tr>
+        <tr><td>Advanced architecture and system-design critique</td><td>Fable on a compact Sol packet</td><td>GLM-5.2 critique, then fresh-context Terra</td></tr>
+        <tr><td>Hard or long-horizon implementation</td><td>Sol High</td><td>Composer for crisp scopes; GLM-5.2 for compatible bounded slices</td></tr>
+        <tr><td>Scoped implementation and first-pass review</td><td>Terra</td><td>Composer, then GLM-5.2</td></tr>
+        <tr><td>High-volume light work</td><td>Luna</td><td>GLM-5.2, then Terra</td></tr>
+        <tr><td>Frontend implementation</td><td>GLM-5.2, streamed</td><td>Terra, then Composer; Sol for High complexity</td></tr>
+        <tr><td>Frontend design judgment</td><td>Impeccable on Sol High</td><td>Impeccable on Terra; Fable only for rare high-value critique</td></tr>
+        <tr><td>Product, editorial, and marketing copy</td><td>Claude Sonnet</td><td>Terra for routine copy; Sol Standard for high-stakes copy</td></tr>
       </table>
 
-      <h3>Pending — decided, not yet built or verified</h3>
-      <table>
-        <tr><th>Role</th><th>Binding</th><th>Status</th></tr>
-        <tr><td>Bounded frontend patches</td><td>GLM via the <code>glm-frontend-patch</code> shell skill</td><td class="status-pending">Decided and queued; first use requires a GLM vs Composer vs Sol experiment on the same slice</td></tr>
-      </table>
+      <h3>Fable ROI gate</h3>
+      <p>Fable is used when the decision is durable or expensive to reverse, a compact review packet is possible, an outside critique could change the decision, and the result will be recorded for reuse. High-return uses include architecture boundaries, migrations and rollback plans, harness policy, conflicting-review adjudication, and rare flagship positioning critique after Sonnet drafts the copy.</p>
+      <p>The budget rule is one critique and, only when needed, one focused follow-up. No Fable swarms. Routine orchestration, implementation, status, summaries, copy drafting, and repeated review stay off Fable.</p>
 
       <div class="callout dedup">
-        <span class="tag">Dedupe · #M1</span>
-        <p>The packet listed "GLM-5.2 for frontend design/coding" as a default. I split that: <strong>frontend design judgment</strong> stays on Impeccable+Claude (verified working, quality-sensitive); <strong>frontend coding</strong> will use a bounded shell skill, now specified and queued for implementation plus experiment validation. The working GLM route today remains the read-only research skill.</p>
+        <span class="tag">Local subscription route</span>
+        <p>Codex can invoke <code>claude -p --model fable</code> through the installed Claude Code CLI and the authenticated Claude Pro account on this machine. It does not require an Anthropic API key. The route must preflight auth, must not use <code>--bare</code>, and must be treated as unavailable in cloud or CI unless that environment has separate Claude authentication.</p>
       </div>
+
+      <h3>What you should see while work runs</h3>
+      <ol class="status-sequence">
+        <li><span><strong>Start.</strong> Task tier, chosen route, reason, and next observable checkpoint.</span></li>
+        <li><span><strong>Phase boundary.</strong> Completed artifact or evidence path, next owner, and any unverified work.</span></li>
+        <li><span><strong>Failure.</strong> Exact route and error classification. A failed command is never called “still running.”</span></li>
+        <li><span><strong>Takeover.</strong> Fallback route, preserved checkpoint, unchanged acceptance checks, and any reduction in review diversity.</span></li>
+        <li><span><strong>Finish.</strong> Implementer, reviewers, verification, skipped checks, fallback ledger, and residual risk.</span></li>
+      </ol>
+
+      <p><strong>GLM rule:</strong> long frontend generations must stream and checkpoint continuation rounds. A timeout gets one retry from the last checkpoint; quota or auth failure skips the whole Z.ai family immediately.</p>
     </section>
 
     <section id="agents">
       <h2>9 · Subagent roster (10 roles)</h2>
-      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter (<code>name</code>, <code>description</code>, <code>tools</code>, <code>model</code>) so it's drop-in ready for <code>.claude/agents/</code>. The frontmatter <code>model:</code> is the Claude-side fallback; the routing matrix is authoritative.</p>
+      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter so it remains usable from that harness, but frontmatter is only an adapter fallback. The v0.5 routing matrix is authoritative.</p>
 
       <table>
         <tr><th>Role</th><th>Default route</th><th>What it does</th></tr>
         <tr><td>Initializer</td><td>Codex Sol (codex-implementation pattern)</td><td>First-time repo/worktree scaffold; proves the app boots.</td></tr>
         <tr><td>Researcher</td><td>Codex Terra read-only packet; GLM research skill for offloaded web sweeps</td><td>One bounded question, evidence with confidence.</td></tr>
-        <tr><td>Research consolidator</td><td>Sonnet</td><td>Merges multiple researcher packets; preserves disagreement.</td></tr>
+        <tr><td>Research consolidator</td><td>Terra; Sonnet when prose quality warrants quota</td><td>Merges multiple researcher packets; preserves disagreement.</td></tr>
         <tr><td>Implementer</td><td>Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical)</td><td>Executes the planned change test-first. Also the fix-types/fix-build delegating-hook target.</td></tr>
-        <tr><td>Frontend designer</td><td>Impeccable-on-Claude for judgment; Composer/Sol for build-out; GLM patch skill pending</td><td>Design judgment on Impeccable+Claude; bounded build-out through the matrix.</td></tr>
+        <tr><td>Frontend designer</td><td>Impeccable on Sol High for judgment; streamed GLM-5.2 for build-out; Terra/Composer fallback</td><td>Produces the design packet, coordinates implementation, and records visible checkpoints.</td></tr>
         <tr><td>Verifier</td><td>Sol (codex-computer-use for runtime/browser)</td><td>Exercises the flow itself; passing tests are evidence, not proof.</td></tr>
-        <tr><td>Reviewer</td><td>Terra first-pass; Sol for high-tier/security; Fable reviews the diff itself at High</td><td>Findings first, cite file:line. Focused invocations (architecture / security / UX / tests / simplification).</td></tr>
-        <tr><td>Auditor</td><td>Terra lenses; Claude steelman; orchestrator synthesis at High</td><td>Audits <em>plans</em> through adversarial / steelman / unbiased lenses.</td></tr>
-        <tr><td>Doc maintainer</td><td>Luna or Haiku</td><td>Tier A/B files only; anti-churn significance check; never touches Tier C.</td></tr>
-        <tr><td>Autoskill improver</td><td>Sonnet</td><td>Stages proposals in <code>dev/skill-proposals/</code>; never applies changes.</td></tr>
+        <tr><td>Reviewer</td><td>Different family from implementer when practical; two lenses at High</td><td>Findings first, cite file:line. Fable is reserved for advanced architecture or system design.</td></tr>
+        <tr><td>Auditor</td><td>Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis</td><td>Audits <em>plans</em> through adversarial, steelman, and neutral lenses.</td></tr>
+        <tr><td>Doc maintainer</td><td>Luna; GLM/Terra fallback</td><td>Tier A/B files only; anti-churn significance check; never touches Tier C.</td></tr>
+        <tr><td>Autoskill improver</td><td>Terra; Sonnet for language-sensitive proposals</td><td>Stages proposals in <code>dev/skill-proposals/</code>; never applies changes.</td></tr>
       </table>
 
       <div class="callout dedup">
@@ -534,10 +847,10 @@
 
       <ol>
         <li>Codex recon packet: stack, verification commands, existing doc roles, conventions, collision risks.</li>
-        <li>Fable makes binding decisions; anything unresolvable goes to you.</li>
+        <li>Codex Sol High makes binding decisions; anything unresolvable goes to you.</li>
         <li>Isolated worktree, branch <code>codex/ai-os-instance</code> off <code>origin/main</code> — never the (possibly dirty) root checkout.</li>
         <li>Codex writes bound files per packet; no git ops, no deletions, no renames; existing marker blocks preserved byte-identical.</li>
-        <li>Fable inspects the diff, verifies no unresolved template-binding markers survive, commits by named file.</li>
+        <li>Codex Sol High inspects the diff, verifies no unresolved template-binding markers survive, and commits by named file.</li>
         <li>Promote repo learnings to the template <em>only</em> when they generalize.</li>
       </ol>
 
@@ -574,12 +887,13 @@
 │   └── delegating-review.md   tool-cache-refresh.md
 ├── agents/                   10 subagent role definitions with Claude Code frontmatter
 ├── routing/
-│   ├── model-routing.md      v0.3 matrix (Codex-first, verified + pending)
+│   ├── model-routing.md      v0.5 matrix (quota-aware primary + fallback routes)
 │   └── complexity-rubric.md  Task tiering rules
 ├── skills/                   Generalized Codex delegation surfaces
 │   ├── codex-implementation/SKILL.template.md
 │   ├── codex-review/SKILL.template.md
 │   ├── codex-computer-use/SKILL.template.md
+│   ├── fable-consultation/SKILL.template.md
 │   ├── composer-implementation/SKILL.template.md
 │   └── glm-frontend-patch/SKILL.template.md
 └── instances/
@@ -595,15 +909,20 @@
         <tr><td>Lower dB</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Your repo-overlay installed verbatim (kernel + operations docs + skills) + <code>docs/ai-os-manifest.md</code> + dated changelog entry. 16 files staged by name per house rules.</td></tr>
         <tr><td>FreshProof</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Expanded <code>AGENTS.md</code> (nextjs-agent-rules marker block preserved byte-identical), thin <code>CLAUDE.md</code> adapter, new <code>PROJECT-STATUS.md</code> + <code>CHANGELOG.md</code> (missing roles), manifest, bound Codex skills. 8 files.</td></tr>
         <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Proving ground for the GLM frontend-coding route + FEATURE-LIST / init modules.</td></tr>
-        <tr><td>ai-os-template itself</td><td class="status-pending">Uncommitted</td><td>Currently on <code>main</code> in <code>/Volumes/rexy/GitHub/skills</code></td><td>Whole tree is untracked. Waiting for your review before commit.</td></tr>
+        <tr><td>ai-os-template itself</td><td class="status-pending">v0.3 rebalance in progress</td><td><code>ai-os-template/v0.1</code></td><td>Routing v0.5, subscription-backed Fable consultation, failover policy, and interactive walkthrough are being validated.</td></tr>
       </table>
 
       <p>Neither instance branch is pushed. Review the worktree diffs at your leisure. Lower dB has its own <code>/publish-slice</code>; FreshProof can go via <code>gh pr create</code>.</p>
     </section>
 
     <section id="decisions">
-      <h2>13 · Decisions — resolved 2026-07-12</h2>
-      <p class="lede">All twelve were answered by Jake on 2026-07-12; each item below now shows the resolution.</p>
+      <h2>13 · Decisions and routing rebalance</h2>
+      <p class="lede">The original twelve decisions remain below. Six routing decisions were added on 2026-07-13 after the always-on Fable control plane exhausted Claude Pro quota too quickly.</p>
+
+      <div class="callout judgment">
+        <span class="tag">Routing decisions · D13–D18</span>
+        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the entire provider family for the task. <strong>D15:</strong> GLM-5.2 is the preferred streamed frontend route. <strong>D16:</strong> Sonnet writes copy. <strong>D17:</strong> review diversity scales with tier and uses multiple families when practical. <strong>D18:</strong> visible route, phase, checkpoint, failure, takeover, and final ledger are part of the output contract.</p>
+      </div>
 
       <ol class="decisions-list">
         <li>
@@ -680,7 +999,7 @@
       <h2>15 · Dedupe log</h2>
       <table>
         <tr><th>#</th><th>Merge</th><th>Winner</th></tr>
-        <tr><td>M1</td><td>GLM-5.2 route split</td><td>Frontend <em>design</em> = Impeccable+Claude (verified). Frontend <em>coding</em> = pending (see D1).</td></tr>
+        <tr><td>M1</td><td>GLM-5.2 route split</td><td>Frontend <em>design judgment</em> = Impeccable on Sol High. Frontend <em>implementation</em> = streamed GLM-5.2, with Terra and Composer fallbacks.</td></tr>
         <tr><td>M2</td><td>20 candidate subagent roles → 10</td><td>Type-fixer/build-fixer → implementer; route/browser verifier → verifier; plan-related roles → orchestrator+auditor; architecture/simplification/PR reviewers → reviewer with focus; web research → researcher.</td></tr>
         <tr><td>M3</td><td>Environment skill collisions</td><td><code>tdd</code> over <code>test-driven-development</code>; accelerated grill in <code>/spec</code> over standalone <code>grill-me</code> (which stays for standalone stress-tests); OS workflows over <code>writing-plans</code>/<code>executing-plans</code>; reviewer/verifier agents over <code>code-reviewer</code>/<code>architect-review</code> (merged as focuses); Codex over GLM for research (GLM kept as zero-token alternate).</td></tr>
         <tr><td>M4</td><td>15 candidate slash commands → 9</td><td><code>/fix-types</code> became a delegating-hook target; <code>/update-docs</code> became automatic maintenance; <code>/prove</code> and <code>/publish-slice</code> stayed repo-specific (lower-db) rather than promoted to OS commands; <code>/autoskill</code> runs inside <code>/commit</code> and <code>/wrap-session</code>, not standalone.</td></tr>
@@ -692,11 +1011,13 @@
       <h2>16 · Next steps</h2>
 
       <ol>
-        <li><strong>Template v0.2 committed</strong> on <code>ai-os-template/v0.1</code> and PR opened.</li>
-        <li><strong>Hook implementation next</strong> via a Codex packet in the D11 priority order, once Jake gives the explicit go on the hook specs.</li>
-        <li><strong>Update the lower-db instance</strong> to template v0.2, including plans-directory consolidation (D6), the routing-matrix pin, and the Composer skill.</li>
+        <li><strong>Validate routing v0.5 and this walkthrough</strong>, including provider-state simulation, keyboard operation, and mobile layout.</li>
+        <li><strong>Implement the Fable consultation wrapper</strong> around local <code>claude -p</code> with auth preflight, streaming output, quota circuit breaker, and a read-only compact packet.</li>
+        <li><strong>Implement the GLM frontend-patch skill</strong> with streaming, continuation checkpoints, and immediate Terra fallback.</li>
+        <li><strong>Hook implementation next</strong> in the D11 priority order after the routing wrappers have observable status.</li>
+        <li><strong>Update the lower-db instance</strong> to template v0.3, including plans-directory consolidation (D6), the routing-matrix pin, and the Composer skill.</li>
         <li><strong>Begin weekly-digest-automation feature work</strong> on lower-db using the OS.</li>
-        <li><strong>Implement the GLM frontend-patch skill</strong> and run its validation experiment.</li>
+        <li><strong>Run the frontend validation experiment</strong>: GLM-5.2 vs Terra vs Composer on the same bounded slice.</li>
         <li><strong>Jake audits the marketingskills subset:</strong> copywriting, copy-editing, marketing-psychology, onboarding, site-architecture, product-marketing, and seo-audit.</li>
       </ol>
 
@@ -704,5 +1025,173 @@
     </section>
   </main>
 </div>
+<script>
+  (() => {
+    const taskSelect = document.querySelector('#task-type');
+    const tierSelect = document.querySelector('#task-tier');
+    const providerSelects = [...document.querySelectorAll('[data-provider]')];
+    const fableGateChecks = [...document.querySelectorAll('[data-fable-gate]')];
+    const summary = document.querySelector('#route-summary');
+    const steps = document.querySelector('#route-steps');
+    const note = document.querySelector('#availability-note');
+
+    const providerState = () => Object.fromEntries(
+      providerSelects.map((select) => [select.dataset.provider, select.value])
+    );
+    const fableGateState = () => ({
+      confirmed: fableGateChecks.filter((check) => check.checked).length,
+      required: fableGateChecks.length,
+    });
+    const eligible = (state, family) => state[family] === 'available';
+
+    function orchestrator(state) {
+      if (eligible(state, 'codex')) return ['Sol High', 'Owns task state, routing, synthesis, and status.'];
+      if (eligible(state, 'anthropic')) return ['Fable fallback', 'Codex cannot take new work; use only with explicit quota acceptance.'];
+      return ['Blocked', 'No eligible control-plane family is available. Stop for user direction.'];
+    }
+
+    function implementation(task, tier, state) {
+      if (task === 'architecture') {
+        if (eligible(state, 'codex')) return ['Sol High exploration', 'Produces options and evidence; no production implementation yet.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2 exploration', 'Bounded option generation only; it does not receive decision authority.'];
+        return ['Blocked', 'Architecture exploration has no eligible route.'];
+      }
+      if (task === 'frontend') {
+        if (eligible(state, 'zai')) return ['GLM-5.2 streamed', 'Preferred frontend implementation; shell integration is conditional until installed in the instance.'];
+        if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', 'Z.ai cannot take new work; the same design packet and acceptance checks move to Codex.'];
+        if (eligible(state, 'cursor')) return ['Composer 2.5', 'Use only if the frontend packet is crisp and bounded.'];
+        return ['Blocked', 'No frontend implementation route is available.'];
+      }
+      if (task === 'copy') {
+        if (eligible(state, 'anthropic')) return ['Claude Sonnet', 'Writes from the approved voice and acceptance brief.'];
+        if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol Standard' : 'Terra', 'Anthropic cannot take new work; preserve the voice brief and human approval gate.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2', 'Last cross-family copy fallback.'];
+        return ['Blocked', 'No copy route is available.'];
+      }
+      if (task === 'research') {
+        if (eligible(state, 'codex')) return ['Terra', 'Primary repo and feasibility research route.'];
+        if (eligible(state, 'zai')) return ['GLM research route', 'Offloaded research fallback with cited evidence.'];
+        return ['Blocked', 'Required evidence cannot be gathered by an eligible route.'];
+      }
+      if (task === 'docs') {
+        if (eligible(state, 'codex')) return ['Luna', 'High-volume light work after the significance check.'];
+        if (eligible(state, 'zai')) return ['GLM-5.2', 'Documentation fallback; stable facts only.'];
+        return ['Blocked', 'No documentation route is available.'];
+      }
+      if (eligible(state, 'codex')) return [tier === 'high' ? 'Sol High' : 'Terra', tier === 'high' ? 'Hard or durable implementation stays on Sol.' : 'Scoped backend work is a Terra lane.'];
+      if (eligible(state, 'cursor')) return ['Composer 2.5', 'Codex cannot take new work; use only with a fully specified packet.'];
+      if (eligible(state, 'zai')) return ['GLM-5.2', 'Bounded compatible-slice fallback.'];
+      return ['Blocked', 'No eligible implementation route is available.'];
+    }
+
+    function consultation(state, gate) {
+      if (gate.confirmed < gate.required) {
+        return ['Not scheduled', `${gate.confirmed} of ${gate.required} ROI conditions confirmed. Fable remains unscheduled until every condition is known.`];
+      }
+      if (eligible(state, 'anthropic')) return ['Fable critique', 'The ROI gate passed. Run one compact review, plus at most one focused follow-up.'];
+      if (eligible(state, 'zai')) return ['GLM-5.2 critique', 'The ROI gate passed, but Anthropic cannot take new work. Use an independent cross-family critic.'];
+      if (eligible(state, 'codex')) return ['Fresh-context Terra', 'The ROI gate passed, but Anthropic and Z.ai cannot take new work. Disclose reduced lineage diversity.'];
+      return ['Human gate', 'No model route can supply an independent architecture critique.'];
+    }
+
+    function review(tier, state, implementer, consultationRoute) {
+      const codexWorker = /Sol|Terra|Luna/.test(implementer);
+      const glmWorker = /GLM/.test(implementer);
+      if (tier === 'simple') {
+        if (codexWorker && eligible(state, 'zai')) return ['GLM combined audit', 'One focused cross-family pass.'];
+        if (eligible(state, 'codex')) return ['Terra combined audit', 'One focused pass, independent when practical.'];
+        return ['Focused human review', 'No eligible independent model reviewer.'];
+      }
+      if (tier === 'medium') {
+        if (codexWorker && eligible(state, 'zai')) return ['GLM independent review', 'Different family from the Codex implementer.'];
+        if ((glmWorker || /Composer/.test(implementer)) && eligible(state, 'codex')) return ['Terra independent review', 'Different route from the implementer.'];
+        if (eligible(state, 'codex')) return ['Fresh-context Terra', 'Independence retained; lineage diversity may be reduced.'];
+        return ['Human review required', 'No eligible independent reviewer.'];
+      }
+      const lenses = [];
+      const consultationLens = {
+        'Fable critique': 'Fable consultation',
+        'GLM-5.2 critique': 'GLM consultation',
+        'Fresh-context Terra': 'fresh-context Terra consultation',
+      }[consultationRoute];
+      const consultationMatchesImplementer = consultationRoute === 'GLM-5.2 critique' && glmWorker;
+      if (consultationLens && !consultationMatchesImplementer) lenses.push(consultationLens);
+      if (eligible(state, 'zai') && !glmWorker && consultationRoute !== 'GLM-5.2 critique') lenses.push('GLM');
+      if (lenses.length < 2 && eligible(state, 'codex')) {
+        if (codexWorker) {
+          if (consultationRoute !== 'Fresh-context Terra') lenses.push('fresh-context Terra');
+        } else {
+          if (consultationRoute !== 'Fresh-context Terra') lenses.push('Terra');
+          if (lenses.length < 2) lenses.push('Sol High');
+        }
+      }
+      const reviewDetail = consultationLens && !consultationMatchesImplementer
+        ? `The ${consultationLens} counts as one lens; do not request it again. Sol synthesizes.`
+        : consultationMatchesImplementer
+          ? 'The GLM consultation does not count as independent from GLM implementation. Two Codex lenses review with a diversity caveat.'
+          : 'Two independent lenses; Sol synthesizes and records any diversity caveat.';
+      return lenses.length >= 2
+        ? [`${lenses.slice(0, 2).join(' + ')}`, reviewDetail]
+        : ['Human gate required', 'High-tier review does not have two eligible independent lenses.'];
+    }
+
+    function verification(task, state, implementer) {
+      if (eligible(state, 'codex')) return [/Sol/.test(implementer) ? 'Fresh-context Terra verifier' : 'Sol verifier', task === 'frontend' ? 'Browser and interaction checks, independent of implementation.' : 'Runs the scoped checks and inspects behavior.'];
+      if (eligible(state, 'cursor')) return ['Deterministic Composer checks', 'Scripted checks only; human verification remains required.'];
+      return ['Human verification', 'Codex cannot take new verification work.'];
+    }
+
+    function render() {
+      const task = taskSelect.value;
+      const tier = tierSelect.value;
+      const state = providerState();
+      const gate = fableGateState();
+      const plan = [];
+      const control = orchestrator(state);
+      const work = implementation(task, tier, state);
+      const consult = consultation(state, gate);
+      const check = review(tier, state, work[0], consult[0]);
+      const verify = verification(task, state, work[0]);
+
+      plan.push(['Orchestrate', ...control]);
+      plan.push(['Consult', ...consult]);
+      plan.push([task === 'architecture' ? 'Explore' : 'Implement', ...work]);
+      plan.push(['Review', ...check]);
+      plan.push(['Verify', ...verify]);
+
+      const requiresHuman = plan.some((item) => item[1] === 'Blocked' || /human/i.test(item[1]));
+      summary.textContent = requiresHuman
+        ? `${tier[0].toUpperCase() + tier.slice(1)} ${task}: human involvement required`
+        : `${tier[0].toUpperCase() + tier.slice(1)} ${task}: route is executable`;
+      steps.replaceChildren(...plan.map(([phase, route, detail]) => {
+        const item = document.createElement('li');
+        const phaseNode = document.createElement('span');
+        const routeNode = document.createElement('span');
+        const noteNode = document.createElement('span');
+        phaseNode.className = 'route-phase';
+        phaseNode.textContent = phase;
+        routeNode.textContent = route;
+        noteNode.className = 'route-note';
+        noteNode.textContent = detail;
+        routeNode.append(noteNode);
+        item.append(phaseNode, routeNode);
+        return item;
+      }));
+
+      const limited = Object.entries(state).filter(([, value]) => value === 'limited').map(([family]) => family);
+      const unavailable = Object.entries(state).filter(([, value]) => value === 'unavailable').map(([family]) => family);
+      const constrained = [
+        limited.length ? `Limited, held for current work: ${limited.join(', ')}` : '',
+        unavailable.length ? `Unavailable: ${unavailable.join(', ')}` : '',
+      ].filter(Boolean);
+      note.textContent = constrained.length
+        ? `Simulated constraints: ${constrained.join('. ')}. This lab plans new work, so Limited families are excluded. Acceptance checks do not change when a route changes.`
+        : 'All families are available. The router still conserves Fable unless the ROI gate passes.';
+    }
+
+    [taskSelect, tierSelect, ...providerSelects, ...fableGateChecks].forEach((control) => control.addEventListener('change', render));
+    render();
+  })();
+</script>
 </body>
 </html>
