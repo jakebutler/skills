@@ -152,7 +152,7 @@ research, prose) bound to currently-verified models, with a "pending verificatio
 section for routes not yet confirmed working. Date-stamped, because model quality and
 availability change.
 
-Defaults as of routing v0.6: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and hard-work
+Defaults as of routing v0.7: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and hard-work
 route; **Codex Terra** (`gpt-5.6-terra`) owns scoped implementation, first-pass review,
 and research sweeps; **Codex Luna** (`gpt-5.6-luna`) owns high-volume light work but
 never long-context codebase synthesis; **Composer 2.5** owns crisp bounded frontend

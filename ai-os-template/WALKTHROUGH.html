@@ -888,7 +888,7 @@
 │   └── delegating-review.md   tool-cache-refresh.md
 ├── agents/                   10 subagent role definitions with Claude Code frontmatter
 ├── routing/
-│   ├── model-routing.md      v0.6 matrix (evidence-backed primary + fallback routes)
+│   ├── model-routing.md      v0.7 matrix (evidence-backed primary + fallback routes)
 │   └── complexity-rubric.md  Task tiering rules
 ├── skills/                   Generalized Codex delegation surfaces
 │   ├── codex-implementation/SKILL.template.md
@@ -1012,7 +1012,7 @@
       <h2>16 · Next steps</h2>
 
       <ol>
-        <li><strong>Use routing v0.6 in FreshProof</strong> for the first real implementation slice, preserving the Composer → Terra takeover packet.</li>
+        <li><strong>Use routing v0.7 in FreshProof</strong> for the first real implementation slice, preserving the declared route packet across model and family fallback.</li>
         <li><strong>Implement the Fable consultation wrapper</strong> around local <code>claude -p</code> with auth preflight, streaming output, quota circuit breaker, and a read-only compact packet.</li>
         <li><strong>Revalidate GLM only after a smaller packet or diff protocol</strong>; require two consecutive sub-ten-minute passes before promotion.</li>
         <li><strong>Hook implementation next</strong> in the D11 priority order after the routing wrappers have observable status.</li>

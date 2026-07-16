@@ -1,6 +1,6 @@
 # Model Routing Matrix
 
-**Version 0.6, 2026-07-14.** Model quality, pricing, quota, and availability change.
+**Version 0.7, 2026-07-16.** Model quality, pricing, quota, and availability change.
 Re-verify bindings older than one quarter. The [complexity rubric](complexity-rubric.md)
 can promote a task to a stronger route, but it cannot remove review independence.
 Bindings are hypotheses; the [experiment workflow](../workflows/experiment.md) is the
@@ -63,6 +63,33 @@ does not permit.
 | Web research sweeps | GLM research route | Terra with web search | Sol Standard | stop if required sources cannot be verified |
 | Runtime and browser verification | Sol Standard | Terra | Composer only for deterministic scripted checks | verifier must be independent of implementer |
 | Docs, summaries, inventory | Luna | GLM-5.2 | Terra | significance check still gates doc writes |
+
+### Cloud subscription overlay
+
+Cloud routes are available only after the executable and subscription credential both
+pass preflight in that Cloud environment. A route verified on a local machine is not
+implicitly available in Cloud.
+
+Claude-in-Cloud is conditional until the platform proves encrypted-secret provisioning,
+credential paths are excluded from checkpoint artifacts, egress enforcement passes an
+active negative probe, and a tested revocation runbook exists. Until then, Cloud runs
+Codex-only and sends Fable or Claude packets to an out-of-band reviewer.
+
+| Work | Cloud primary | Model fallback | Family fallback | Stop rule |
+|---|---|---|---|---|
+| Orchestration and synthesis | Sol High | Sol Standard for a bounded continuation | none | checkpoint and pause if the Codex family is unavailable; Claude never becomes the control plane |
+| Hard implementation | Sol High | Terra after the scope is re-bounded | Claude Sonnet High on the unchanged packet | Claude work requires fresh Codex review before final approval |
+| Scoped implementation | Terra | Sol Standard | Claude Sonnet | pause after two route fallbacks |
+| Architecture and system design | Fable | Opus only when Anthropic family auth and quota remain healthy | fresh-context Sol High | the user remains the final gate |
+| Product or editorial copy | Claude Sonnet | none in-family by default | Terra, then Sol Standard | preserve the voice brief and human approval |
+| Review of Codex work | Claude Sonnet; Fable for architecture | Opus only for equivalent high-value review | fresh-context Codex only for Simple/Medium work with reduced-diversity disclosure | High-tier review pauses for Anthropic reset or a human reviewer; the implementer is never sole reviewer |
+| Review of Claude work | fresh-context Sol or Terra | another Codex route | GLM only after independent preflight | otherwise pause for Codex quota reset |
+| Deterministic verification | Sol Standard or Terra | role-compatible Codex route | Claude Sonnet for shell-only checks | unsupported browser verification pauses |
+
+Do not enable Claude's `--fallback-model` globally. It hides a route change from the
+orchestrator and may substitute a model that is not equivalent for the role. Use it
+only for an explicitly declared same-family equivalence, record the actual model, and
+preserve the original packet and acceptance checks.
 
 ## Review topology
 
@@ -143,15 +170,20 @@ credential path has been configured intentionally.
 - **Available:** new work may be routed normally.
 - **Limited:** conserve the family. Finish current bounded work, do not fan out, and
   route optional work elsewhere.
-- **Unavailable:** quota exhausted, authentication failed, provider rejected the model,
-  or the route failed its preflight. Skip every model in that family until reset or
+- **Unavailable:** quota or session exhausted, authentication failed, billing rejected,
+  or the family preflight failed. Skip every model in that family until reset or an
   explicit recheck.
+- **Route unavailable:** one model identifier is missing, retired, overloaded, or
+  rejected while family authentication and quota remain healthy. Skip that route, not
+  the whole family, and use only a declared role-compatible model fallback.
 
 ### Failure classification
 
 | Failure | Action |
 |---|---|
-| quota, session limit, billing, authentication, invalid model | mark the family Unavailable immediately; do not retry another model in the same family |
+| explicit quota/session exhaustion with a reliable provider signal, billing rejection, or failed auth preflight | mark the family Unavailable; checkpoint and record the transition |
+| ambiguous 401 or 429 without a reliable family-wide signal | back off once and repeat the family preflight; mark Unavailable only on the second consistent failure |
+| invalid, retired, overloaded, or unavailable model with healthy family auth | mark only that route unavailable; use the declared role-compatible model fallback |
 | rate limit with a reliable reset time | mark Limited; checkpoint; wait only if the user asked to wait, otherwise reroute |
 | timeout, dropped stream, transient 5xx | retry once on the same route from the last checkpoint; then reroute |
 | malformed or incomplete output | request one bounded continuation or repair; then reroute with the partial artifact attached |
@@ -161,7 +193,8 @@ credential path has been configured intentionally.
 
 1. Save the current delegation packet, partial output, last verified checkpoint, and
    exact error. Never discard a useful partial artifact.
-2. Classify the failure and update the family state for the current task.
+2. Classify the failure, update the family state for the current task, and write the
+   prior state, new state, exact signal, and timestamp into the checkpoint.
 3. Select the first eligible fallback from the role table, skipping unavailable
    families and routes that violate the task tier.
 4. Reuse the same goal, scope, acceptance checks, and stop condition. Add only the
@@ -225,6 +258,10 @@ they request full files only when needed.
 
 ## Version history
 
+- **0.7 (2026-07-16):** adds an explicit Cloud subscription overlay, separates
+  route-level model unavailability from family-wide quota/auth failure, prohibits
+  hidden global Claude fallback, and makes quota exhaustion a checkpoint-and-pause
+  condition when no eligible family remains.
 - **0.6 (2026-07-14):** first frontend-route experiment rejects GLM as the default;
   Composer becomes the bounded frontend implementation route, Terra the first
   fallback, and GLM an installed experiment guarded by deadline, heartbeat, partial
