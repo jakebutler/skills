@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/design-review-coverage.schema.json",
+  "title": "Proof Harness Design Review Coverage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "design_candidate_hash", "requirements_hash", "reviews"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "type": "string", "minLength": 1 },
+    "design_candidate_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "requirements_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "reviews": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["review_id", "review_run_id", "lens", "model_route", "transcript_sha256", "authority", "snapshot_reproduced", "start_snapshot_hash", "end_snapshot_hash", "verdicts", "findings"],
+        "properties": {
+          "review_id": { "type": "string", "minLength": 1 },
+          "review_run_id": { "type": "string", "minLength": 1 },
+          "lens": { "enum": ["architecture", "security", "correctness", "residual", "specialist"] },
+          "model_route": { "type": "string", "minLength": 1 },
+          "transcript_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+          "authority": { "enum": ["blocking", "advisory"] },
+          "snapshot_reproduced": { "type": "boolean" },
+          "start_snapshot_hash": { "anyOf": [{ "$ref": "common.schema.json#/$defs/sha256" }, { "type": "null" }] },
+          "end_snapshot_hash": { "anyOf": [{ "$ref": "common.schema.json#/$defs/sha256" }, { "type": "null" }] },
+          "verdicts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["requirement_id", "status", "evidence", "finding_ids"],
+              "properties": {
+                "requirement_id": { "type": "string", "minLength": 1 },
+                "status": { "enum": ["satisfied", "violated", "not_verifiable"] },
+                "evidence": { "type": "string", "minLength": 1 },
+                "finding_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/stableId" } }
+              }
+            }
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "severity", "root_cause_class", "requirement_ids", "surface_ids", "invariant_ids", "directive", "evidence"],
+              "properties": {
+                "id": { "$ref": "common.schema.json#/$defs/stableId" },
+                "severity": { "enum": ["p0", "p1", "p2", "p3"] },
+                "root_cause_class": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+                "requirement_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+                "surface_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+                "invariant_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+                "directive": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+                "evidence": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

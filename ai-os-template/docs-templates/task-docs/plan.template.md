@@ -1,9 +1,9 @@
 <!--
-  TEMPLATE: dev/active/[task]/plan.md — task-scoped implementation plan.
+  TEMPLATE: {{TASK_DOCS_DIR}}/[task]/plan.md — task-scoped implementation plan.
 
   WRITE TIER: task-scoped and disposable (see DESIGN-MEMO.md §4, §11 decision #2).
   - Lives only for the duration of the task. Archive (or delete, per repo convention)
-    the whole dev/active/[task]/ directory when the task completes.
+    the whole {{TASK_DOCS_DIR}}/[task]/ directory when the task completes.
   - The PLAN does not get promoted to global docs. Only DECISIONS made while executing
     it get promoted — into SPEC.md, docs/, or AGENTS.md as appropriate. If this plan
     contains a decision worth keeping, copy the decision (not the plan) upward and note
@@ -11,7 +11,7 @@
   - Never treated as a durable record: don't link to this file from SPEC.md or docs/;
     link to the promoted decision instead.
 
-  Instantiation: create at dev/active/{{TASK_SLUG}}/plan.md, replace {{PLACEHOLDERS}}.
+  Instantiation: create at {{TASK_DOCS_DIR}}/{{TASK_SLUG}}/plan.md, replace {{PLACEHOLDERS}}.
 -->
 
 # Plan: {{TASK_NAME}}

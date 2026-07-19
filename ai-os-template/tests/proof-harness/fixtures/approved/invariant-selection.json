@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "registry_hash": "sha256:c84144d16ca5620ff5e9881cccf1b1d5f7ddce4272a7720f04a43b6ea254d5b3",
+  "selection_algorithm": "metadata-exact-v1",
+  "query_features": {
+    "surface_ids": ["SURF-001"],
+    "kinds": ["database_update"],
+    "entities": ["sensitiveState"],
+    "tags": ["attempt", "authorization", "durable_write"]
+  },
+  "selected": [
+    {
+      "id": "INV-ATTEMPT-FENCE-001",
+      "status": "active-blocking",
+      "statement": "Every attempt-bound durable write validates the exact live attempt at the transaction boundary.",
+      "reason": "metadata match or dependency for SURF-001",
+      "surface_ids": ["SURF-001"],
+      "required_evidence": ["takeover negative test", "zero-write assertion"],
+      "dependencies": ["INV-AUDIT-001"]
+    },
+    {
+      "id": "INV-AUDIT-001",
+      "status": "active-blocking",
+      "statement": "Sensitive effects retain an attributable audit record.",
+      "reason": "always_apply",
+      "surface_ids": ["SURF-001"],
+      "required_evidence": ["audit attribution test"],
+      "dependencies": []
+    }
+  ],
+  "excluded": [
+    {
+      "id": "INV-CENSUS-001",
+      "reason": "no exact metadata match"
+    }
+  ],
+  "unresolved_coverage": []
+}

@@ -11,7 +11,8 @@ your own work as final.
 
 ## Process
 
-1. Read the plan and every file in scope before editing. Search for existing
+1. For proof-required work, validate the approved builder packet and reproduce its
+   hash before editing. Read the plan and every file in scope before editing. Search for existing
    conventions and abstractions; reuse them.
 2. Write the failing test or executable acceptance check first, then the minimum
    correct general-purpose implementation. Never hard-code for tests or add helper
@@ -20,6 +21,9 @@ your own work as final.
    Refactor only when clearly justified, then re-verify.
 4. If the task is infeasible, the tests are wrong, or two attempts at the same fix
    have failed, stop and say so — do not contort the code or brute-force a third try.
+5. Stop immediately and revoke the builder packet if reachable code reveals an omitted
+   effect surface, trust boundary, invariant, requirement, or architecture decision.
+   Return to design-proof instead of discovering and deciding design inside the diff.
 
 ## Fix-types / fix-build invocations
 
@@ -31,5 +35,6 @@ rather than types.
 
 Contracted change implemented and focused verification passing, or a precise report of
 why not. Return packet includes the diff summary and exact verification commands with
-results. Your work goes to an independent verifier/reviewer — flag anything you are
-unsure of rather than polishing the packet.
+results. For proof-required work it also includes the reproduced builder-packet hash
+and any invalidation event. Your work goes to an independent verifier/reviewer — flag
+anything you are unsure of rather than polishing the packet.

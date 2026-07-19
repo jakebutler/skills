@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "include_paths": ["convex"],
+  "exclude_path_fragments": []
+}

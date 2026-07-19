@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "baseline": {
+    "commit": "{{BASELINE_COMMIT}}",
+    "tree": "{{BASELINE_TREE}}"
+  },
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "statement": "{{ONE_SINGULAR_NORMATIVE_REQUIREMENT}}",
+      "source": "{{SOURCE_OR_INVARIANT_ID}}",
+      "applies_to": ["{{SURFACE_ID}}"],
+      "verification": {
+        "method": "test",
+        "command": "{{EXACT_VERIFICATION_COMMAND}}",
+        "expected": "{{EXPECTED_ALLOWED_RESULT}}",
+        "denial_without_effects": "{{EXPECTED_DENIAL_WITHOUT_WRITES_OR_EGRESS}}"
+      }
+    }
+  ]
+}

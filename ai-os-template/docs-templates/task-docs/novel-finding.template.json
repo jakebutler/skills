@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "finding_id": "{{FINDING_ID}}",
+  "classification": "novel_reproduced",
+  "statement": "{{NORMALIZED_DURABLE_INVARIANT_DRAFT}}",
+  "surface_ids": ["SURF-001"],
+  "surface_kinds": ["{{SURFACE_KIND}}"],
+  "tags": ["{{APPLICABILITY_TAG}}"],
+  "required_evidence": ["{{REQUIRED_EVIDENCE}}"],
+  "finding_snapshot": "{{FINDING_SNAPSHOT_SHA256}}",
+  "fix_snapshot": "{{FIX_SNAPSHOT_SHA256}}",
+  "reproduction": {
+    "command": "{{REPRODUCTION_COMMAND}}",
+    "result": "{{REPRODUCTION_RESULT}}",
+    "counterexample_test": "{{COUNTEREXAMPLE_TEST_REFERENCE}}"
+  },
+  "existing_invariant_ids": [],
+  "observed_at": "{{ISO_8601_TIMESTAMP}}"
+}

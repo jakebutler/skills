@@ -82,6 +82,7 @@ must not block.
 | Workflow | Use when |
 |---|---|
 | spec | New feature or significant change: grill → PRD → issues → TDD plan |
+| design-proof | Proof-required change: enumerate effects → prove architecture → independent architecture/security approval |
 | implement-tdd | Executing a planned change test-first |
 | debug | Investigating a defect: logs → reproduce → assess → fix → lesson |
 | commit | Any commit: verify → review → docs → focused commit |
@@ -120,6 +121,13 @@ Classify each task before starting (full rubric: {{RUBRIC_LOCATION}}):
 
 Any single high-risk dimension (security, data loss, irreversibility) promotes the tier
 regardless of size.
+
+Proof-required work must enter the bound `design-proof` workflow before production
+edits. Implementation requires a validated approved builder-packet hash. Discovery of
+a missing trust root, reachable effect, sibling path, lifecycle behavior, or requirement
+invalidates that packet and returns control to design. The invariant catalog and
+task-specific matrices are retrieved into the task packet; they do not belong in this
+root file or every model request.
 
 ## Model routing and provider failure
 

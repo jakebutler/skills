@@ -14,3 +14,15 @@ for advanced architecture and system-design feedback. Composer is the validated
 bounded frontend implementation default, Terra is the first fallback, and the
 installed GLM route remains experimental after its first timed validation failed.
 FreshProof and Lower dB are first, followed by corvo-labs-dot-com.
+
+The shift-left proof harness template now provides task-scoped effect/invariant
+selection, immutable design and approved-builder packet identities, exact
+architecture/security review coverage, deterministic fan-in, append-only novel-rule
+capture with advisory-only automated promotion, a TypeScript/Convex inventory adapter,
+and deterministic rendered views. A project must still bind and pass its own manifest,
+adapter, schema, and positive/negative dogfood fixtures before advertising the gate as
+installed.
+
+The included TypeScript/Convex adapter is intentionally fail-visible and heuristic;
+project installation still requires planner and reviewer reconciliation rather than
+claiming that regex discovery is a complete static analysis.

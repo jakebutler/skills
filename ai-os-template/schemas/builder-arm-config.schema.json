@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/builder-arm-config.schema.json",
+  "title": "Paired Builder Arm Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "experiment_id", "arm_id", "model", "repository", "baseline_commit", "prompt_path", "allowed_paths", "allowed_ignored_paths", "output_directory", "timeout_ms", "visible_checks", "held_out_checks"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "experiment_id": { "type": "string", "minLength": 1 },
+    "arm_id": { "type": "string", "minLength": 1 },
+    "model": { "enum": ["composer-2.5", "gpt-5.6-sol-high"] },
+    "repository": { "type": "string", "minLength": 1 },
+    "baseline_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "prompt_path": { "type": "string", "minLength": 1 },
+    "allowed_paths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "allowed_ignored_paths": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "output_directory": { "type": "string", "minLength": 1 },
+    "timeout_ms": { "type": "integer", "minimum": 1000 },
+    "check_timeout_ms": { "type": "integer", "minimum": 1000 },
+    "visible_checks": { "$ref": "#/$defs/commands" },
+    "held_out_checks": { "$ref": "#/$defs/commands" }
+  },
+  "$defs": {
+    "commands": {
+      "type": "array",
+      "items": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+    }
+  }
+}

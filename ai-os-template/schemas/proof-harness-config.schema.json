@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/proof-harness-config.schema.json",
+  "title": "Proof Harness Project Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_artifact_root", "proof_harness_workflow", "schema_root", "invariant_registry", "generated_inventory", "inventory_config", "package_manager_source", "commands", "review_roles"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_artifact_root": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+    "proof_harness_workflow": { "type": "string", "minLength": 1 },
+    "schema_root": { "type": "string", "minLength": 1 },
+    "invariant_registry": { "type": "string", "minLength": 1 },
+    "generated_inventory": { "type": "string", "minLength": 1 },
+    "inventory_config": { "type": "string", "minLength": 1 },
+    "package_manager_source": { "type": "string", "minLength": 1 },
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generate_inventory", "build_invariant_index", "select_invariants", "hash_design", "hash_builder_packet", "extract_invariant", "promote_advisory", "validate_design", "validate_resolution", "render_views", "check_views"],
+      "properties": {
+        "generate_inventory": { "type": "string", "minLength": 1 },
+        "build_invariant_index": { "type": "string", "minLength": 1 },
+        "select_invariants": { "type": "string", "minLength": 1 },
+        "hash_design": { "type": "string", "minLength": 1 },
+        "hash_builder_packet": { "type": "string", "minLength": 1 },
+        "extract_invariant": { "type": "string", "minLength": 1 },
+        "promote_advisory": { "type": "string", "minLength": 1 },
+        "validate_design": { "type": "string", "minLength": 1 },
+        "validate_resolution": { "type": "string", "minLength": 1 },
+        "render_views": { "type": "string", "minLength": 1 },
+        "check_views": { "type": "string", "minLength": 1 }
+      }
+    },
+    "review_roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["architecture", "security", "resolver"],
+      "properties": {
+        "architecture": { "type": "string", "minLength": 1 },
+        "security": { "type": "string", "minLength": 1 },
+        "resolver": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

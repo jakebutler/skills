@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/design-snapshot.schema.json",
+  "title": "Proof Harness Design Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "algorithm", "included_files", "requirements_hash", "design_candidate_hash"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "type": "string", "minLength": 1 },
+    "algorithm": { "const": "raw-bytes-manifest-v1" },
+    "included_files": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "bytes", "sha256"],
+        "properties": {
+          "path": { "enum": ["architecture-proof.json", "effect-surfaces.json", "invariant-selection.json", "proof-plan.json", "requirements.json"] },
+          "bytes": { "type": "integer", "minimum": 1 },
+          "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    "requirements_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "design_candidate_hash": { "$ref": "common.schema.json#/$defs/sha256" }
+  }
+}

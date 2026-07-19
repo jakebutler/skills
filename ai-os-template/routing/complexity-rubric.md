@@ -34,6 +34,25 @@ Score each dimension Low / Medium / High:
 task High regardless of size. When in doubt between tiers, take the higher one; the
 extra ceremony is one audit pass, not a process tax.
 
+## Proof-required predicate
+
+Complexity tier controls ceremony volume. `proof_required` independently controls
+whether production edits need the shift-left design-proof gate.
+
+Set `proof_required: true` when a task changes or relies on any of:
+
+- authorization, tenancy, identity, secrets, or sensitive-data boundaries;
+- allow-capable, destructive, external, or durable-write effects;
+- migrations, backfills, lifecycle transitions, retention, deletion, or replay;
+- concurrency, retries, takeover, worker progress, idempotency, or reconciliation;
+- immutable, historical, or public-contract authority; or
+- a hard-to-reverse architecture boundary whose failure can create P0/P1 impact.
+
+A High-tier copy, research, or reversible UX task may be `proof_required: false` with a
+recorded reason. A small security or destructive-state change is proof-required even if
+its diff is Simple. Proof-required work runs `workflows/design-proof.md` before the
+first production RED/GREEN edit.
+
 ## What each tier requires
 
 | | Simple | Medium | High |

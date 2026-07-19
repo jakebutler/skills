@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "design_candidate_hash": "{{DESIGN_CANDIDATE_SHA256}}",
+  "source_review_ids": ["REVIEW-ARCH-001", "REVIEW-SEC-001"],
+  "source_finding_dispositions": [],
+  "resolved_changes": [],
+  "conflicts": [],
+  "blocking_findings": [],
+  "status": "approved",
+  "approved_builder_packet_hash": "{{APPROVED_BUILDER_PACKET_SHA256}}"
+}

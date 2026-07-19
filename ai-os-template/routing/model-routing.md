@@ -64,6 +64,26 @@ does not permit.
 | Runtime and browser verification | Sol Standard | Terra | Composer only for deterministic scripted checks | verifier must be independent of implementer |
 | Docs, summaries, inventory | Luna | GLM-5.2 | Terra | significance check still gates doc writes |
 
+## Tracer 7 experimental backend route
+
+Composer is not the general backend default. Tracer 7 is a paired, provisional test of
+whether it can execute most builder work after the proof-required design gate has
+removed unresolved architecture and security decisions.
+
+- Control builder route: Cursor Agent model `gpt-5.6-sol-high`.
+- Experimental builder route: Cursor Agent model `composer-2.5`.
+- Both arms use the same Cursor Agent binary and subscription-backed authentication,
+  frozen baseline, byte-identical builder packet and prompt, tool policy, time and
+  retry budget, visible checks, held-out evaluation, and review topology.
+- Model selection is the only planned independent variable. Any fallback, intervention,
+  packet invalidation, prompt change, or environment drift is an experiment event and
+  may make the arm non-comparable.
+- Architecture and security lenses are completed during the shared design dogfood gate.
+  Post-build reviewers remain independent of the builder family and receive blinded
+  candidate labels until their findings and scores are frozen.
+- No routing-table change follows from one tracer. Evidence may justify only a
+  provisional bounded-backend route, with explicit stop conditions and more tracers.
+
 ## Review topology
 
 Review routes depend on both task tier and the implementer's family. Different prompts

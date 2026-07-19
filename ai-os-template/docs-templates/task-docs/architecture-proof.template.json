@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "authority_effect_diagram": {
+    "format": "mermaid",
+    "content": "{{AUTHORITY_EFFECT_DIAGRAM}}",
+    "trust_boundaries": ["{{TRUST_BOUNDARY}}"]
+  },
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "requirement_ids": ["REQ-001"],
+      "immutable_root": "{{IMMUTABLE_AUTHORITY_ROOT}}",
+      "canonical_projection": "{{EXACT_CANONICAL_PROJECTION}}",
+      "cardinality": "{{EXACT_CARDINALITY}}",
+      "creation_anchor": "{{CREATION_ANCHOR}}",
+      "lifecycle_semantics": "{{LIFECYCLE_SEMANTICS}}",
+      "fail_closed_behavior": "{{FAIL_CLOSED_BEHAVIOR}}",
+      "enforcement_point": "{{ONE_ENFORCEMENT_POINT}}"
+    }
+  ],
+  "sibling_paths": [
+    {
+      "id": "PATH-001",
+      "kind": "direct",
+      "entry_point": "{{ENTRY_POINT}}",
+      "effect_surface_ids": ["{{SURFACE_ID}}"],
+      "enforcement_point": "{{ONE_ENFORCEMENT_POINT}}",
+      "requirement_ids": ["REQ-001"]
+    }
+  ],
+  "matrices": {
+    "coherent_tamper": [],
+    "lifecycle": [],
+    "worker_progress": []
+  },
+  "review_units": [
+    {
+      "id": "UNIT-001",
+      "requirement_ids": ["REQ-001"],
+      "surface_ids": ["{{SURFACE_ID}}"],
+      "depends_on": []
+    }
+  ],
+  "unresolved_assumptions": []
+}

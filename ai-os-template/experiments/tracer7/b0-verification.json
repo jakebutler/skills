@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "baseline_id": "B0",
+  "verdict": "verified",
+  "commit": "d72b02cfc9f869be78fd62c1ad0cc81eeaab4162",
+  "tree": "3227572dc4bb6566b934663381583df816d37a79",
+  "parents": [
+    "cb45a532d1c052dc6ffd0ae8ae51ca9ff5d82e40",
+    "8a121a208a099d44e32d820ef3dfbe82562ab73f"
+  ],
+  "binary_diff_sha256": "f77833c327446b161fc765d7a6b8e549cf446d898e2f6c130c619db392d6fc6c",
+  "path_count": 158,
+  "lockfile_path": "pnpm-lock.yaml",
+  "lockfile_sha256": "10909cd2627c5149fb1dd0e0c24cdc4eef49b32e03c2544b9d88736cd93ce3a3",
+  "recorded_only": [
+    "nul_status_sha256",
+    "manifest_sha256"
+  ],
+  "note": "The original pre-commit NUL status and path/mode/content manifest require their recorded freeze recipe; they are retained as attestations, not silently recomputed with a different command."
+}

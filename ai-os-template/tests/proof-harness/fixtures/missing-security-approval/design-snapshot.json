@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "algorithm": "raw-bytes-manifest-v1",
+  "included_files": [
+    {
+      "path": "architecture-proof.json",
+      "bytes": 1342,
+      "sha256": "sha256:5545a428531ddffb0c72982758c3c9bbb3b677c66d300f6e39e3abb34a8ac4d7"
+    },
+    {
+      "path": "effect-surfaces.json",
+      "bytes": 705,
+      "sha256": "sha256:6a2eb258c3530e316d04ee092036a773c7d93e8ab594c7334cce40bb83ff5798"
+    },
+    {
+      "path": "invariant-selection.json",
+      "bytes": 1267,
+      "sha256": "sha256:c1ad856341cafb9115cb66283e2d095ac5461f98f98b535fa05156dae651cf25"
+    },
+    {
+      "path": "proof-plan.json",
+      "bytes": 1014,
+      "sha256": "sha256:8f56a5204b150f1fe45bdac8fe7721394a6e9799342cb9a0325b954316095f35"
+    },
+    {
+      "path": "requirements.json",
+      "bytes": 1142,
+      "sha256": "sha256:bb07ae9d1936f464f1fcd83054259c476d6f951b77242f32ffed7995f4f6dbd4"
+    }
+  ],
+  "requirements_hash": "sha256:bb07ae9d1936f464f1fcd83054259c476d6f951b77242f32ffed7995f4f6dbd4",
+  "design_candidate_hash": "sha256:aac853c8b7b071b026328bef77b7453e77b1818ea5b52c6635be2c3d36db622f"
+}

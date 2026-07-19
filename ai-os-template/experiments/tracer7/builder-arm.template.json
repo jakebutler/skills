@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "experiment_id": "freshproof-tracer7-paired-builder",
+  "arm_id": "{{PRIVATE_ARM_ID}}",
+  "model": "{{composer-2.5_OR_gpt-5.6-sol-high}}",
+  "repository": "{{ISOLATED_ARM_WORKTREE}}",
+  "baseline_commit": "{{D0_COMMIT}}",
+  "prompt_path": "{{BYTE_IDENTICAL_BUILDER_PROMPT_PATH}}",
+  "allowed_paths": [
+    "{{ALLOWED_PRODUCT_PATH}}"
+  ],
+  "allowed_ignored_paths": [],
+  "output_directory": "{{EXPERIMENT_EVIDENCE_DIRECTORY_OUTSIDE_ARM_WORKTREES}}",
+  "timeout_ms": 3600000,
+  "check_timeout_ms": 600000,
+  "visible_checks": [
+    ["pnpm", "exec", "vitest", "run", "{{VISIBLE_TEST_PATH}}"]
+  ],
+  "held_out_checks": [
+    ["{{EXTERNAL_HELD_OUT_RUNNER}}"]
+  ]
+}

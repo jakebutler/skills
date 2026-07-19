@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "design_candidate_hash": "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+  "requirements_hash": "sha256:bb07ae9d1936f464f1fcd83054259c476d6f951b77242f32ffed7995f4f6dbd4",
+  "reviews": [
+    {
+      "review_id": "REVIEW-ARCH-001",
+      "review_run_id": "RUN-ARCH-001",
+      "lens": "architecture",
+      "model_route": "fable",
+      "transcript_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "authority": "blocking",
+      "snapshot_reproduced": true,
+      "start_snapshot_hash": "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+      "end_snapshot_hash": "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+      "verdicts": [
+        {
+          "requirement_id": "REQ-001",
+          "status": "satisfied",
+          "evidence": "Authority root and enforcement point are explicit.",
+          "finding_ids": []
+        },
+        {
+          "requirement_id": "REQ-002",
+          "status": "satisfied",
+          "evidence": "The audit projection is bound to the accepted write authority.",
+          "finding_ids": []
+        }
+      ],
+      "findings": []
+    },
+    {
+      "review_id": "REVIEW-SEC-001",
+      "review_run_id": "RUN-SEC-001",
+      "lens": "security",
+      "model_route": "opus-4.8",
+      "transcript_sha256": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "authority": "blocking",
+      "snapshot_reproduced": true,
+      "start_snapshot_hash": "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+      "end_snapshot_hash": "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+      "verdicts": [
+        {
+          "requirement_id": "REQ-001",
+          "status": "satisfied",
+          "evidence": "The stale-attempt path denies before effects.",
+          "finding_ids": []
+        },
+        {
+          "requirement_id": "REQ-002",
+          "status": "satisfied",
+          "evidence": "Denied writes cannot emit a misleading success audit record.",
+          "finding_ids": []
+        }
+      ],
+      "findings": []
+    }
+  ]
+}

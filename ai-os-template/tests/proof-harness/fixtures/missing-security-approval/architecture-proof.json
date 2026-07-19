@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "authority_effect_diagram": {
+    "format": "mermaid",
+    "content": "flowchart LR\n  A[Attempt] --> W[Write]",
+    "trust_boundaries": ["request-to-transaction"]
+  },
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "requirement_ids": ["REQ-001", "REQ-002"],
+      "immutable_root": "attempt.publicId",
+      "canonical_projection": "attempt public ID plus owning API Client",
+      "cardinality": "exactly one active attempt",
+      "creation_anchor": "attempt acquisition transaction",
+      "lifecycle_semantics": "takeover retires the predecessor before a successor is active",
+      "fail_closed_behavior": "deny before mutation",
+      "enforcement_point": "write transaction entry"
+    }
+  ],
+  "sibling_paths": [
+    {
+      "id": "PATH-001",
+      "kind": "direct",
+      "entry_point": "writeSensitiveState",
+      "effect_surface_ids": ["SURF-001"],
+      "enforcement_point": "write transaction entry",
+      "requirement_ids": ["REQ-001", "REQ-002"]
+    }
+  ],
+  "matrices": {
+    "coherent_tamper": [],
+    "lifecycle": [],
+    "worker_progress": []
+  },
+  "review_units": [
+    {
+      "id": "UNIT-001",
+      "requirement_ids": ["REQ-001", "REQ-002"],
+      "surface_ids": ["SURF-001"],
+      "depends_on": []
+    }
+  ],
+  "unresolved_assumptions": []
+}

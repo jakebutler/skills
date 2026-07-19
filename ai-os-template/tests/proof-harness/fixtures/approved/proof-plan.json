@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "entries": [
+    {
+      "surface_id": "SURF-001",
+      "reachable_because": "The public mutation calls the write transaction.",
+      "requirement_ids": ["REQ-001", "REQ-002"],
+      "invariant_ids": ["INV-ATTEMPT-FENCE-001", "INV-AUDIT-001"],
+      "enforcement_point": "write transaction entry",
+      "negative_evidence": "stale-attempt denial test",
+      "integration_evidence": "active-attempt success test",
+      "disposition": "covered"
+    }
+  ],
+  "requirement_trace": [
+    {
+      "requirement_id": "REQ-001",
+      "enforcement_points": ["write transaction entry"],
+      "verification_evidence": ["sensitive-write.test.ts"],
+      "status": "covered"
+    },
+    {
+      "requirement_id": "REQ-002",
+      "enforcement_points": ["write transaction entry"],
+      "verification_evidence": ["sensitive-write.test.ts audit attribution case"],
+      "status": "covered"
+    }
+  ],
+  "orphan_requirements": [],
+  "orphan_effects": []
+}

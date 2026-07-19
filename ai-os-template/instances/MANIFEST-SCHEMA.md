@@ -20,8 +20,9 @@ the manifest records the winner, it never renames existing files.
    - task working memory
    - deep knowledge (docs dir)
    - tool/command cache
-   - each workflow (spec, implement-tdd, debug, commit, commit-pr, review-pr,
-     wrap-session, init, experiment, research, prototype) — may bind to existing repo skills
+   - each workflow (spec, design-proof, implement-tdd, debug, commit, commit-pr, review-pr,
+     wrap-session, init, experiment, research, prototype, extract-invariant) — may bind
+     to existing repo skills
    - hooks
    - subagent roles
    - Codex delegation skills
@@ -29,6 +30,28 @@ the manifest records the winner, it never renames existing files.
    - FEATURE-LIST module (default: not installed)
 3. **Follow-ups** — numbered list of deferred decisions and unwired pieces, each with
    enough context that a future session can act without re-deriving it.
+
+## Machine-readable proof-harness binding
+
+Instances that enable proof-required work also install `.ai/proof-harness.json` from
+`docs-templates/proof-harness-config.template.json` and validate it against
+`schemas/proof-harness-config.schema.json`. This file is the machine source of truth;
+the human role-bindings table points to it rather than duplicating values.
+
+Required bindings:
+
+- `task_artifact_root`: existing project-local task directory, relative to repo root;
+- proof-harness workflow, schema root, active invariant registry, generated invariant
+  index, generated effect inventory, and inventory-adapter configuration;
+- `package_manager_source`: derive the current tool declaration from a repo file rather
+  than copying a version string into root instructions;
+- exact inventory, invariant-index build, invariant-selection, design-hash,
+  builder-hash, invariant-extraction, advisory-promotion, review-resolution validation,
+  rendered-view generation/freshness, and design-validation commands; and
+- architecture, security, and resolver role bindings.
+
+House conventions win. For example, FreshProof binds `task_artifact_root` to `plans`,
+never `dev/active`. Absolute paths and `..` escapes are invalid.
 
 ## Routing matrix distribution (D3, 2026-07-12)
 
@@ -69,7 +92,10 @@ must also record a portable source URL, such as
 5. Codex Sol High inspects the diff, verifies no `{{PLACEHOLDER}}` survivors and no
    host-specific absolute paths, and tests the documented fallback with `AI_OS_HOME`
    unset before committing by named file.
-6. Promote repo learnings to the template only when they generalize (decision #12).
+6. When proof-required work is enabled, validate `.ai/proof-harness.json`, inventory
+   adapter config, active registry, and one positive/negative design-packet fixture;
+   run rendered-view freshness before advertising the gate as installed.
+7. Promote repo learnings to the template only when they generalize (decision #12).
 
 Reference instances: `docs/ai-os-manifest.md` in lower-db (overlay-based, house
 conventions dominant) and freshproof (template-based, mostly fresh roles).

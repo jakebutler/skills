@@ -20,8 +20,12 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 4. Orchestrator: separate intended changes from unrelated work; stop and ask the user before touching, staging, or committing any ambiguous file.
 5. Orchestrator or `implementer`: run formatter and lint commands scoped to the change when the repo supports scoped runs; otherwise run the standard `{{FORMAT_COMMAND}}` and `{{LINT_COMMAND}}` if safe for the branch.
 6. Orchestrator or `verifier`: run tests, typecheck, and build scoped to the change: `{{TYPECHECK_COMMAND}}`, `{{TEST_COMMAND}}`, `{{BUILD_COMMAND}}`, or documented focused variants.
-7. `reviewer`: perform an independent review of the diff; the implementer is never the sole reviewer. Findings must cite file:line and prioritize bugs, regressions, missing tests, security, and broken contracts.
-8. Orchestrator: disposition each review finding as fixed, accepted-risk, deferred with owner, or rejected with reason.
+7. `reviewer`: perform the frozen review topology from `review-pr`; the implementer is
+   never the sole reviewer. For proof-required work, require validated coverage and
+   resolver fan-in before any review-driven edits.
+8. Orchestrator: disposition each consolidated finding as fixed, accepted-risk,
+   deferred with owner, or rejected with reason. Close any required novel-finding
+   extraction or explicit deferral before commit.
 9. `implementer`: address accepted findings with scoped edits, then rerun affected verification.
 10. `doc-maintainer`: update `{{PROJECT_STATUS_FILE}}`, `{{CHANGELOG_FILE}}`, and relevant docs according to doc write tiers. Use Tier A automatic updates, Tier B guarded updates, and no Tier C direct edits.
 11. `autoskill-improver`: run the four-route triage in `agents/autoskill-improver.md` (skill proposal, doc proposal, solution doc, or skip); proposals are staged, while solution docs are written directly as Tier B.
@@ -42,6 +46,8 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 - Formatter/lint ran or was explicitly skipped with reason.
 - Tests/typecheck/build ran at the scope required by the complexity tier or were explicitly skipped with reason.
 - An independent reviewer reviewed the change; implementer was not the sole reviewer.
+- For proof-required work, candidate identity, review resolution, and invariant
+  extraction closure all validate before commit.
 - Final commit contains only intended files.
 
 ## **Ceremony scaling**

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "invariants": [
+    {
+      "id": "INV-EXAMPLE-001",
+      "status": "active-blocking",
+      "statement": "Replace this example with a canonical, testable invariant.",
+      "always_apply": false,
+      "applies_to": {
+        "kinds": ["database_update"],
+        "entities": [],
+        "tags": ["authorization"],
+        "risks": ["high"]
+      },
+      "dependencies": [],
+      "required_evidence": ["denial-without-effects test"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "candidate_id": "{{INVARIANT_CANDIDATE_ID}}",
+  "target_status": "advisory",
+  "counterexample_test": "{{COUNTEREXAMPLE_TEST_PATH}}",
+  "verification_command": "{{COUNTEREXAMPLE_VERIFICATION_COMMAND}}",
+  "verification_result": "pass",
+  "conflicts_active_invariant_ids": [],
+  "promoted_at": "{{ISO_8601_TIMESTAMP}}"
+}

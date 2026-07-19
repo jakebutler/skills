@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/invariant-promotion.schema.json",
+  "title": "Advisory Invariant Promotion Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "candidate_id", "target_status", "counterexample_test", "verification_command", "verification_result", "conflicts_active_invariant_ids", "promoted_at"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "target_status": { "const": "advisory" },
+    "counterexample_test": { "type": "string", "minLength": 1 },
+    "verification_command": { "type": "string", "minLength": 1 },
+    "verification_result": { "const": "pass" },
+    "conflicts_active_invariant_ids": { "type": "array", "maxItems": 0 },
+    "promoted_at": { "type": "string", "format": "date-time" }
+  }
+}

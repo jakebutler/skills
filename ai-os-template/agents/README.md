@@ -1,6 +1,6 @@
 # Subagent Roster
 
-**v1 roster: ten roles.** Reduced from the twenty candidates in the source notes —
+**v1 roster: twelve roles.** Reduced from the twenty candidates in the source notes —
 roles that were sub-cases of another role became named invocations instead:
 
 - *type fixer, build-error resolver* → `implementer` invoked by the verify-on-change
@@ -44,6 +44,8 @@ passing tests for understanding.
 | Frontend designer | `frontend-designer.md` | Impeccable on Sol High for judgment; Composer for crisp build-out; Terra fallback; GLM-5.2 experimental | does not self-approve visual quality |
 | Verifier | `verifier.md` | Sol (codex-computer-use for runtime/browser) | did not write the code under test |
 | Reviewer | `reviewer.md` | cross-family when practical; Fable only for architecture/system-design judgment | independent of implementer |
+| Review resolver | `review-resolver.md` | route-neutral read-only synthesis; Sol owns final disposition | did not design or implement the candidate |
+| Invariant extractor | `invariant-extractor.md` | bounded read-only normalization; deterministic writer appends candidates | never promotes active policy or edits product code |
 | Auditor | `auditor.md` | Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis | independent lenses at High tier |
 | Doc maintainer | `doc-maintainer.md` | Luna; GLM/Terra fallback | Tier A/B files only |
 | Autoskill improver | `autoskill-improver.md` | Terra; Sonnet for language-sensitive proposals | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |

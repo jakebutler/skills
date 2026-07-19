@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "design_candidate_hash": "sha256:aac853c8b7b071b026328bef77b7453e77b1818ea5b52c6635be2c3d36db622f",
+  "requirements_hash": "sha256:bb07ae9d1936f464f1fcd83054259c476d6f951b77242f32ffed7995f4f6dbd4",
+  "reviews": [
+    {
+      "review_id": "REVIEW-ARCH-001",
+      "review_run_id": "RUN-ARCH-001",
+      "lens": "architecture",
+      "model_route": "fable",
+      "transcript_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "authority": "blocking",
+      "snapshot_reproduced": true,
+      "start_snapshot_hash": "sha256:aac853c8b7b071b026328bef77b7453e77b1818ea5b52c6635be2c3d36db622f",
+      "end_snapshot_hash": "sha256:aac853c8b7b071b026328bef77b7453e77b1818ea5b52c6635be2c3d36db622f",
+      "verdicts": [
+        {
+          "requirement_id": "REQ-001",
+          "status": "satisfied",
+          "evidence": "Authority root and enforcement point are explicit.",
+          "finding_ids": []
+        },
+        {
+          "requirement_id": "REQ-002",
+          "status": "satisfied",
+          "evidence": "The audit projection is bound to the accepted write authority.",
+          "finding_ids": []
+        }
+      ],
+      "findings": []
+    }
+  ]
+}

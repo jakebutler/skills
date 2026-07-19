@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "purpose": "apparatus-only; not Tracer 7 model-quality evidence",
+  "cursor_agent_version": "2026.07.16-899851b",
+  "baseline_commit": "8dca0723ae73c99f75ac03026117659dc8ba855b",
+  "baseline_tree": "0df9493d6a998831685fb7cd1672de18ae70db1f",
+  "prompt_sha256": "sha256:0126dc59a8af3fc7db2d3cb0cb0296360fb222f127d0928030cc8fedf2930b6e",
+  "arms": [
+    {
+      "model": "composer-2.5",
+      "status": "completed",
+      "duration_ms": 17322,
+      "runner_config_sha256": "sha256:94d37e07ef86a8eec87524a986d001548dc1aa4dc7de2126f1a01d91a9e5a1b6",
+      "ignored_state_changed_paths": [],
+      "changed_paths": ["math.mjs"],
+      "working_state_sha256": "sha256:e32a50163ebe0f68c62714e9bec71245045217e471df6b19166d100ec2d707f7",
+      "visible_checks_passed": 1,
+      "held_out_checks_passed": 1,
+      "interventions": 0
+    },
+    {
+      "model": "gpt-5.6-sol-high",
+      "status": "completed",
+      "duration_ms": 23238,
+      "runner_config_sha256": "sha256:6292ca0edcfaec7b6b73bf6a38ade53593de15be21269e10b24ff09616de3778",
+      "ignored_state_changed_paths": [],
+      "changed_paths": ["math.mjs"],
+      "working_state_sha256": "sha256:e32a50163ebe0f68c62714e9bec71245045217e471df6b19166d100ec2d707f7",
+      "visible_checks_passed": 1,
+      "held_out_checks_passed": 1,
+      "interventions": 0
+    }
+  ],
+  "environment_names": ["HOME", "LANG", "LC_ALL", "LOGNAME", "PATH", "SHELL", "TERM", "TMPDIR", "USER"],
+  "conclusion": "Both exact routes ran through the same hardened wrapper, prompt, sandbox flags, scrubbed environment-name set, baseline, allowed-path and Git-control policy, and checks. The per-arm config hashes differ only because model, arm ID, and worktree path are arm-specific; controlled fields are checked separately. The identical working-state hash confirms the micro-fixture output. Timing is diagnostic only and is not evidence for a routing decision."
+}

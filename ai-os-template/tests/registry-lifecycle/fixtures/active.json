@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "invariants": [
+    {
+      "id": "INV-AUDIT-001",
+      "version": 1,
+      "title": "Attributable sensitive effects",
+      "statement": "Sensitive effects retain an attributable audit record.",
+      "status": "active-blocking",
+      "owner": "security",
+      "review_date": "2026-07-19",
+      "always_apply": true,
+      "applies_to": {
+        "kinds": [],
+        "entities": [],
+        "tags": [],
+        "risks": []
+      },
+      "dependencies": [],
+      "allowed_exceptions": [],
+      "required_evidence": ["audit attribution test"],
+      "origin": {
+        "finding_class": "missing_audit_attribution",
+        "evidence": "fixture"
+      },
+      "counterexamples": ["fixture audit test"]
+    }
+  ]
+}

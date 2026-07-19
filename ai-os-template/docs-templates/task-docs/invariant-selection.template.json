@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "registry_hash": "{{INVARIANT_REGISTRY_HASH}}",
+  "selection_algorithm": "metadata-exact-v1",
+  "query_features": {
+    "surface_ids": ["SURF-001"],
+    "kinds": ["{{SURFACE_KIND}}"],
+    "entities": ["{{TABLE_ENTITY_SERVICE_OR_API}}"],
+    "tags": ["{{AUTH_TENANT_LIFECYCLE_OR_EFFECT_TAG}}"]
+  },
+  "selected": [
+    {
+      "id": "INV-001",
+      "status": "active-blocking",
+      "statement": "{{NORMATIVE_INVARIANT}}",
+      "reason": "{{MATCH_REASON}}",
+      "surface_ids": ["SURF-001"],
+      "required_evidence": ["{{REQUIRED_EVIDENCE}}"],
+      "dependencies": []
+    }
+  ],
+  "excluded": [],
+  "unresolved_coverage": []
+}

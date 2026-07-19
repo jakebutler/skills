@@ -21,6 +21,7 @@ At response stop, when any of these conditions are true:
   tokens, or UI test fixtures
 - docs drift is detected: behavior changed without corresponding Tier A/B doc update,
   or docs mention old file paths, commands, states, or intent
+- proof-required files changed, or a proof-required builder packet is present
 
 ## Action
 
@@ -29,6 +30,9 @@ Emit one or more bounded subagent delegation packets:
 - Large diff: route to `reviewer` with architecture focus.
 - Frontend file changes: route to `frontend-designer` for UX and visual review.
 - Docs drift: route to `doc-maintainer` for Tier A/B maintenance.
+- Proof-required change: freeze one candidate identity; emit bounded architecture,
+  security, correctness, and other triggered lens packets against that same identity;
+  then emit a `review-resolver` packet only after every durable source packet exists.
 
 Each packet follows the delegation contract: goal, repo/paths, files to inspect,
 excluded areas, expected output artifact, allowed tools, model preference,
@@ -42,6 +46,12 @@ verification requirement, quality bar, and stop condition.
 - Deduplicate routes when the same file set triggers multiple checks.
 - Respect doc write tiers: `doc-maintainer` may handle Tier A/B only; Tier C changes
   become proposals.
+- A hook never auto-approves a candidate, applies review fixes, promotes an invariant
+  to blocking policy, or edits the active registry.
+- Do not forward individual source findings to implementation. Only a validated
+  resolution packet may become actionable feedback.
+- If the candidate identity changes, invalidate all outstanding source and resolution
+  packets and begin a new bounded review generation.
 
 ## Failure behavior
 
@@ -69,4 +79,3 @@ run the subagent explicitly.
   }
 }
 ```
-
