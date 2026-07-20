@@ -148,7 +148,7 @@ function validateResult(result, label, resultPath) {
     requireString(result.native_run_id, `${label}.native_run_id`);
     requireString(result.native_session_id, `${label}.native_session_id`);
     if (result.native_run_id !== result.native_session_id) fail(`${label}.native run/session identity is cross-wired`);
-    if (result.worker_packet_delivery !== "stdin-bytes" || result.multi_agent_enabled !== false || result.network_access !== false || result.writable_tmp !== false || result.sandbox_mode !== "permission-profile" || result.permission_profile !== "native-proof-builder" || result.filesystem_read_scope !== "minimal+workspace+visible-executables") {
+    if (result.worker_packet_delivery !== "stdin-bytes" || result.multi_agent_enabled !== false || result.network_access !== false || result.writable_tmp !== true || result.sandbox_mode !== "permission-profile" || result.permission_profile !== "native-proof-builder" || result.filesystem_read_scope !== "minimal+workspace+approved-toolchain") {
       fail(`${label}.native Codex execution controls are invalid`);
     }
     const packet = readBoundJson(result.native_invocation_packet_path, result.native_invocation_packet_sha256, `${label}.native invocation packet`);
@@ -209,7 +209,7 @@ function validateResult(result, label, resultPath) {
     if (attestation.controls_sha256 !== packet.controls_sha256) fail(`${label}.native attestation cross-wiring: controls_sha256`);
     if (attestation.worker_packet_sha256 !== packet.worker_packet_sha256 || attestation.observed_prompt_sha256 !== packet.prompt_sha256) fail(`${label}.native attestation worker/prompt binding is invalid`);
     if (attestation.status !== "completed" || attestation.agent_exit_status !== 0 || attestation.agent_signal !== null || attestation.agent_timed_out !== false) fail(`${label}.native attestation did not complete`);
-    if (attestation.launch_contract_sha256 !== result.launch_contract_sha256 || attestation.worker_packet_delivery !== "stdin-bytes" || attestation.multi_agent_enabled !== false || attestation.network_access !== false || attestation.writable_tmp !== false || attestation.sandbox_mode !== "permission-profile" || attestation.permission_profile !== "native-proof-builder" || attestation.filesystem_read_scope !== "minimal+workspace+visible-executables") {
+    if (attestation.launch_contract_sha256 !== result.launch_contract_sha256 || attestation.worker_packet_delivery !== "stdin-bytes" || attestation.multi_agent_enabled !== false || attestation.network_access !== false || attestation.writable_tmp !== true || attestation.sandbox_mode !== "permission-profile" || attestation.permission_profile !== "native-proof-builder" || attestation.filesystem_read_scope !== "minimal+workspace+approved-toolchain") {
       fail(`${label}.native attestation launch controls are invalid`);
     }
     if (attestation.capability_probe_contract_sha256 !== result.capability_probe_contract_sha256 || attestation.capability_probe_evidence_sha256 !== result.capability_probe_evidence_sha256 || path.resolve(attestation.capability_probe_evidence_path) !== path.resolve(result.capability_probe_evidence_path)) {

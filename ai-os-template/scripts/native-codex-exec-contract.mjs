@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import os from "node:os";
+import path from "node:path";
 
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const DISABLED_FEATURES = Object.freeze([
@@ -31,6 +33,22 @@ function fail(message) {
   throw new Error(message);
 }
 
+function approvedToolchainReadPaths(commandPaths, executablePaths) {
+  const approved = new Set([...commandPaths, ...executablePaths]);
+  for (const commandPath of commandPaths) {
+    if (path.basename(commandPath) !== "pnpm") continue;
+    const prefix = path.dirname(path.dirname(commandPath));
+    approved.add(path.join(prefix, "bin"));
+    approved.add(path.join(prefix, "Cellar"));
+    approved.add(path.join(prefix, "opt"));
+    approved.add(path.join(prefix, "etc", "openssl@3"));
+    approved.add(
+      path.join(os.homedir(), ".cache", "node", "corepack", "v1", "pnpm"),
+    );
+  }
+  return [...approved].sort();
+}
+
 export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketSha256) {
   if (!SHA256.test(approvedWorkerPacketSha256 ?? "") || sha256(workerPacketBytes) !== approvedWorkerPacketSha256) {
     fail("worker packet hash does not match the approved identity");
@@ -43,18 +61,24 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
   if (workerPacket.reasoning_effort !== "high") fail("native Codex exec reasoning effort must be high");
   if (!Array.isArray(workerPacket.visible_execution_manifest?.checks)) fail("visible execution manifest checks are invalid");
   if (workerPacket.visible_execution_manifest.checks.length !== workerPacket.visible_checks.length) fail("visible execution manifest check count mismatch");
+  const visibleCommandPaths = [];
   const visibleExecutablePaths = [];
   for (const [index, check] of workerPacket.visible_execution_manifest.checks.entries()) {
     if (JSON.stringify(check.command) !== JSON.stringify(workerPacket.visible_checks[index])) fail(`visible execution manifest command ${index} mismatch`);
+    if (typeof check.command?.[0] !== "string" || !check.command[0].startsWith("/")) fail(`visible execution manifest command path ${index} is invalid`);
     if (typeof check.executable_path !== "string" || !check.executable_path.startsWith("/")) fail(`visible execution manifest executable ${index} is invalid`);
+    visibleCommandPaths.push(check.command[0]);
     visibleExecutablePaths.push(check.executable_path);
   }
-
+  const approvedToolchainPaths = approvedToolchainReadPaths(
+    visibleCommandPaths,
+    visibleExecutablePaths,
+  );
   const stdin = [
     "You are the sole native builder process for a proof-gated experiment.",
-    "The parent runner has disabled multi-agent, web, browser, app, plugin, user-configuration, project-instruction, and network capabilities and has restricted filesystem reads to minimal runtime paths, this repository, and exact visible-check executables.",
+    "The parent runner has disabled multi-agent, web, browser, app, plugin, user-configuration, project-instruction, and network capabilities and has restricted filesystem reads to minimal runtime paths, this repository, and the approved visible-check toolchain.",
     "Treat the exact JSON packet below as your complete task capability. Do not search for producer, sibling-arm, held-out, result, receipt, or orchestration evidence.",
-    "Decode prompt_base64 and implement only that prompt. Modify only allowed_paths in repository. Do not stage, commit, change refs, push, deploy, migrate, access production, use secrets, or write outside repository.",
+    "Decode prompt_base64 and implement only that prompt. Modify only allowed_paths in repository. Do not stage, commit, change refs, push, deploy, migrate, access production, use secrets, or write outside repository except transient toolchain scratch created by visible checks.",
     "Run only visible_checks from the packet. If the task is ambiguous or needs an intervention, stop and report failure without expanding scope.",
     `APPROVED_WORKER_PACKET_SHA256 ${approvedWorkerPacketSha256}`,
     "BEGIN_EXACT_WORKER_PACKET",
@@ -75,10 +99,12 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
     "--config", `model_reasoning_effort=${JSON.stringify(workerPacket.reasoning_effort)}`,
     "--config", "approval_policy=\"never\"",
     "--config", `default_permissions=${JSON.stringify(PERMISSION_PROFILE)}`,
+    "--config", `permissions.${PERMISSION_PROFILE}.extends=\":workspace\"`,
     "--config", `permissions.${PERMISSION_PROFILE}.filesystem={${[
+      `"/"="deny"`,
       `\":minimal\"=\"read\"`,
       `\":workspace_roots\"={\".\"=\"write\",\".git\"=\"read\"}`,
-      ...[...new Set(visibleExecutablePaths)].sort().map((target) => `${JSON.stringify(target)}=\"read\"`),
+      ...approvedToolchainPaths.map((target) => `${JSON.stringify(target)}=\"read\"`),
     ].join(",")}}`,
     "--config", `permissions.${PERMISSION_PROFILE}.network.enabled=false`,
     "--config", "project_doc_max_bytes=0",
@@ -97,9 +123,9 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
     worker_packet_delivery: "stdin-bytes",
     sandbox_mode: "permission-profile",
     permission_profile: PERMISSION_PROFILE,
-    filesystem_read_scope: "minimal+workspace+visible-executables",
+    filesystem_read_scope: "minimal+workspace+approved-toolchain",
     network_access: false,
-    writable_tmp: false,
+    writable_tmp: true,
     multi_agent_enabled: false,
     ignored_user_config: true,
     ignored_project_rules: true,
@@ -115,7 +141,7 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
 
 export function nativeCodexCapabilityProbeContract(launchContract, paths) {
   if (launchContract?.contract_type !== "native-codex-exec-launch-v4") fail("native launch contract is invalid for capability probing");
-  for (const key of ["repository", "visible_executable_path", "held_out_executable_path", "root_evidence_path", "codex_executable_path"]) {
+  for (const key of ["repository", "visible_command_path", "visible_executable_path", "held_out_executable_path", "root_evidence_path", "codex_executable_path"]) {
     if (typeof paths?.[key] !== "string" || paths[key] === "") fail(`capability probe ${key} is required`);
   }
   const inheritedArgs = [];
@@ -127,10 +153,11 @@ export function nativeCodexCapabilityProbeContract(launchContract, paths) {
   }
   const expected = {
     workspace_read: 0,
+    visible_command_read: 0,
     visible_executable_read: 0,
     held_out_executable_read: "nonzero",
     root_evidence_read: "nonzero",
-    tmp_write: "nonzero",
+    tmp_write: 0,
     network_connect: "nonzero",
     descendant_codex_agent: "nonzero",
   };
@@ -146,6 +173,7 @@ export function nativeCodexCapabilityProbeContract(launchContract, paths) {
     "  printf '\\n' >&2",
     "}",
     "observe workspace_read /bin/ls \"$PROOF_PROBE_REPOSITORY\"",
+    "observe visible_command_read /bin/cat \"$PROOF_PROBE_VISIBLE_COMMAND\"",
     "observe visible_executable_read /bin/cat \"$PROOF_PROBE_VISIBLE_EXECUTABLE\"",
     "observe held_out_executable_read /bin/cat \"$PROOF_PROBE_HELD_OUT_EXECUTABLE\"",
     "observe root_evidence_read /bin/cat \"$PROOF_PROBE_ROOT_EVIDENCE\"",
@@ -155,6 +183,7 @@ export function nativeCodexCapabilityProbeContract(launchContract, paths) {
   ].join("\n");
   const environment = {
     PROOF_PROBE_REPOSITORY: paths.repository,
+    PROOF_PROBE_VISIBLE_COMMAND: paths.visible_command_path,
     PROOF_PROBE_VISIBLE_EXECUTABLE: paths.visible_executable_path,
     PROOF_PROBE_HELD_OUT_EXECUTABLE: paths.held_out_executable_path,
     PROOF_PROBE_ROOT_EVIDENCE: paths.root_evidence_path,

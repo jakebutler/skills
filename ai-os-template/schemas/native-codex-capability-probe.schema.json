@@ -35,9 +35,10 @@
     "observations": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["workspace_read", "visible_executable_read", "held_out_executable_read", "root_evidence_read", "tmp_write", "network_connect", "descendant_codex_agent"],
+      "required": ["workspace_read", "visible_command_read", "visible_executable_read", "held_out_executable_read", "root_evidence_read", "tmp_write", "network_connect", "descendant_codex_agent"],
       "properties": {
         "workspace_read": { "$ref": "#/$defs/status" },
+        "visible_command_read": { "$ref": "#/$defs/status" },
         "visible_executable_read": { "$ref": "#/$defs/status" },
         "held_out_executable_read": { "$ref": "#/$defs/status" },
         "root_evidence_read": { "$ref": "#/$defs/status" },

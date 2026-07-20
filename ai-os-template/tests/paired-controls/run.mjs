@@ -97,7 +97,7 @@ if (process.argv.includes("features") && process.argv.includes("list")) {
   process.exit(0);
 }
 if (process.argv.includes("sandbox")) {
-  for (const [label, status] of [["workspace_read",0],["visible_executable_read",0],["held_out_executable_read",1],["root_evidence_read",1],["tmp_write",1],["network_connect",1],["descendant_codex_agent",1]]) console.log(label + "\\t" + status);
+  for (const [label, status] of [["workspace_read",0],["visible_command_read",0],["visible_executable_read",0],["held_out_executable_read",1],["root_evidence_read",1],["tmp_write",0],["network_connect",1],["descendant_codex_agent",1]]) console.log(label + "\\t" + status);
   process.exit(0);
 }
 process.stdin.resume();

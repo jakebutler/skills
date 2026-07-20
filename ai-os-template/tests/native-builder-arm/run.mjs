@@ -244,6 +244,7 @@ const workerPacketBytes = fs.readFileSync(prepared.worker_packet_path);
 const launchContract = nativeCodexExecContract(workerPacketBytes, prepared.worker_packet_sha256);
 const capabilityProbeContract = nativeCodexCapabilityProbeContract(launchContract, {
   repository: prepared.packet.repository,
+  visible_command_path: evaluatorPath,
   visible_executable_path: fs.realpathSync(evaluatorPath),
   held_out_executable_path: fs.realpathSync(evaluatorPath),
   root_evidence_path: prepared.invocation_packet_path,
@@ -308,10 +309,10 @@ const attestation = {
   worker_packet_delivery: "stdin-bytes",
   multi_agent_enabled: false,
   network_access: false,
-  writable_tmp: false,
+  writable_tmp: true,
   sandbox_mode: "permission-profile",
   permission_profile: "native-proof-builder",
-  filesystem_read_scope: "minimal+workspace+visible-executables",
+  filesystem_read_scope: "minimal+workspace+approved-toolchain",
   transcript_path: transcriptPath,
   transcript_sha256: sha256(transcriptBytes),
   stderr_path: stderrPath,

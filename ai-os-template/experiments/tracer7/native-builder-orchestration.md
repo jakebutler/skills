@@ -66,16 +66,18 @@ host transport.
 
 Before model launch, the runner records the exact effective feature inventory and
 runs the same permission profile through deterministic syscall probes. Finalization
-requires observed workspace/visible-executable reads plus denial of held-out and
-root-evidence reads, temporary writes, network connection, and a nested `codex exec`
-agent. Raw feature/probe stdout and stderr are retained and hash-bound through
+requires observed workspace, visible-command, visible-executable, and approved
+visible-check toolchain reads; observed temporary scratch capability; and denial of
+held-out/root-evidence reads, network connection, and a nested `codex exec` agent.
+Raw feature/probe stdout and stderr are retained and hash-bound through
 `native-capability-probe.json`; configured booleans alone are not accepted as proof.
 
 The worker may modify only `allowed_paths` in the packet repository and may run only
 the visible checks named in the packet. It must not stage, commit, change refs, push,
 publish, deploy, migrate, access production, use secrets, inspect held-out evidence,
-or write outside the repository. The parent independently measures all repository
-effects and rejects violations.
+or write outside the repository except for transient toolchain scratch created by a
+visible check. The parent independently measures all repository effects and rejects
+violations.
 
 The parent captures the CLI version and executable content identity, exact launch
 contract and capability-probe hashes, JSONL transcript/session ID, stderr, exit status, timeout status,

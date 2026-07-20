@@ -115,9 +115,10 @@ log writes; result validation reopens and hash-checks those external claim artif
 The CLI supplies an auditable session/transcript/process identity, not a cryptographic
 provider signature. The apparatus detects missing, inconsistent, stale, replayed,
 cross-wired, wrong-route, failed, or repository-divergent evidence. It hash-binds the
-launch contract, disables descendant-agent tools, and denies sandboxed command network
-and temporary-directory writes. Trust in the local parent process and HITL remains
-explicit; any observed breach invalidates the run.
+launch contract, disables descendant-agent tools, denies sandboxed command network,
+and explicitly attests the temporary-directory scratch required by the visible test
+toolchain. Trust in the local parent process and HITL remains explicit; any observed
+breach invalidates the run.
 
 ## Held-out and leakage controls
 

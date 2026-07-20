@@ -89,10 +89,11 @@ if (process.argv.includes("sandbox")) {
   const permissive = process.env.PROOF_PROBE_ROOT_EVIDENCE.includes("permissive-capability");
   for (const [label, status] of [
     ["workspace_read", 0],
+    ["visible_command_read", 0],
     ["visible_executable_read", 0],
     ["held_out_executable_read", permissive ? 0 : 1],
     ["root_evidence_read", 1],
-    ["tmp_write", 1],
+    ["tmp_write", 0],
     ["network_connect", 1],
     ["descendant_codex_agent", 1],
   ]) console.log(label + "\\t" + status);
@@ -173,10 +174,10 @@ assert.equal(attestation.execution_surface, "codex-exec");
 assert.equal(attestation.native_session_id, "fixture-thread-001");
 assert.equal(attestation.multi_agent_enabled, false);
 assert.equal(attestation.network_access, false);
-assert.equal(attestation.writable_tmp, false);
+assert.equal(attestation.writable_tmp, true);
 assert.equal(attestation.sandbox_mode, "permission-profile");
 assert.equal(attestation.permission_profile, "native-proof-builder");
-assert.equal(attestation.filesystem_read_scope, "minimal+workspace+visible-executables");
+assert.equal(attestation.filesystem_read_scope, "minimal+workspace+approved-toolchain");
 assert.equal(attestation.worker_packet_delivery, "stdin-bytes");
 assert.match(attestation.launch_contract_sha256, /^sha256:[a-f0-9]{64}$/);
 assert.match(attestation.capability_probe_contract_sha256, /^sha256:[a-f0-9]{64}$/);

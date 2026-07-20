@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import { nativeCodexCapabilityProbeContract, nativeCodexExecContract } from "../../scripts/native-codex-exec-contract.mjs";
+
+const visibleCommandPath = "/tooling/bin/pnpm";
 
 const workerPacket = {
   schema_version: 1,
@@ -24,10 +28,10 @@ const workerPacket = {
   allowed_ignored_paths: [],
   timeout_ms: 10_000,
   intervention_budget: 0,
-  visible_checks: [[process.execPath, "--version"]],
+  visible_checks: [[visibleCommandPath, "--version"]],
   visible_execution_manifest: {
     schema_version: 1,
-    checks: [{ command: [process.execPath, "--version"], executable_path: fs.realpathSync(process.execPath) }],
+    checks: [{ command: [visibleCommandPath, "--version"], executable_path: fs.realpathSync(process.execPath) }],
   },
   visible_execution_manifest_sha256: `sha256:${"5".repeat(64)}`,
 };
@@ -43,10 +47,24 @@ assert.equal(contract.argv.includes('model_reasoning_effort="high"'), true);
 assert.equal(contract.argv.includes("--sandbox"), false);
 assert.equal(contract.argv.some((arg) => arg.startsWith("sandbox_workspace_write.")), false);
 assert.equal(contract.argv.includes('default_permissions="native-proof-builder"'), true);
+assert.equal(contract.argv.includes('permissions.native-proof-builder.extends=":workspace"'), true);
 const filesystemProfile = contract.argv.find((arg) => arg.startsWith("permissions.native-proof-builder.filesystem="));
+assert.equal(filesystemProfile.includes('"/"="deny"'), true);
+assert.equal(filesystemProfile.includes('":tmpdir"="deny"'), false);
+assert.equal(filesystemProfile.includes('":slash_tmp"="deny"'), false);
 assert.equal(filesystemProfile.includes('":minimal"="read"'), true);
 assert.equal(filesystemProfile.includes('":workspace_roots"={"."="write",".git"="read"}'), true);
 assert.equal(filesystemProfile.includes(`${JSON.stringify(fs.realpathSync(process.execPath))}="read"`), true);
+assert.equal(filesystemProfile.includes(`${JSON.stringify(visibleCommandPath)}="read"`), true);
+for (const runtimeRoot of ["/tooling/bin", "/tooling/Cellar", "/tooling/opt", "/tooling/etc/openssl@3"]) {
+  assert.equal(filesystemProfile.includes(`${JSON.stringify(runtimeRoot)}="read"`), true);
+}
+assert.equal(
+  filesystemProfile.includes(
+    `${JSON.stringify(path.join(os.homedir(), ".cache", "node", "corepack", "v1", "pnpm"))}="read"`,
+  ),
+  true,
+);
 assert.equal(contract.argv.includes("permissions.native-proof-builder.network.enabled=false"), true);
 assert.equal(contract.argv.includes("project_doc_max_bytes=0"), true);
 assert.equal(contract.argv.includes('web_search="disabled"'), true);
@@ -57,10 +75,10 @@ for (const feature of ["multi_agent_v2", "enable_fanout", "enable_mcp_apps", "co
 }
 assert.equal(contract.multi_agent_enabled, false);
 assert.equal(contract.network_access, false);
-assert.equal(contract.writable_tmp, false);
+assert.equal(contract.writable_tmp, true);
 assert.equal(contract.sandbox_mode, "permission-profile");
 assert.equal(contract.permission_profile, "native-proof-builder");
-assert.equal(contract.filesystem_read_scope, "minimal+workspace+visible-executables");
+assert.equal(contract.filesystem_read_scope, "minimal+workspace+approved-toolchain");
 assert.equal(contract.worker_packet_delivery, "stdin-bytes");
 assert.equal(contract.stdin.includes("native-invocation-packet.json"), false);
 assert.equal(contract.stdin.includes("native-result.json"), false);
@@ -70,6 +88,7 @@ assert.match(contract.sha256, /^sha256:[a-f0-9]{64}$/);
 
 const probe = nativeCodexCapabilityProbeContract(contract, {
   repository: workerPacket.repository,
+  visible_command_path: visibleCommandPath,
   visible_executable_path: fs.realpathSync(process.execPath),
   held_out_executable_path: "/private/proof/held-out-check",
   root_evidence_path: "/private/proof/native-invocation-packet.json",
@@ -80,13 +99,15 @@ assert.equal(probe.argv.includes('default_permissions="native-proof-builder"'), 
 assert.equal(probe.argv.includes("permissions.native-proof-builder.network.enabled=false"), true);
 assert.deepEqual(probe.expected, {
   workspace_read: 0,
+  visible_command_read: 0,
   visible_executable_read: 0,
   held_out_executable_read: "nonzero",
   root_evidence_read: "nonzero",
-  tmp_write: "nonzero",
+  tmp_write: 0,
   network_connect: "nonzero",
   descendant_codex_agent: "nonzero",
 });
+assert.equal(probe.environment.PROOF_PROBE_VISIBLE_COMMAND, visibleCommandPath);
 assert.equal(probe.argv.at(-1).includes("PROBE_COMMAND_OUTPUT"), true, "probe must retain per-command diagnostic output");
 assert.match(probe.sha256, /^sha256:[a-f0-9]{64}$/);
 

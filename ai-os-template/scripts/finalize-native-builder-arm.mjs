@@ -193,6 +193,7 @@ export async function finalizeNativeBuilderArm(
   const heldOutExecutablePath = packet.execution_manifest?.checks?.[packet.visible_checks.length]?.executable_path;
   const capabilityProbeContract = nativeCodexCapabilityProbeContract(launchContract, {
     repository,
+    visible_command_path: packet.visible_checks[0][0],
     visible_executable_path: visibleExecutablePath,
     held_out_executable_path: heldOutExecutablePath,
     root_evidence_path: packet.invocation_packet_path,
@@ -230,10 +231,10 @@ export async function finalizeNativeBuilderArm(
   requireExact(attestation.worker_packet_delivery, "stdin-bytes", "attestation worker_packet_delivery");
   requireExact(attestation.multi_agent_enabled, false, "attestation multi_agent_enabled");
   requireExact(attestation.network_access, false, "attestation network_access");
-  requireExact(attestation.writable_tmp, false, "attestation writable_tmp");
+  requireExact(attestation.writable_tmp, true, "attestation writable_tmp");
   requireExact(attestation.sandbox_mode, "permission-profile", "attestation sandbox_mode");
   requireExact(attestation.permission_profile, "native-proof-builder", "attestation permission_profile");
-  requireExact(attestation.filesystem_read_scope, "minimal+workspace+visible-executables", "attestation filesystem_read_scope");
+  requireExact(attestation.filesystem_read_scope, "minimal+workspace+approved-toolchain", "attestation filesystem_read_scope");
   if (attestation.status !== "completed" || attestation.agent_exit_status !== 0 || attestation.agent_signal !== null || attestation.agent_timed_out !== false) {
     fail("failed or timeout native run cannot be finalized as success");
   }

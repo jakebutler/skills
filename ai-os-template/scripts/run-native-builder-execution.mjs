@@ -217,6 +217,7 @@ export async function runNativeBuilderExecution(
   }
   const probeContract = nativeCodexCapabilityProbeContract(launchContract, {
     repository,
+    visible_command_path: packet.visible_checks[0][0],
     visible_executable_path: visibleExecutablePath,
     held_out_executable_path: heldOutExecutablePath,
     root_evidence_path: packet.invocation_packet_path,
