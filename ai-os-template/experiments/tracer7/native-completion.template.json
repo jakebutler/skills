@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "evidence_type": "codex-collaboration-subagent-completion-v1",
+  "invocation_packet_sha256": "{{PREPARED_INVOCATION_PACKET_SHA256}}",
+  "invocation_id": "{{INVOCATION_ID}}",
+  "experiment_id": "{{EXPERIMENT_ID}}",
+  "arm_id": "{{ARM_ID}}",
+  "canonical_task": "{{CANONICAL_COLLABORATION_TASK}}",
+  "run_id": "{{COLLABORATION_AGENT_ID}}",
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "status": "completed",
+  "controls_sha256": "{{CONTROLS_SHA256}}",
+  "worker_packet_sha256": "{{WORKER_PACKET_SHA256}}",
+  "observed_prompt_sha256": "{{WORKER_OBSERVED_PROMPT_SHA256}}",
+  "changed_paths": [
+    "{{ACTUAL_CHANGED_PATH}}"
+  ],
+  "observed_working_state_sha256": "{{SUBAGENT_REPORTED_WORKING_STATE_SHA256}}",
+  "returned_completion": "{{VERBATIM_RETURNED_COMPLETION}}"
+}

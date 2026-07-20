@@ -66,23 +66,26 @@ does not permit.
 
 ## Tracer 7 experimental backend route
 
-Composer is not the general backend default. Tracer 7 is a paired, provisional test of
-whether it can execute most builder work after the proof-required design gate has
-removed unresolved architecture and security decisions.
+Composer is not the general backend default. Tracer 7 is a paired routing-stack
+viability test after the proof-required design gate removes unresolved architecture
+and security decisions.
 
-- Control builder route: Cursor Agent model `gpt-5.6-sol-high`.
-- Experimental builder route: Cursor Agent model `composer-2.5`.
-- Both arms use the same Cursor Agent binary and subscription-backed authentication,
-  frozen baseline, byte-identical builder packet and prompt, tool policy, time and
-  retry budget, visible checks, held-out evaluation, and review topology.
-- Model selection is the only planned independent variable. Any fallback, intervention,
-  packet invalidation, prompt change, or environment drift is an experiment event and
-  may make the arm non-comparable.
-- Architecture and security lenses are completed during the shared design dogfood gate.
-  Post-build reviewers remain independent of the builder family and receive blinded
-  candidate labels until their findings and scores are frozen.
-- No routing-table change follows from one tracer. Evidence may justify only a
-  provisional bounded-backend route, with explicit stop conditions and more tracers.
+- Native control route: one fresh Codex collaboration subagent using `gpt-5.6-sol` at
+  high reasoning through native Codex subscription access, with deterministic
+  prepare/attest/finalize evidence.
+- Experimental route: Cursor Agent using only `composer-2.5` through Cursor
+  subscription access.
+- D0, builder prompt, allowed paths, ignored policy, visible/held-out commands, budgets,
+  intervention policy, and review rubric remain identical. Runtime, producer surface,
+  authentication path, and model move together as an explicit fixed confound.
+- No fallback or silent relabeling is allowed inside either route. Any intervention,
+  packet invalidation, prompt change, environment drift, or producer-evidence failure
+  is an experiment event and may make the pair non-comparable.
+- Reviewers receive neutral labels and may not see model, runtime, producer, transcript,
+  duration, or route order before row-level findings and scores are frozen.
+- A successful single tracer may establish only provisional viability of the complete
+  Composer-on-Cursor route for similar proof-gated slices. It cannot prove Composer
+  model superiority, explain speed causally, or establish a universal backend default.
 
 ## Review topology
 

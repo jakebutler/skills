@@ -1,4 +1,4 @@
-# Proof Harness and Composer-vs-Sol Routing Experiment
+# Proof Harness and Composer-on-Cursor vs Native-Sol Routing-Stack Experiment
 
 **Status (2026-07-19):** generic template implementation is authorized and in progress
 in this task. The contracted design-gate slice, surface-driven invariant retrieval,
@@ -13,6 +13,12 @@ installation remains gated on user acceptance of `B0` from task
 are approved for implementation. Manual HITL gates still control `B0` acceptance,
 FreshProof instance installation, experiment-arm start, candidate selection, and any
 routing promotion.
+
+**Native producer correction (2026-07-20):** the control builder now uses a native
+`gpt-5.6-sol` collaboration subagent at high reasoning with deterministic
+prepare/attest/finalize evidence. Composer remains Cursor-only. The comparison is an
+end-to-end routing-stack experiment with runtime/producer surface as a fixed confound,
+not a pure model-isolation A/B test.
 
 ## 1. Executive decision
 
@@ -30,8 +36,9 @@ workflow:
 7. automatically extract novel, reproduced findings into a governed candidate inbox;
 8. use explicit convergence and forced-replan rules instead of an indefinite sequence
    of fresh-context reviews; and
-9. validate Composer 2.5 against Sol High on the paired Tracer 7 build before granting
-   Composer provisional eligibility for similar proof-complete backend work.
+9. validate the Composer 2.5-on-Cursor route against native Sol High on the paired
+   Tracer 7 build before granting that complete route provisional eligibility for
+   similar proof-complete backend work.
 
 The experiment uses a split ownership model:
 
@@ -824,7 +831,7 @@ Integrated execution order:
    of `B0`, including the lean FreshProof `AGENTS.md` and project-specific bindings.
 7. Verify and freeze final post-harness baseline `H0`.
 8. Run the shared Tracer 7 design dogfood gate on `H0` and freeze `D0`.
-9. Run the paired Composer 2.5 and Sol High builder arms from byte-identical `D0`.
+9. Run the paired Composer 2.5-on-Cursor and native-Sol builder routes from byte-identical `D0`.
 10. Resolve blinded reviews, reveal routes, let the user select at most one integration
     candidate, and make at most a provisional routing change.
 
@@ -1064,38 +1071,42 @@ Dogfood acceptance:
 - context retrieval avoids flat-registry injection; and
 - lessons change the generic template only through reviewed follow-up edits.
 
-The Composer-vs-Sol Tracer 7 build does not start until this design dogfood gate passes.
+The paired routing-stack Tracer 7 build does not start until this design dogfood gate passes.
 
-## 8. Composer-vs-Sol experiment
+## 8. Composer-on-Cursor vs native-Sol routing-stack experiment
 
 ### 8.1 Decision question
 
-Can Composer 2.5 perform the primary implementation work for FreshProof Tracer 7, from
-the same fully approved design packet as Sol High, with comparable correctness and less
-builder time and remediation burden?
+Can Composer 2.5 through Cursor perform the primary implementation work for FreshProof
+Tracer 7, from the same fully approved design packet as native Sol High, with comparable
+correctness and no worse intervention or remediation burden?
 
 This does not test whether Composer should plan epics, change architecture, review its
-own work, or replace Sol as control plane.
+own work, or replace Sol as control plane. It also does not isolate model quality:
+runtime, producer surface, authentication path, and model move together as an explicit
+fixed confound.
 
 ### 8.2 Falsifiable hypothesis
 
 > Given the same approved Tracer 7 architecture proof packet and exact clean
-> post-harness baseline `H0`, Composer 2.5 produces an independently accepted Tracer 7
-> candidate within the same two-round budget as Sol High, with zero residual P0/P1
-> defects, no scope or architecture deviation, complete requirement traceability, and
-> at least a 1.5x reduction in active builder plus remediation time.
+> post-harness baseline `H0`, the Composer 2.5-on-Cursor route produces an independently
+> accepted Tracer 7 candidate within the same two-round budget as native Sol High, with
+> zero residual P0/P1 defects, no scope or architecture deviation, complete requirement
+> traceability, and no worse intervention or remediation burden.
 
-Design, deterministic verification, and independent review time are shared or identical
-experimental overhead and are recorded separately. The 1.5x threshold applies to the
-variable actually under test: primary-builder and remediation time.
+Design, deterministic verification, and independent review time are shared or matched
+experimental overhead and are recorded separately. Builder/remediation duration remains
+a secondary route-level measurement; a speed difference cannot be attributed solely to
+the model.
 
-The manipulated variable is only the primary implementation/remediation route:
+The paired treatment is the complete primary implementation/remediation route:
 
-- experimental arm: Composer 2.5 performs almost all approved builder work;
-- control arm: Sol High performs almost all approved builder work under the existing
-  routing; and
+- experimental arm: Composer 2.5 through Cursor performs approved builder work;
+- control arm: native `gpt-5.6-sol` at high reasoning through a Codex collaboration
+  subagent performs approved builder work under prepare/attest/finalize controls; and
 - both arms use the same `D0`, updated harness, design history, allowed paths,
-  budgets, verification, reviewer models, fan-in, convergence rules, and HITL gates.
+  ignored policy, evaluator vectors, budgets, intervention policy, verification,
+  reviewer models, fan-in, convergence rules, and HITL gates.
 
 Any arm-specific hint, extra planning conversation, reviewer substitution, retry, or
 scope change invalidates the paired comparison unless applied symmetrically from a new
@@ -1130,8 +1141,9 @@ production code authority before design approval.
 Create two arms from the exact same clean baseline and give them byte-identical approved
 packets:
 
-- Arm A: Composer 2.5 is primary builder.
-- Arm B: Sol High is primary builder.
+- Arm A: Composer 2.5 through Cursor is primary builder.
+- Arm B: native `gpt-5.6-sol` through one Codex collaboration subagent at high
+  reasoning is primary builder.
 
 Each arm implements the same architecture-approved Tracer 7 review units. It may stop
 and escalate a missing design requirement, but may not independently redesign the
@@ -1337,17 +1349,18 @@ Tracer 7 arm:
 - passes the same visible and held-out checks; and
 - stops and escalates when the proof packet is incomplete instead of improvising.
 
-Composer becomes the **provisionally preferred Tracer-style builder** only if it is
-viable, its initial and accepted severity profile is no worse than Sol's, it needs no
-more review/remediation rounds, and its active builder-plus-remediation time is at least
-1.5x faster.
+The **Composer-on-Cursor route** becomes provisionally viable for similar Tracer-style
+work only if it is viable, its initial and accepted severity profile is no worse than
+native Sol's, and it needs no more intervention or review/remediation generations.
+Lower builder-plus-remediation time may strengthen that route-level result but is not a
+causal model-superiority claim.
 
 Interpretation is predeclared:
 
-- both arms pass and Composer clears the speed threshold: provisionally prefer
-  Composer for similar proof-complete tracers;
-- Composer passes but misses the speed threshold: retain it as a viable fallback, not
-  the default;
+- both arms pass and Composer-on-Cursor has no worse primary-gate burden: record that
+  route as provisionally viable for similar proof-complete tracers;
+- both pass but order effects or route-level timing dominate interpretation: record
+  viability and keep performance conclusions inconclusive;
 - Composer is faster but has worse correctness, traceability, or design adherence: do
   not promote it;
 - the shared design packet is incomplete: classify the run as a harness/design failure,
@@ -1355,10 +1368,12 @@ Interpretation is predeclared:
 - the environment, snapshot, packet, or review topology is not reproducible: classify
   the comparison as inconclusive.
 
-Because Tracer 7 is one paired task, a win establishes provisional eligibility, not a
-universal routing default. A general Composer default requires later paired evidence or
-production telemetry across representative task classes. Sol High remains the control
-builder and planner; Fable remains architecture critic; Opus remains security critic.
+Because Tracer 7 is one paired task with a runtime/producer confound, a win establishes
+provisional eligibility of the complete Composer-on-Cursor route, not Composer model
+superiority or a universal routing default. A general default requires later paired
+evidence or production telemetry across representative task classes. Native Sol High
+remains the control builder and planner; Fable remains architecture critic; Opus
+remains security critic.
 
 If both candidates pass, candidate selection uses, in order: lower initial P0/P1
 burden, fewer design deviations, fewer remediation rounds, faster active builder time,
@@ -1459,7 +1474,7 @@ Human review checks:
    matrix, selected invariants,
    verification plan, baseline, and builder packet by hash.
 10. At HITL gate 3, approve `D0` and the execution budget, then run the blinded Composer
-    2.5 and Sol High Tracer 7 builder arms from the exact same
+    2.5-on-Cursor and native-Sol Tracer 7 builder routes from the exact same
    frozen baseline and packet.
 11. Independently verify, review, resolve, and compare both frozen candidates under the
     same two-round policy.

@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "purpose": "apparatus-only; not Tracer 7 model-quality evidence",
+  "purpose": "historical Cursor-only apparatus rehearsal; not Tracer 7 model-quality evidence",
+  "status": "superseded-for-native-control-route",
   "cursor_agent_version": "2026.07.16-899851b",
   "baseline_commit": "8dca0723ae73c99f75ac03026117659dc8ba855b",
   "baseline_tree": "0df9493d6a998831685fb7cd1672de18ae70db1f",
@@ -32,5 +33,5 @@
     }
   ],
   "environment_names": ["HOME", "LANG", "LC_ALL", "LOGNAME", "PATH", "SHELL", "TERM", "TMPDIR", "USER"],
-  "conclusion": "Both exact routes ran through the same hardened wrapper, prompt, sandbox flags, scrubbed environment-name set, baseline, allowed-path and Git-control policy, and checks. The per-arm config hashes differ only because model, arm ID, and worktree path are arm-specific; controlled fields are checked separately. The identical working-state hash confirms the micro-fixture output. Timing is diagnostic only and is not evidence for a routing decision."
+  "conclusion": "This historical rehearsal proved the Cursor wrapper only. Its Cursor-wrapped Sol arm is not the approved native control producer and cannot satisfy the revised paired routing-stack protocol. Timing remains diagnostic only."
 }

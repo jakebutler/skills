@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/native-builder-worker-invocation.schema.json",
+  "title": "Native Codex Builder Worker Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "packet_type", "producer_version", "invocation_id",
+    "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort",
+    "execution_surface", "repository", "baseline_commit", "baseline_tree",
+    "prompt_sha256", "prompt_base64", "allowed_paths", "allowed_ignored_paths",
+    "timeout_ms", "intervention_budget", "visible_checks",
+    "visible_execution_manifest", "visible_execution_manifest_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "packet_type": { "const": "native-codex-worker-invocation-v1" },
+    "producer_version": { "const": "native-codex-producer-v1" },
+    "invocation_id": { "$ref": "#/$defs/sha256" },
+    "experiment_id": { "$ref": "#/$defs/string" },
+    "arm_id": { "$ref": "#/$defs/string" },
+    "run_nonce": { "$ref": "#/$defs/string" },
+    "model": { "const": "gpt-5.6-sol" },
+    "reasoning_effort": { "const": "high" },
+    "execution_surface": { "const": "codex-collaboration-subagent" },
+    "repository": { "$ref": "#/$defs/string" },
+    "baseline_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "baseline_tree": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "prompt_sha256": { "$ref": "#/$defs/sha256" },
+    "prompt_base64": { "$ref": "#/$defs/string" },
+    "allowed_paths": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/string" } },
+    "allowed_ignored_paths": { "type": "array", "items": { "$ref": "#/$defs/string" } },
+    "timeout_ms": { "type": "integer", "minimum": 1000 },
+    "intervention_budget": { "type": "integer", "minimum": 0 },
+    "visible_checks": { "type": "array", "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/string" } } },
+    "visible_execution_manifest": { "type": "object" },
+    "visible_execution_manifest_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "string": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}

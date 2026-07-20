@@ -23,6 +23,12 @@ and deterministic rendered views. A project must still bind and pass its own man
 adapter, schema, and positive/negative dogfood fixtures before advertising the gate as
 installed.
 
+The paired builder apparatus uses separate honest producers: Cursor Agent is restricted
+to Composer 2.5, while native Sol uses a deterministic prepare packet, one fresh Codex
+collaboration subagent at high reasoning, a source-bound root attestation, and
+deterministic finalization. The comparison is an end-to-end routing-stack viability
+experiment with runtime/producer surface recorded as a confound, not a pure model A/B.
+
 The included TypeScript/Convex adapter is intentionally fail-visible and heuristic;
 project installation still requires planner and reviewer reconciliation rather than
 claiming that regex discovery is a complete static analysis.

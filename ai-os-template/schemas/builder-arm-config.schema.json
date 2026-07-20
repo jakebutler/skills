@@ -4,12 +4,14 @@
   "title": "Paired Builder Arm Configuration",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "experiment_id", "arm_id", "model", "repository", "baseline_commit", "prompt_path", "allowed_paths", "allowed_ignored_paths", "output_directory", "timeout_ms", "visible_checks", "held_out_checks"],
+  "required": ["schema_version", "experiment_id", "arm_id", "run_nonce", "model", "repository", "baseline_commit", "prompt_path", "allowed_paths", "allowed_ignored_paths", "output_directory", "timeout_ms", "check_timeout_ms", "intervention_budget", "remediation_generation_budget", "visible_checks", "held_out_checks"],
   "properties": {
     "schema_version": { "const": 1 },
     "experiment_id": { "type": "string", "minLength": 1 },
     "arm_id": { "type": "string", "minLength": 1 },
-    "model": { "enum": ["composer-2.5", "gpt-5.6-sol-high"] },
+    "model": { "enum": ["composer-2.5", "gpt-5.6-sol"] },
+    "reasoning_effort": { "const": "high" },
+    "run_nonce": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$", "minLength": 1 },
     "repository": { "type": "string", "minLength": 1 },
     "baseline_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
     "prompt_path": { "type": "string", "minLength": 1 },
@@ -18,9 +20,17 @@
     "output_directory": { "type": "string", "minLength": 1 },
     "timeout_ms": { "type": "integer", "minimum": 1000 },
     "check_timeout_ms": { "type": "integer", "minimum": 1000 },
+    "intervention_budget": { "type": "integer", "minimum": 0 },
+    "remediation_generation_budget": { "type": "integer", "minimum": 0 },
     "visible_checks": { "$ref": "#/$defs/commands" },
     "held_out_checks": { "$ref": "#/$defs/commands" }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "model": { "const": "gpt-5.6-sol" } }, "required": ["model"] },
+      "then": { "required": ["reasoning_effort"] }
+    }
+  ],
   "$defs": {
     "commands": {
       "type": "array",

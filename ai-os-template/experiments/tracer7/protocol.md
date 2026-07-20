@@ -1,148 +1,177 @@
-# Tracer 7 paired-builder protocol
+# Tracer 7 paired routing-stack protocol
 
 Status: template protocol; instantiate in FreshProof only after HT is installed and the
 post-harness baseline is frozen.
 
 ## Question and decision boundary
 
-Can Composer 2.5 perform most implementation labor for a proof-required backend tracer
-when Sol owns planning and resolution and independent models own review, without worse
-correctness, security, intervention burden, or review convergence than Sol High?
+Can the Composer 2.5-on-Cursor builder route complete a proof-required backend tracer
+with no worse correctness, security, intervention, or convergence outcome than the
+native Sol control route, while Sol owns shared planning/resolution and independent
+models own blinded review?
 
-One tracer cannot establish a permanent routing default. A positive result may support
-only a provisional, bounded Composer backend route and a plan for additional tracers.
+This is an end-to-end paired builder-route experiment, not a pure model-isolation A/B
+test. Model, runtime, producer surface, authentication path, and orchestration mechanics
+move together. Runtime/producer surface is an intentional fixed confound. A result may
+establish provisional viability of Composer-on-Cursor for similarly proof-gated slices;
+it cannot prove Composer model superiority, attribute a speed difference solely to the
+model, or establish a universal default. One tracer still requires replication.
 
 ## Frozen checkpoints
 
-1. **B0:** user-approved integrated Tracer 6 product baseline. Template intake records
-   commit `d72b02cfc9f869be78fd62c1ad0cc81eeaab4162`.
-2. **HT:** independently reviewed harness-template commit produced in this repository.
-3. **H0:** FreshProof B0 plus the HT instance installation and lean `AGENTS.md`, with no
-   Tracer 7 product design or implementation.
-4. **D0:** H0 plus the shared Tracer 7 requirements, effect inventory, scoped invariant
-   selection, architecture/security source reviews, validated resolution, proof plan,
-   and approved builder packet. D0 is the exact start commit for both arms.
+1. **B0:** user-approved integrated Tracer 6 product baseline.
+2. **HT:** independently reviewed harness-template checkpoint.
+3. **H0:** FreshProof B0 plus exact HT installation, with no Tracer 7 design or build.
+4. **D0:** H0 plus the approved Tracer 7 requirements, inventory, invariant selection,
+   architecture/security reviews, resolution, proof plan, and builder packet. D0 is
+   the exact start commit for both arms.
 
-Any change to D0, the builder-packet hash, prompt bytes, environment, tools, tests, or
-budgets after an arm begins is an invalidation event. Re-freeze both arms or record the
-comparison as non-equivalent.
+Any change to D0, approved packet/config hashes, prompt bytes, allowed paths, ignored
+policy, environment-name set, evaluator commands, budgets, or intervention policy after
+an arm begins is an invalidation event. Re-freeze both routes or record the pair as
+non-comparable.
 
 ## Shared design dogfood gate
 
-Before either model writes product code:
+Before either builder writes product code:
 
-1. Enumerate reachable writes, reads, transitions, external effects, scans, scheduled
-   work, and bypass paths with the TypeScript/Convex adapter plus manual reconciliation.
-2. Retrieve only matching invariants from the generated index; do not inject the full
-   registry.
-3. Freeze the design candidate and run architecture, security, correctness, and any
-   triggered specialist lenses concurrently.
-4. Validate source identities and feed them to the read-only resolver. The resolver
-   must disposition every source finding exactly once and produce one coherent change
-   list. Security and data-authority requirements outrank performance preferences when
-   both cannot be satisfied; unresolved intent returns to HITL.
-5. Apply the consolidated design feedback, re-freeze if necessary, and repeat one
-   bounded generation. No individual review finding goes directly to a builder.
-6. Run one residual adversarial design review. Confirmed novel findings create
-   candidate events; deterministic automation may promote only verified,
-   non-conflicting advisory rules. Active-blocking promotion remains owner-approved.
-7. Approve and hash the builder packet only when every required lens and requirement
-   is resolved. Unknown or newly discovered design during development revokes it.
+1. Enumerate reachable effects and bypasses with generated plus manual reconciliation.
+2. Retrieve the scoped invariant set; do not inject the flat registry.
+3. Freeze one design candidate and run architecture and security review against the
+   same exact identity and requirement matrix.
+4. Resolve every source finding exactly once into one coherent design change list.
+5. Apply at most one consolidated design remediation generation; any material change
+   creates a new exact candidate and requires re-review.
+6. Run one residual adversarial design review and preserve novel-finding governance.
+7. Approve the builder packet only with no unresolved High-risk requirement.
 
-HITL may manually trigger each numbered phase. Automation is not required to sequence
-the experiment, but every transition must name its input and output identity.
+## Paired routes and fixed controls
 
-## Arms and the only intended variable
-
-| Property | Control | Experimental |
+| Property | Native control route | Experimental route |
 |---|---|---|
-| Runtime | Cursor Agent | Cursor Agent |
-| Model | `gpt-5.6-sol-high` | `composer-2.5` |
+| Runtime/producer | Codex collaboration subagent with prepare/attest/finalize | Cursor Agent hardened runner |
+| Model | `gpt-5.6-sol` | `composer-2.5` |
+| Reasoning | high | Cursor route setting supplied by the installed model |
+| Authentication | native Codex subscription access | Cursor subscription access |
 | Start | D0 | D0 |
 | Prompt and builder packet | byte-identical | byte-identical |
-| Allowed paths and tools | identical | identical |
-| Timeout, retry, and token policy | identical | identical |
-| Visible and held-out checks | identical | identical |
+| Allowed paths and ignored policy | identical | identical |
+| Evaluator command vectors and budgets | identical | identical |
+| Intervention policy | identical | identical |
 | Post-build review | blinded, independent | blinded, independent |
 
-The exact model IDs were visible through Cursor Agent
-`2026.07.16-899851b` on 2026-07-19. Re-run model and authentication preflight when the
-FreshProof experiment begins. Do not silently substitute fast variants.
+The non-model route differences above are not controlled away and must remain visible
+after unblinding. No fallback is allowed inside either arm. Route failure is an outcome,
+not permission to relabel or substitute another surface. A pre-inference environmental
+failure may receive one separately identified retry from the exact clean baseline after
+the environment is repaired; both attempts remain evidence.
 
-Prepare two clean isolated worktrees at D0 and install dependencies before timing. Run
-arms sequentially in a randomly selected, pre-recorded order to avoid resource
-contention. Record the order and recognize warm-cache/order bias; elapsed time is a
-secondary endpoint. No fallback is allowed inside an arm. A model failure is an
-outcome, not a reason to reroute and preserve the score.
+Prepare two clean isolated worktrees at D0, assign distinct approved run nonces, and
+install dependencies before timing. Paired validation rejects equal canonical
+repositories or Git worktree identities. Run
+active builder phases serially in a pre-recorded randomized order. Record order and
+warm-cache bias. Elapsed time is secondary and must be split from preparation, checks,
+review, and remediation.
 
-The runner, not the arm config, owns the Cursor executable, flags, and environment. It
-passes only a small non-secret process environment needed for the local subscription
-client and command lookup; provider keys and production variables are not inherited.
-Arm configs cannot add executables, argument prefixes, or environment values.
-Each config is frozen in D0; the operator passes its separately approved SHA-256 to the
-runner, which rejects any byte drift before parsing or executing evaluator commands.
-The runner hashes all Git-ignored files before and after the builder and fails on
-unexpected drift. `allowed_ignored_paths` is for narrow disposable caches only; never
-allow dependency, executable, generated-code, configuration, or evaluator paths such
-as `node_modules/` or `dist/`.
+## Producer contracts
 
-Held-out evaluator source stays outside both builder worktrees and outside the prompt
-packet. The post-agent runner invokes it only after the model process exits. A held-out
-test path committed at D0 is visible to the builder and is not a held-out evaluator.
+### Composer-on-Cursor
+
+`run-builder-arm.mjs` accepts only `composer-2.5`. The executable, flags, and scrubbed
+environment are runner-owned. Configs cannot add executables, prefix arguments, or
+environment values. The runner emits a nonce-bound result receipt and rejects config
+drift, HEAD/index/ref escape, out-of-scope writes, ignored-file drift, prompt drift,
+evaluator identity drift, or any repository mutation caused by checks.
+
+### Native Sol-on-Codex
+
+Follow `native-builder-orchestration.md` exactly:
+
+1. deterministic prepare validates the separately approved native config and emits a
+   canonical source-bound root packet plus a minimal worker packet containing embedded
+   prompt bytes and no held-out/evidence paths;
+2. the root Codex orchestrator makes one fresh-context `gpt-5.6-sol` collaboration call
+   at high reasoning, without fallback or route-specific coaching;
+3. root records the actual task/run identity and returned completion in external
+   completion and attestation records; and
+4. deterministic finalization binds the packet, completion, route provenance, exact
+   start/end source state, worktree identity, prompt/evaluator/environment identities,
+   scope/ignored state, interventions, and check results into
+   the only admissible native result.
+
+The root owns Git and all external effects. The native worker may not commit, stage,
+switch refs, push, publish, deploy, migrate, access production, inspect held-out source,
+or modify external state.
+
+The platform supplies auditable task/run identity, not a cryptographic provider
+signature. The apparatus detects missing, inconsistent, stale, replayed, cross-wired,
+wrong-route, failed, or repository-divergent evidence, but retains an explicit trust in
+the root orchestrator's truthful recording of the collaboration call. Capability-level
+network, credential, and external-write denial is not claimed where the collaboration
+surface cannot expose such a sandbox; any observed breach invalidates the run.
+
+## Held-out and leakage controls
+
+Held-out evaluator source stays outside both builder worktrees and outside the minimal
+worker packet. It runs only after each builder exits. Its resolved executable bytes,
+command vector, and execution-environment digest are content-bound in the root control
+packet and rechecked around execution. A committed D0 test is visible, not
+held-out. Neither builder may inspect the sibling worktree, route output, transcript,
+or evidence. Any cross-arm contamination invalidates both arms.
 
 ## Intervention and invalidation policy
 
 - Builders may ask questions but receive no model-specific coaching. A shared answer
-  that changes the contract invalidates D0 and must be delivered identically to fresh
-  arms.
+  that changes the contract invalidates D0 and requires fresh arms.
 - Record clarification, restart, timeout, harness failure, manual edit, packet
   invalidation, and environment drift as explicit intervention events.
-- Out-of-scope writes invalidate the arm. The runner records evidence and exits nonzero.
+- Unrecorded manual editing, out-of-scope writes, HEAD/index/ref mutation, ignored
+  drift, producer-version mismatch, and failed/timeout runs cannot finalize as success.
 - A newly exposed surface or architecture/security decision stops the arm and returns
-  to the shared design gate. Do not count design work performed in review as ordinary
-  code-review burden.
-- Neither external builder may commit, push, publish, deploy, migrate, or access
-  production. The orchestrator owns Git and all external state.
+  to the shared design gate.
+- No builder may commit, push, publish, deploy, migrate, or access production.
 
 ## Evaluation
 
-Primary viability gates:
+Primary viability gates are deterministic and binary:
 
-- all deterministic visible and held-out checks pass;
+- identical content-addressed visible/held-out execution manifests pass with status zero;
 - no unresolved P0/P1 correctness or security finding;
-- no harness bypass, Git ref/index mutation, out-of-scope write, or unapproved design decision;
-- builder packet remains valid through implementation;
-- candidate reaches approval within the predeclared review-generation budget.
+- no harness bypass, source-identity mutation, scope violation, ignored drift, or
+  unapproved design decision;
+- every requirement is satisfied and bidirectionally traced;
+- the builder packet remains valid; and
+- the candidate reaches approval inside the same predeclared review/remediation budget.
 
-Secondary measurements:
+Secondary measurements include builder/remediation duration, time to first and final
+green, initial finding burden, intervention count, review generations, churn, and
+available quota/cost evidence. Speed is diagnostic; the protocol never attributes a
+route-level speed difference solely to model quality.
 
-- wall-clock and active builder duration;
-- time to first green focused test and final green suite;
-- number and severity of unique post-build findings;
-- number of review generations and review-driven code edits;
-- human clarification/intervention count and time;
-- changed lines, tests added, revert/rework volume, and residual reviewer confidence.
+After deterministic validation, create private neutral candidate labels. Reviewers see
+only the labeled diff, D0 packet, deterministic evidence, and rubric. They must not see
+model, runtime, producer, transcript, duration, route order, or sibling output before
+scores and findings are frozen. Run the same requirement-level architecture/security
+lenses and resolver fan-in for both candidates.
 
-After the orchestrator commits each validated worktree, create candidate labels with a
-private random mapping. Reviewers receive only the labeled diff, D0 design/builder
-packet, deterministic evidence, and rubric—not model, transcript, duration, or arm
-order. Architecture and security reviewers score independently before resolver fan-in.
-Reveal the mapping only after findings, dispositions, and scores are immutable.
-Before scoring, run `validate-paired-builder-controls.mjs` over both result packets;
-any drift in runtime/version, baseline, prompt, allowed paths, budgets, environment-name
-set, or visible/held-out command vectors makes the pair non-comparable.
+Before scoring, run `validate-paired-builder-controls.mjs`. It verifies exact route
+bindings, route-specific producer receipts, exact result paths, distinct worktrees and
+run nonces, while requiring equality of baseline, prompt, scope, ignored baseline,
+environment digest, evaluator manifests, and budgets. Runtime
+and agent version are intentionally not equal and are reported as confounds.
 
 ## Decision rule
 
-- **Not viable:** any primary gate fails, or Composer requires materially more design
-  discovery, P0/P1 remediation, or human rescue than control.
-- **Promising but inconclusive:** both pass and Composer is faster, but review burden,
-  order effects, or the single-tracer sample prevents a robust routing claim.
-- **Provisionally viable:** both pass; Composer has no worse blocker/security burden,
-  stays within the same intervention and review budgets, and materially reduces elapsed
-  builder time. Route only crisp proof-gated backend slices and keep Sol planning plus
-  independent review.
+- **Not viable:** the Composer-on-Cursor route fails a primary gate or requires worse
+  blocker/security, intervention, design-discovery, or remediation burden.
+- **Apparatus or pair inconclusive:** a packet, producer, source identity, evaluator,
+  blindness, or control is not reproducible; do not turn missing parity into a score.
+- **Provisionally viable:** both routes pass; Composer-on-Cursor is no worse on primary
+  gates and stays within identical intervention/review budgets. Any speed advantage is
+  supportive route-level evidence only.
 
-Integrate only the candidate selected after unblinding and human approval. Preserve the
-other arm and all evidence; do not merge both or opportunistically combine them before
-the comparison is frozen.
+A successful single tracer may authorize only a bounded Composer-on-Cursor route for
+similarly crisp proof-gated slices. It cannot prove model superiority or a general
+backend default. Replication or representative production telemetry is required for a
+broader routing change. Candidate integration and any routing change remain separate
+HITL decisions after unblinding.
