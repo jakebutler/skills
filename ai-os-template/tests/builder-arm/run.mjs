@@ -40,9 +40,9 @@ if (process.env.FAKE_MODE === "ref") execFileSync("git", ["-C", workspace, "chec
 console.log(JSON.stringify({type:"result",result:"done"}));
 `);
 
-async function run(target = "allowed.txt", mode = "edit", checksPass = true, model = "composer-2.5", checkMutation = false, outputDirectory = output) {
+async function run(target = "allowed.txt", mode = "edit", checksPass = true, model = "composer-2.5", checkMutation = false, outputDirectory = output, isolationBoundary = "test-double") {
   const fixtureIdentity = crypto.createHash("sha256")
-    .update(JSON.stringify({ target, mode, checksPass, model, checkMutation, outputDirectory }))
+    .update(JSON.stringify({ target, mode, checksPass, model, checkMutation, outputDirectory, isolationBoundary }))
     .digest("hex")
     .slice(0, 16);
   const config = {
@@ -78,13 +78,19 @@ async function run(target = "allowed.txt", mode = "edit", checksPass = true, mod
       agentExecutable: process.execPath,
       agentPrefixArgs: [fake],
       agentEnvironment: { FAKE_TARGET: target, FAKE_MODE: mode },
-      agentVersion: "fixture-agent"
+      agentVersion: "fixture-agent",
+      isolationBoundary: isolationBoundary === null ? undefined : { enforcement: isolationBoundary },
     });
     return { status: 0, result, error: "" };
   } catch (error) {
     return { status: 1, result: null, error: error.message };
   }
 }
+
+const unisolated = await run("allowed.txt", "edit", true, "composer-2.5", false, output, null);
+assert.equal(unisolated.status, 1);
+assert.match(unisolated.error, /verified workspace-only isolation boundary/i);
+assert.equal(fs.existsSync(agentLaunchCountPath), false, "unisolated Composer must fail before agent launch");
 
 const concurrentStarts = await Promise.all([run(), run()]);
 const successfulStarts = concurrentStarts.filter((entry) => entry.status === 0);

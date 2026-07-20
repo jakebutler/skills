@@ -6,17 +6,19 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { assertPathOutsideRepository, executionManifest, repositoryIdentity, repositoryState, runGuardedChecks } from "./builder-execution-contract.mjs";
-import { nativeCodexExecContract, parseNativeCodexTranscript } from "./native-codex-exec-contract.mjs";
+import { nativeCodexCapabilityProbeContract, nativeCodexExecContract, parseNativeCodexTranscript } from "./native-codex-exec-contract.mjs";
 
-const PRODUCER_VERSION = "native-codex-exec-producer-v3";
-const FINALIZER_VERSION = "native-codex-exec-finalizer-v3";
+const PRODUCER_VERSION = "native-codex-exec-producer-v4";
+const FINALIZER_VERSION = "native-codex-exec-finalizer-v4";
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const ATTESTATION_KEYS = new Set([
   "schema_version", "attestation_type", "producer_version", "finalizer_version",
   "invocation_packet_sha256", "invocation_id", "experiment_id", "arm_id", "run_nonce",
   "native_session_id", "run_id", "model", "reasoning_effort", "execution_surface",
   "platform_version", "codex_executable_path", "codex_executable_sha256",
-  "launch_contract_sha256", "worker_packet_delivery", "multi_agent_enabled",
+  "launch_contract_sha256", "capability_probe_contract_sha256",
+  "capability_probe_evidence_path", "capability_probe_evidence_sha256",
+  "worker_packet_delivery", "multi_agent_enabled",
   "network_access", "writable_tmp", "sandbox_mode", "permission_profile",
   "filesystem_read_scope", "transcript_path",
   "transcript_sha256", "stderr_path", "stderr_sha256", "status",
@@ -34,6 +36,16 @@ const COMPLETION_KEYS = new Set([
   "status", "controls_sha256", "worker_packet_sha256", "observed_prompt_sha256",
   "changed_paths", "observed_working_state_sha256",
   "returned_completion",
+]);
+const CAPABILITY_PROBE_KEYS = new Set([
+  "schema_version", "evidence_type", "invocation_packet_sha256",
+  "codex_executable_path", "codex_executable_sha256", "codex_version",
+  "launch_contract_sha256", "capability_probe_contract_sha256",
+  "feature_inventory_stdout_path", "feature_inventory_stdout_sha256",
+  "feature_inventory_stderr_path", "feature_inventory_stderr_sha256",
+  "capability_probe_stdout_path", "capability_probe_stdout_sha256",
+  "capability_probe_stderr_path", "capability_probe_stderr_sha256",
+  "disabled_features", "observations", "passed",
 ]);
 
 function sha256(value) {
@@ -132,7 +144,7 @@ export async function finalizeNativeBuilderArm(
   const packetBytes = fs.readFileSync(path.resolve(invocationPacketPath));
   if (sha256(packetBytes) !== approvedInvocationPacketSha256) fail("invocation packet hash mismatch");
   const packet = JSON.parse(packetBytes.toString("utf8"));
-  if (packet.packet_type !== "native-codex-exec-invocation-v3") fail("invocation packet type is invalid");
+  if (packet.packet_type !== "native-codex-exec-invocation-v4") fail("invocation packet type is invalid");
   if (packet.producer_version !== PRODUCER_VERSION || packet.finalizer_version !== FINALIZER_VERSION) {
     fail("producer/finalizer version mismatch in invocation packet");
   }
@@ -168,7 +180,7 @@ export async function finalizeNativeBuilderArm(
   const workerPacketBytes = fs.readFileSync(path.resolve(packet.worker_packet_path));
   if (sha256(workerPacketBytes) !== packet.worker_packet_sha256) fail("worker packet content identity mismatch");
   const workerPacket = JSON.parse(workerPacketBytes.toString("utf8"));
-  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v3") fail("worker packet type is invalid");
+  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v4") fail("worker packet type is invalid");
   if (Buffer.from(workerPacket.prompt_base64, "base64").compare(promptBytes) !== 0) fail("worker packet prompt identity mismatch");
   for (const field of ["invocation_id", "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort", "repository", "baseline_commit", "baseline_tree", "prompt_sha256"]) {
     requireExact(workerPacket[field], packet[field], `worker packet ${field}`);
@@ -177,6 +189,15 @@ export async function finalizeNativeBuilderArm(
     fail("worker packet exposes root-only held-out or evidence fields");
   }
   const launchContract = nativeCodexExecContract(workerPacketBytes, packet.worker_packet_sha256);
+  const visibleExecutablePath = packet.execution_manifest?.checks?.[0]?.executable_path;
+  const heldOutExecutablePath = packet.execution_manifest?.checks?.[packet.visible_checks.length]?.executable_path;
+  const capabilityProbeContract = nativeCodexCapabilityProbeContract(launchContract, {
+    repository,
+    visible_executable_path: visibleExecutablePath,
+    held_out_executable_path: heldOutExecutablePath,
+    root_evidence_path: packet.invocation_packet_path,
+    codex_executable_path: packet.codex_executable_path,
+  });
   const attestationBytes = fs.readFileSync(path.resolve(attestationPath));
   if (sha256(attestationBytes) !== approvedAttestationSha256) fail("native attestation hash mismatch");
   const attestation = JSON.parse(attestationBytes.toString("utf8"));
@@ -186,7 +207,7 @@ export async function finalizeNativeBuilderArm(
   if (!SHA256.test(attestation.completion_evidence_sha256 ?? "")) {
     fail("completion evidence hash is required");
   }
-  if (attestation.schema_version !== 1 || attestation.attestation_type !== "codex-exec-builder-attestation-v3") {
+  if (attestation.schema_version !== 1 || attestation.attestation_type !== "codex-exec-builder-attestation-v4") {
     fail("native attestation type is invalid");
   }
   requireExact(attestation.producer_version, PRODUCER_VERSION, "attestation producer_version");
@@ -200,7 +221,12 @@ export async function finalizeNativeBuilderArm(
   requireString(attestation.run_id, "attestation.run_id");
   requireExact(attestation.run_id, attestation.native_session_id, "attestation run/session identity");
   requireString(attestation.platform_version, "attestation.platform_version");
+  requireExact(attestation.platform_version, packet.codex_version, "attestation approved Codex version identity");
+  requireExact(attestation.codex_executable_path, packet.codex_executable_path, "attestation approved Codex executable path");
+  requireExact(attestation.codex_executable_sha256, packet.codex_executable_sha256, "attestation approved Codex executable SHA-256 identity");
   requireExact(attestation.launch_contract_sha256, launchContract.sha256, "attestation launch_contract_sha256");
+  requireExact(attestation.capability_probe_contract_sha256, capabilityProbeContract.sha256, "attestation capability_probe_contract_sha256");
+  if (!SHA256.test(attestation.capability_probe_evidence_sha256 ?? "")) fail("capability probe evidence hash is required");
   requireExact(attestation.worker_packet_delivery, "stdin-bytes", "attestation worker_packet_delivery");
   requireExact(attestation.multi_agent_enabled, false, "attestation multi_agent_enabled");
   requireExact(attestation.network_access, false, "attestation network_access");
@@ -234,17 +260,49 @@ export async function finalizeNativeBuilderArm(
   const completionPath = assertPathOutsideRepository(repository, fs.realpathSync(path.resolve(attestation.completion_evidence_path ?? "")), "completion evidence");
   const transcriptPath = assertPathOutsideRepository(repository, fs.realpathSync(path.resolve(attestation.transcript_path ?? "")), "native transcript");
   const stderrPath = assertPathOutsideRepository(repository, fs.realpathSync(path.resolve(attestation.stderr_path ?? "")), "native stderr");
+  const capabilityProbePath = assertPathOutsideRepository(repository, fs.realpathSync(path.resolve(attestation.capability_probe_evidence_path ?? "")), "native capability probe");
   for (const [label, target, expectedName] of [
     ["attestation", canonicalAttestationPath, "native-attestation.json"],
     ["completion", completionPath, "native-completion.json"],
     ["transcript", transcriptPath, "native-codex.stdout.jsonl"],
     ["stderr", stderrPath, "native-codex.stderr.log"],
+    ["capability probe", capabilityProbePath, "native-capability-probe.json"],
   ]) {
     if (path.dirname(target) !== evidenceDirectory || path.basename(target) !== expectedName) fail(`native ${label} evidence path is cross-wired`);
   }
   const executablePath = fs.realpathSync(path.resolve(attestation.codex_executable_path ?? ""));
   if (path.basename(executablePath) === "codex.js") fail("native Codex attestation must bind the transitive native runtime, not the JavaScript launcher");
   if (sha256(fs.readFileSync(executablePath)) !== attestation.codex_executable_sha256) fail("native Codex executable content identity mismatch");
+  const capabilityProbeBytes = fs.readFileSync(capabilityProbePath);
+  requireExact(sha256(capabilityProbeBytes), attestation.capability_probe_evidence_sha256, "capability probe evidence hash");
+  const capabilityProbe = JSON.parse(capabilityProbeBytes.toString("utf8"));
+  for (const key of Object.keys(capabilityProbe)) if (!CAPABILITY_PROBE_KEYS.has(key)) fail(`unsupported capability probe field: ${key}`);
+  requireExact(capabilityProbe.evidence_type, "native-codex-capability-probe-v1", "capability probe evidence type");
+  requireExact(capabilityProbe.invocation_packet_sha256, approvedInvocationPacketSha256, "capability probe invocation identity");
+  requireExact(capabilityProbe.codex_executable_path, packet.codex_executable_path, "capability probe Codex executable path");
+  requireExact(capabilityProbe.codex_executable_sha256, packet.codex_executable_sha256, "capability probe Codex executable SHA-256");
+  requireExact(capabilityProbe.codex_version, packet.codex_version, "capability probe Codex version");
+  requireExact(capabilityProbe.launch_contract_sha256, launchContract.sha256, "capability probe launch contract");
+  requireExact(capabilityProbe.capability_probe_contract_sha256, capabilityProbeContract.sha256, "capability probe contract");
+  requireExact(capabilityProbe.passed, true, "capability probe passed state");
+  if (JSON.stringify(capabilityProbe.disabled_features) !== JSON.stringify(launchContract.disabled_features)) fail("capability probe disabled feature inventory is invalid");
+  if (JSON.stringify(Object.keys(capabilityProbe.observations ?? {}).sort()) !== JSON.stringify(Object.keys(capabilityProbeContract.expected).sort())) {
+    fail("capability probe observation set is invalid");
+  }
+  for (const [label, expected] of Object.entries(capabilityProbeContract.expected)) {
+    const status = capabilityProbe.observations?.[label]?.status;
+    if (!Number.isInteger(status) || (expected === 0 ? status !== 0 : status === 0)) fail(`capability probe observation is invalid: ${label}`);
+  }
+  for (const [pathField, hashField, expectedName] of [
+    ["feature_inventory_stdout_path", "feature_inventory_stdout_sha256", "native-feature-inventory.stdout.log"],
+    ["feature_inventory_stderr_path", "feature_inventory_stderr_sha256", "native-feature-inventory.stderr.log"],
+    ["capability_probe_stdout_path", "capability_probe_stdout_sha256", "native-capability-probe.stdout.log"],
+    ["capability_probe_stderr_path", "capability_probe_stderr_sha256", "native-capability-probe.stderr.log"],
+  ]) {
+    const rawPath = assertPathOutsideRepository(repository, fs.realpathSync(path.resolve(capabilityProbe[pathField] ?? "")), `capability probe ${pathField}`);
+    if (path.dirname(rawPath) !== evidenceDirectory || path.basename(rawPath) !== expectedName) fail(`capability probe ${pathField} is cross-wired`);
+    requireExact(sha256(fs.readFileSync(rawPath)), capabilityProbe[hashField], `capability probe ${hashField}`);
+  }
   const transcriptBytes = fs.readFileSync(transcriptPath);
   if (sha256(transcriptBytes) !== attestation.transcript_sha256) fail("native Codex transcript hash mismatch");
   const transcript = parseNativeCodexTranscript(transcriptBytes);
@@ -255,7 +313,7 @@ export async function finalizeNativeBuilderArm(
   if (sha256(completionBytes) !== attestation.completion_evidence_sha256) fail("completion evidence hash mismatch");
   const completion = JSON.parse(completionBytes.toString("utf8"));
   for (const key of Object.keys(completion)) if (!COMPLETION_KEYS.has(key)) fail(`unsupported completion evidence field: ${key}`);
-  if (completion.schema_version !== 1 || completion.evidence_type !== "codex-exec-completion-v3") fail("completion evidence type is invalid");
+  if (completion.schema_version !== 1 || completion.evidence_type !== "codex-exec-completion-v4") fail("completion evidence type is invalid");
   for (const field of ["invocation_id", "experiment_id", "arm_id", "model", "reasoning_effort"]) {
     requireExact(completion[field], packet[field], `completion ${field}`);
   }
@@ -331,7 +389,7 @@ export async function finalizeNativeBuilderArm(
     run_nonce: packet.run_nonce,
     model: packet.model,
     reasoning_effort: packet.reasoning_effort,
-    runner: "codex-exec-builder-v3",
+    runner: "codex-exec-builder-v4",
     producer_version: PRODUCER_VERSION,
     finalizer_version: FINALIZER_VERSION,
     runner_config_sha256: packet.runner_config_sha256,
@@ -358,6 +416,11 @@ export async function finalizeNativeBuilderArm(
     native_run_id: attestation.run_id,
     native_session_id: attestation.native_session_id,
     launch_contract_sha256: attestation.launch_contract_sha256,
+    codex_executable_path: packet.codex_executable_path,
+    codex_executable_sha256: packet.codex_executable_sha256,
+    capability_probe_contract_sha256: attestation.capability_probe_contract_sha256,
+    capability_probe_evidence_path: capabilityProbePath,
+    capability_probe_evidence_sha256: attestation.capability_probe_evidence_sha256,
     worker_packet_delivery: attestation.worker_packet_delivery,
     multi_agent_enabled: attestation.multi_agent_enabled,
     network_access: attestation.network_access,
@@ -408,6 +471,7 @@ export async function finalizeNativeBuilderArm(
     invocation_packet_sha256: approvedInvocationPacketSha256,
     native_attestation_sha256: approvedAttestationSha256,
     completion_evidence_sha256: attestation.completion_evidence_sha256,
+    capability_probe_evidence_sha256: attestation.capability_probe_evidence_sha256,
     execution_claim_sha256: executionClaimSha256,
     finalization_claim_sha256: finalizationClaimSha256,
     result_sha256: sha256(resultBytes),

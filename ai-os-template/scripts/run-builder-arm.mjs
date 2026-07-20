@@ -165,6 +165,13 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   if (config.agent_executable !== undefined || config.agent_prefix_args !== undefined || config.agent_environment !== undefined) {
     fail("agent executable, prefix arguments, and environment are runner-owned, not config-controlled");
   }
+  const testDoubleIsolation = testOverrides.isolationBoundary?.enforcement === "test-double"
+    && testOverrides.agentExecutable === process.execPath
+    && typeof testOverrides.agentVersion === "string"
+    && testOverrides.agentVersion.startsWith("fixture-");
+  if (!testDoubleIsolation) {
+    fail("Composer requires a verified workspace-only isolation boundary; host Cursor execution is prohibited because held-out and root evidence reads are not denied");
+  }
   const repo = fs.realpathSync(path.resolve(config.repository));
   const repoIdentity = repositoryIdentity(repo);
   assertPathOutsideRepository(repo, resolvedConfigPath, "arm config");

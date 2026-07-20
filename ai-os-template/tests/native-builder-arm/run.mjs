@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 
 import { prepareNativeBuilderArm } from "../../scripts/prepare-native-builder-arm.mjs";
 import { finalizeNativeBuilderArm } from "../../scripts/finalize-native-builder-arm.mjs";
-import { nativeCodexExecContract } from "../../scripts/native-codex-exec-contract.mjs";
+import { nativeCodexCapabilityProbeContract, nativeCodexExecContract } from "../../scripts/native-codex-exec-contract.mjs";
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "native-builder-arm-"));
 const repository = path.join(scratch, "repository");
@@ -29,6 +29,8 @@ const checkRunCountPath = path.join(scratch, "check-run-count.log");
 const evaluatorPath = path.join(scratch, "evaluator.mjs");
 const evaluatorSource = `#!/usr/bin/env node\nimport fs from "node:fs";\nimport path from "node:path";\nfs.appendFileSync(${JSON.stringify(checkRunCountPath)}, "check\\n");\nconst target = path.join(process.cwd(), "post-check-outside.txt");\nif (fs.existsSync(${JSON.stringify(checkMutationFlag)}) && process.argv[2] === "mutate") fs.writeFileSync(target, "mutated\\n");\nif (process.argv[2] === "restore") fs.rmSync(target, { force: true });\nprocess.exit(0);\n`;
 fs.writeFileSync(evaluatorPath, evaluatorSource, { mode: 0o755 });
+const approvedCodexExecutablePath = fs.realpathSync(process.execPath);
+const approvedCodexExecutableSha256 = `sha256:${crypto.createHash("sha256").update(fs.readFileSync(approvedCodexExecutablePath)).digest("hex")}`;
 
 function config(overrides = {}) {
   return {
@@ -38,6 +40,9 @@ function config(overrides = {}) {
     run_nonce: "native-fixture-run-001",
     model: "gpt-5.6-sol",
     reasoning_effort: "high",
+    codex_executable_path: approvedCodexExecutablePath,
+    codex_executable_sha256: approvedCodexExecutableSha256,
+    codex_version: "codex-cli fixture",
     repository,
     baseline_commit: baseline,
     prompt_path: promptPath,
@@ -86,6 +91,16 @@ await assert.rejects(
   /reasoning effort must be high/i,
 );
 await assert.rejects(
+  () => prepare({
+    arm_id: "missing-codex-identity",
+    run_nonce: "missing-codex-identity-001",
+    codex_executable_path: undefined,
+    codex_executable_sha256: undefined,
+    codex_version: undefined,
+  }),
+  /codex_executable_path is required/i,
+);
+await assert.rejects(
   () => prepare({ visible_checks: [["node", "--version"]] }),
   /visible_checks\[0\] executable must be an absolute external path/i,
 );
@@ -109,6 +124,9 @@ assert.equal(
 const prepared = await prepare();
 assert.equal(prepared.packet.model, "gpt-5.6-sol");
 assert.equal(prepared.packet.reasoning_effort, "high");
+assert.equal(prepared.packet.codex_executable_path, approvedCodexExecutablePath);
+assert.equal(prepared.packet.codex_executable_sha256, approvedCodexExecutableSha256);
+assert.equal(prepared.packet.codex_version, "codex-cli fixture");
 assert.match(prepared.invocation_packet_sha256, /^sha256:[a-f0-9]{64}$/);
 assert.equal(fs.existsSync(prepared.invocation_packet_path), true);
 assert.match(prepared.worker_packet_sha256, /^sha256:[a-f0-9]{64}$/, "prepare must emit a source-bound worker packet");
@@ -146,7 +164,7 @@ async function finalize(attestation) {
 await assert.rejects(
   () => finalize({
     schema_version: 1,
-    attestation_type: "codex-exec-builder-attestation-v3",
+    attestation_type: "codex-exec-builder-attestation-v4",
     invocation_packet_sha256: prepared.invocation_packet_sha256,
     model: "gpt-5.6-sol-high",
     reasoning_effort: "high",
@@ -157,9 +175,9 @@ await assert.rejects(
 await assert.rejects(
   () => finalize({
     schema_version: 1,
-    attestation_type: "codex-exec-builder-attestation-v3",
-    producer_version: "native-codex-exec-producer-v3",
-    finalizer_version: "native-codex-exec-finalizer-v3",
+    attestation_type: "codex-exec-builder-attestation-v4",
+    producer_version: "native-codex-exec-producer-v4",
+    finalizer_version: "native-codex-exec-finalizer-v4",
     invocation_packet_sha256: prepared.invocation_packet_sha256,
     invocation_id: prepared.packet.invocation_id,
     experiment_id: prepared.packet.experiment_id,
@@ -192,7 +210,7 @@ const controlsSha256 = sha256(Buffer.from(JSON.stringify({
 })));
 const completion = {
   schema_version: 1,
-  evidence_type: "codex-exec-completion-v3",
+  evidence_type: "codex-exec-completion-v4",
   invocation_packet_sha256: prepared.invocation_packet_sha256,
   invocation_id: prepared.packet.invocation_id,
   experiment_id: prepared.packet.experiment_id,
@@ -224,11 +242,52 @@ fs.writeFileSync(stderrPath, "");
 const executablePath = fs.realpathSync(process.execPath);
 const workerPacketBytes = fs.readFileSync(prepared.worker_packet_path);
 const launchContract = nativeCodexExecContract(workerPacketBytes, prepared.worker_packet_sha256);
+const capabilityProbeContract = nativeCodexCapabilityProbeContract(launchContract, {
+  repository: prepared.packet.repository,
+  visible_executable_path: fs.realpathSync(evaluatorPath),
+  held_out_executable_path: fs.realpathSync(evaluatorPath),
+  root_evidence_path: prepared.invocation_packet_path,
+  codex_executable_path: executablePath,
+});
+const featureInventoryStdoutPath = path.join(prepared.packet.evidence_directory, "native-feature-inventory.stdout.log");
+const featureInventoryStderrPath = path.join(prepared.packet.evidence_directory, "native-feature-inventory.stderr.log");
+const capabilityProbeStdoutPath = path.join(prepared.packet.evidence_directory, "native-capability-probe.stdout.log");
+const capabilityProbeStderrPath = path.join(prepared.packet.evidence_directory, "native-capability-probe.stderr.log");
+const capabilityProbePath = path.join(prepared.packet.evidence_directory, "native-capability-probe.json");
+const featureInventoryStdout = Buffer.from(launchContract.disabled_features.map((feature) => `${feature} stable false`).join("\n") + "\n");
+const capabilityProbeStdout = Buffer.from(Object.entries(capabilityProbeContract.expected).map(([label, expected]) => `${label}\t${expected === 0 ? 0 : 1}`).join("\n") + "\n");
+fs.writeFileSync(featureInventoryStdoutPath, featureInventoryStdout);
+fs.writeFileSync(featureInventoryStderrPath, "");
+fs.writeFileSync(capabilityProbeStdoutPath, capabilityProbeStdout);
+fs.writeFileSync(capabilityProbeStderrPath, "");
+const capabilityProbeEvidence = {
+  schema_version: 1,
+  evidence_type: "native-codex-capability-probe-v1",
+  invocation_packet_sha256: prepared.invocation_packet_sha256,
+  codex_executable_path: executablePath,
+  codex_executable_sha256: sha256(fs.readFileSync(executablePath)),
+  codex_version: "codex-cli fixture",
+  launch_contract_sha256: launchContract.sha256,
+  capability_probe_contract_sha256: capabilityProbeContract.sha256,
+  feature_inventory_stdout_path: featureInventoryStdoutPath,
+  feature_inventory_stdout_sha256: sha256(featureInventoryStdout),
+  feature_inventory_stderr_path: featureInventoryStderrPath,
+  feature_inventory_stderr_sha256: sha256(Buffer.from("")),
+  capability_probe_stdout_path: capabilityProbeStdoutPath,
+  capability_probe_stdout_sha256: sha256(capabilityProbeStdout),
+  capability_probe_stderr_path: capabilityProbeStderrPath,
+  capability_probe_stderr_sha256: sha256(Buffer.from("")),
+  disabled_features: launchContract.disabled_features,
+  observations: Object.fromEntries(Object.entries(capabilityProbeContract.expected).map(([label, expected]) => [label, { status: expected === 0 ? 0 : 1 }])),
+  passed: true,
+};
+const capabilityProbeBytes = Buffer.from(`${JSON.stringify(capabilityProbeEvidence, null, 2)}\n`);
+fs.writeFileSync(capabilityProbePath, capabilityProbeBytes);
 const attestation = {
   schema_version: 1,
-  attestation_type: "codex-exec-builder-attestation-v3",
-  producer_version: "native-codex-exec-producer-v3",
-  finalizer_version: "native-codex-exec-finalizer-v3",
+  attestation_type: "codex-exec-builder-attestation-v4",
+  producer_version: "native-codex-exec-producer-v4",
+  finalizer_version: "native-codex-exec-finalizer-v4",
   invocation_packet_sha256: prepared.invocation_packet_sha256,
   invocation_id: prepared.packet.invocation_id,
   experiment_id: prepared.packet.experiment_id,
@@ -243,6 +302,9 @@ const attestation = {
   codex_executable_path: executablePath,
   codex_executable_sha256: sha256(fs.readFileSync(executablePath)),
   launch_contract_sha256: launchContract.sha256,
+  capability_probe_contract_sha256: capabilityProbeContract.sha256,
+  capability_probe_evidence_path: capabilityProbePath,
+  capability_probe_evidence_sha256: sha256(capabilityProbeBytes),
   worker_packet_delivery: "stdin-bytes",
   multi_agent_enabled: false,
   network_access: false,
@@ -309,6 +371,10 @@ await assert.rejects(
 await assert.rejects(
   () => finalize({ ...attestation, producer_version: "native-codex-producer-v0" }),
   /producer_version/i,
+);
+await assert.rejects(
+  () => finalize({ ...attestation, platform_version: "unapproved-codex-version" }),
+  /approved Codex version identity/i,
 );
 
 for (const [label, mutation] of [

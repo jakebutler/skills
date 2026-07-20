@@ -13,7 +13,7 @@
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "evidence_type": { "const": "codex-exec-completion-v3" },
+    "evidence_type": { "const": "codex-exec-completion-v4" },
     "invocation_packet_sha256": { "$ref": "#/$defs/sha256" },
     "invocation_id": { "$ref": "#/$defs/sha256" },
     "experiment_id": { "$ref": "#/$defs/string" },

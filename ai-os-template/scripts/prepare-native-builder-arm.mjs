@@ -7,13 +7,14 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { assertPathOutsideRepository, executionManifest, repositoryIdentity, safeEnvironment } from "./builder-execution-contract.mjs";
 
-const PRODUCER_VERSION = "native-codex-exec-producer-v3";
-const FINALIZER_VERSION = "native-codex-exec-finalizer-v3";
+const PRODUCER_VERSION = "native-codex-exec-producer-v4";
+const FINALIZER_VERSION = "native-codex-exec-finalizer-v4";
 const ALLOWED_CONFIG_KEYS = new Set([
   "schema_version", "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort",
   "repository", "baseline_commit", "prompt_path", "allowed_paths", "allowed_ignored_paths",
   "output_directory", "timeout_ms", "check_timeout_ms", "intervention_budget",
   "remediation_generation_budget", "visible_checks", "held_out_checks",
+  "codex_executable_path", "codex_executable_sha256", "codex_version",
 ]);
 
 function sha256(value) {
@@ -85,6 +86,9 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
     if (!/^[A-Za-z0-9._-]+$/.test(config[key])) fail(`${key} must be filesystem-safe`);
   }
   if (!/^[a-f0-9]{40}$/.test(config.baseline_commit)) fail("baseline_commit must be a full Git object ID");
+  const codexIdentityKeys = ["codex_executable_path", "codex_executable_sha256", "codex_version"];
+  for (const key of codexIdentityKeys) if (typeof config[key] !== "string" || config[key] === "") fail(`${key} is required`);
+  if (!/^sha256:[a-f0-9]{64}$/.test(config.codex_executable_sha256)) fail("codex_executable_sha256 must be a SHA-256 identity");
   if (!Array.isArray(config.allowed_paths) || config.allowed_paths.length === 0) fail("allowed_paths must not be empty");
   if (!Array.isArray(config.allowed_ignored_paths)) fail("allowed_ignored_paths must be an array");
   config.allowed_paths.forEach((entry, index) => validateRelativePath(entry, `allowed_paths[${index}]`));
@@ -100,6 +104,14 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
 
   const repository = fs.realpathSync(path.resolve(config.repository));
   assertPathOutsideRepository(repository, resolvedConfigPath, "arm config");
+  const requestedCodexExecutablePath = path.resolve(config.codex_executable_path);
+  const codexExecutablePath = fs.realpathSync(requestedCodexExecutablePath);
+  if (requestedCodexExecutablePath !== codexExecutablePath) fail("codex_executable_path must be canonical");
+  const codexExecutableStat = fs.statSync(codexExecutablePath);
+  if (!codexExecutableStat.isFile() || (codexExecutableStat.mode & 0o111) === 0) fail("codex_executable_path must identify an executable file");
+  if (sha256(fs.readFileSync(codexExecutablePath)) !== config.codex_executable_sha256) {
+    fail("codex executable content does not match the approved SHA-256 identity");
+  }
   const outputDirectory = assertPathOutsideRepository(repository, path.resolve(config.output_directory), "output_directory");
   for (const [index, command] of config.visible_checks.entries()) {
     if (!path.isAbsolute(command[0])) fail(`visible_checks[${index}] executable must be an absolute external path`);
@@ -168,7 +180,7 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
   }
   const workerPacket = {
     schema_version: 1,
-    packet_type: "native-codex-exec-worker-invocation-v3",
+    packet_type: "native-codex-exec-worker-invocation-v4",
     producer_version: PRODUCER_VERSION,
     invocation_id: invocationId,
     experiment_id: config.experiment_id,
@@ -195,7 +207,7 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
   const workerPacketSha256 = sha256(workerPacketBytes);
   const packet = {
     schema_version: 1,
-    packet_type: "native-codex-exec-invocation-v3",
+    packet_type: "native-codex-exec-invocation-v4",
     producer_version: PRODUCER_VERSION,
     finalizer_version: FINALIZER_VERSION,
     invocation_id: invocationId,
@@ -205,6 +217,9 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
     model: config.model,
     reasoning_effort: config.reasoning_effort,
     execution_surface: "codex-exec",
+    codex_executable_path: codexExecutablePath,
+    codex_executable_sha256: config.codex_executable_sha256,
+    codex_version: config.codex_version,
     repository,
     git_common_dir: identity.git_common_dir,
     git_dir: identity.git_dir,

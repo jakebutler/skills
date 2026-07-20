@@ -36,8 +36,8 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
     fail("worker packet hash does not match the approved identity");
   }
   const workerPacket = JSON.parse(Buffer.from(workerPacketBytes).toString("utf8"));
-  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v3") fail("worker packet type is invalid");
-  if (workerPacket.producer_version !== "native-codex-exec-producer-v3") fail("worker packet producer version is invalid");
+  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v4") fail("worker packet type is invalid");
+  if (workerPacket.producer_version !== "native-codex-exec-producer-v4") fail("worker packet producer version is invalid");
   if (workerPacket.execution_surface !== "codex-exec") fail("worker packet execution surface is invalid");
   if (workerPacket.model !== "gpt-5.6-sol") fail("native Codex exec model must be gpt-5.6-sol");
   if (workerPacket.reasoning_effort !== "high") fail("native Codex exec reasoning effort must be high");
@@ -90,7 +90,7 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
 
   const contract = {
     schema_version: 1,
-    contract_type: "native-codex-exec-launch-v3",
+    contract_type: "native-codex-exec-launch-v4",
     argv,
     stdin_sha256: sha256(stdin),
     worker_packet_sha256: approvedWorkerPacketSha256,
@@ -111,6 +111,71 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
     stdin,
     sha256: sha256(Buffer.from(JSON.stringify(contract))),
   };
+}
+
+export function nativeCodexCapabilityProbeContract(launchContract, paths) {
+  if (launchContract?.contract_type !== "native-codex-exec-launch-v4") fail("native launch contract is invalid for capability probing");
+  for (const key of ["repository", "visible_executable_path", "held_out_executable_path", "root_evidence_path", "codex_executable_path"]) {
+    if (typeof paths?.[key] !== "string" || paths[key] === "") fail(`capability probe ${key} is required`);
+  }
+  const inheritedArgs = [];
+  for (let index = 0; index < launchContract.argv.length; index += 1) {
+    if (launchContract.argv[index] === "--config" || launchContract.argv[index] === "--disable") {
+      inheritedArgs.push(launchContract.argv[index], launchContract.argv[index + 1]);
+      index += 1;
+    }
+  }
+  const expected = {
+    workspace_read: 0,
+    visible_executable_read: 0,
+    held_out_executable_read: "nonzero",
+    root_evidence_read: "nonzero",
+    tmp_write: "nonzero",
+    network_connect: "nonzero",
+    descendant_codex_agent: "nonzero",
+  };
+  const script = [
+    "observe() {",
+    "  label=\"$1\"",
+    "  shift",
+    "  output=$(\"$@\" 2>&1)",
+    "  status=$?",
+    "  printf '%s\\t%s\\n' \"$label\" \"$status\"",
+    "  printf 'PROBE_COMMAND_OUTPUT\\t%s\\t' \"$label\" >&2",
+    "  printf '%s' \"$output\" | /usr/bin/base64 >&2",
+    "  printf '\\n' >&2",
+    "}",
+    "observe workspace_read /bin/ls \"$PROOF_PROBE_REPOSITORY\"",
+    "observe visible_executable_read /bin/cat \"$PROOF_PROBE_VISIBLE_EXECUTABLE\"",
+    "observe held_out_executable_read /bin/cat \"$PROOF_PROBE_HELD_OUT_EXECUTABLE\"",
+    "observe root_evidence_read /bin/cat \"$PROOF_PROBE_ROOT_EVIDENCE\"",
+    "observe tmp_write /usr/bin/touch \"$PROOF_PROBE_TMP_PATH\"",
+    "observe network_connect /usr/bin/curl --connect-timeout 2 --max-time 3 https://api.openai.com/",
+    "observe descendant_codex_agent \"$PROOF_PROBE_CODEX_EXECUTABLE\" exec --ignore-user-config --ignore-rules --strict-config --ephemeral --json --model gpt-5.6-sol --config 'approval_policy=\"never\"' 'Return exactly NESTED_AGENT_UNEXPECTEDLY_RAN'",
+  ].join("\n");
+  const environment = {
+    PROOF_PROBE_REPOSITORY: paths.repository,
+    PROOF_PROBE_VISIBLE_EXECUTABLE: paths.visible_executable_path,
+    PROOF_PROBE_HELD_OUT_EXECUTABLE: paths.held_out_executable_path,
+    PROOF_PROBE_ROOT_EVIDENCE: paths.root_evidence_path,
+    PROOF_PROBE_CODEX_EXECUTABLE: paths.codex_executable_path,
+  };
+  const argv = [
+    "sandbox",
+    ...inheritedArgs,
+    "-P", launchContract.permission_profile,
+    "-C", paths.repository,
+    "--log-denials",
+    "/bin/sh", "-c", script,
+  ];
+  const contract = {
+    schema_version: 1,
+    contract_type: "native-codex-capability-probe-v1",
+    argv,
+    environment,
+    expected,
+  };
+  return { ...contract, sha256: sha256(Buffer.from(JSON.stringify(contract))) };
 }
 
 export function parseNativeCodexTranscript(stdout) {

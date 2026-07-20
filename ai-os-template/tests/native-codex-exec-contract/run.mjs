@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import fs from "node:fs";
 
-import { nativeCodexExecContract } from "../../scripts/native-codex-exec-contract.mjs";
+import { nativeCodexCapabilityProbeContract, nativeCodexExecContract } from "../../scripts/native-codex-exec-contract.mjs";
 
 const workerPacket = {
   schema_version: 1,
-  packet_type: "native-codex-exec-worker-invocation-v3",
-  producer_version: "native-codex-exec-producer-v3",
+  packet_type: "native-codex-exec-worker-invocation-v4",
+  producer_version: "native-codex-exec-producer-v4",
   invocation_id: `sha256:${"1".repeat(64)}`,
   experiment_id: "fixture",
   arm_id: "sol-a",
@@ -67,5 +67,27 @@ assert.equal(contract.stdin.includes("native-result.json"), false);
 assert.equal(contract.stdin.includes("native-finalize-receipt.json"), false);
 assert.equal(contract.stdin.includes("worker-packet.json"), false);
 assert.match(contract.sha256, /^sha256:[a-f0-9]{64}$/);
+
+const probe = nativeCodexCapabilityProbeContract(contract, {
+  repository: workerPacket.repository,
+  visible_executable_path: fs.realpathSync(process.execPath),
+  held_out_executable_path: "/private/proof/held-out-check",
+  root_evidence_path: "/private/proof/native-invocation-packet.json",
+  codex_executable_path: "/private/runtime/codex",
+});
+assert.equal(probe.argv[0], "sandbox");
+assert.equal(probe.argv.includes('default_permissions="native-proof-builder"'), true);
+assert.equal(probe.argv.includes("permissions.native-proof-builder.network.enabled=false"), true);
+assert.deepEqual(probe.expected, {
+  workspace_read: 0,
+  visible_executable_read: 0,
+  held_out_executable_read: "nonzero",
+  root_evidence_read: "nonzero",
+  tmp_write: "nonzero",
+  network_connect: "nonzero",
+  descendant_codex_agent: "nonzero",
+});
+assert.equal(probe.argv.at(-1).includes("PROBE_COMMAND_OUTPUT"), true, "probe must retain per-command diagnostic output");
+assert.match(probe.sha256, /^sha256:[a-f0-9]{64}$/);
 
 console.log("native Codex exec contract fixtures passed");

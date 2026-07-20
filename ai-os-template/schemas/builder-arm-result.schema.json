@@ -20,7 +20,7 @@
     "run_nonce": { "$ref": "#/$defs/string" },
     "model": { "enum": ["composer-2.5", "gpt-5.6-sol"] },
     "reasoning_effort": { "const": "high" },
-    "runner": { "enum": ["cursor-agent-paired-builder-v1", "codex-exec-builder-v3"] },
+    "runner": { "enum": ["cursor-agent-paired-builder-v1", "codex-exec-builder-v4"] },
     "runner_config_sha256": { "$ref": "#/$defs/sha256" },
     "repository": { "$ref": "#/$defs/string" },
     "git_common_dir": { "$ref": "#/$defs/string" },
@@ -44,8 +44,8 @@
     "environment_sha256": { "$ref": "#/$defs/sha256" },
     "execution_manifest": { "type": "object" },
     "execution_manifest_sha256": { "$ref": "#/$defs/sha256" },
-    "producer_version": { "enum": ["cursor-agent-producer-v1", "native-codex-exec-producer-v3"] },
-    "finalizer_version": { "const": "native-codex-exec-finalizer-v3" },
+    "producer_version": { "enum": ["cursor-agent-producer-v1", "native-codex-exec-producer-v4"] },
+    "finalizer_version": { "const": "native-codex-exec-finalizer-v4" },
     "native_invocation_packet_sha256": { "$ref": "#/$defs/sha256" },
     "native_invocation_packet_path": { "$ref": "#/$defs/string" },
     "native_attestation_sha256": { "$ref": "#/$defs/sha256" },
@@ -56,6 +56,11 @@
     "native_run_id": { "$ref": "#/$defs/string" },
     "native_session_id": { "$ref": "#/$defs/string" },
     "launch_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "codex_executable_path": { "$ref": "#/$defs/string" },
+    "codex_executable_sha256": { "$ref": "#/$defs/sha256" },
+    "capability_probe_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "capability_probe_evidence_path": { "$ref": "#/$defs/string" },
+    "capability_probe_evidence_sha256": { "$ref": "#/$defs/sha256" },
     "worker_packet_delivery": { "const": "stdin-bytes" },
     "multi_agent_enabled": { "const": false },
     "network_access": { "const": false },
@@ -98,11 +103,13 @@
           "execution_claim_path", "execution_claim_sha256",
           "finalization_claim_path", "finalization_claim_sha256",
           "worker_packet_path", "worker_packet_sha256", "launch_contract_sha256",
+          "codex_executable_path", "codex_executable_sha256",
+          "capability_probe_contract_sha256", "capability_probe_evidence_path", "capability_probe_evidence_sha256",
           "worker_packet_delivery", "multi_agent_enabled", "network_access",
           "writable_tmp", "sandbox_mode", "permission_profile", "filesystem_read_scope",
           "transcript_path", "transcript_sha256"
         ],
-        "properties": { "runner": { "const": "codex-exec-builder-v3" } }
+        "properties": { "runner": { "const": "codex-exec-builder-v4" } }
       }
     }
   ],

@@ -14,8 +14,8 @@
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "packet_type": { "const": "native-codex-exec-worker-invocation-v3" },
-    "producer_version": { "const": "native-codex-exec-producer-v3" },
+    "packet_type": { "const": "native-codex-exec-worker-invocation-v4" },
+    "producer_version": { "const": "native-codex-exec-producer-v4" },
     "invocation_id": { "$ref": "#/$defs/sha256" },
     "experiment_id": { "$ref": "#/$defs/string" },
     "arm_id": { "$ref": "#/$defs/string" },

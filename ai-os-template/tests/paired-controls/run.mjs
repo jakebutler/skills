@@ -68,6 +68,7 @@ const composer = await runBuilderArm(composerConfigPath, {
   agentExecutable: process.execPath,
   agentPrefixArgs: [fakeAgent],
   agentVersion: "fixture-cursor-agent",
+  isolationBoundary: { enforcement: "test-double" },
 });
 
 const nativeConfig = {
@@ -76,6 +77,9 @@ const nativeConfig = {
   run_nonce: "native-run-001",
   model: "gpt-5.6-sol",
   reasoning_effort: "high",
+  codex_executable_path: fs.realpathSync(process.execPath),
+  codex_executable_sha256: sha256(fs.readFileSync(fs.realpathSync(process.execPath))),
+  codex_version: "fixture-native-codex-cli",
   repository: nativeRepo,
 };
 const nativeConfigPath = path.join(root, "native-config.json");
@@ -85,6 +89,16 @@ const fakeNativeAgent = path.join(root, "fake-native-agent.mjs");
 fs.writeFileSync(fakeNativeAgent, `
 import fs from "node:fs";
 import path from "node:path";
+if (process.argv.includes("features") && process.argv.includes("list")) {
+  for (let index = 0; index < process.argv.length; index += 1) {
+    if (process.argv[index] === "--disable") console.log(process.argv[index + 1] + " stable false");
+  }
+  process.exit(0);
+}
+if (process.argv.includes("sandbox")) {
+  for (const [label, status] of [["workspace_read",0],["visible_executable_read",0],["held_out_executable_read",1],["root_evidence_read",1],["tmp_write",1],["network_connect",1],["descendant_codex_agent",1]]) console.log(label + "\\t" + status);
+  process.exit(0);
+}
 process.stdin.resume();
 process.stdin.on("end", () => {
   const workspace = process.argv[process.argv.indexOf("--cd") + 1];
@@ -136,7 +150,7 @@ rejected("nonzero check status", rightPath, (value) => { value.visible_checks[0]
 rejected("missing check status", rightPath, (value) => { delete value.held_out_checks[0].status; }, /status must be 0/i);
 rejected("wrong native reasoning", rightPath, (value) => { value.reasoning_effort = "medium"; }, /reasoning_effort/i);
 rejected("Sol through Cursor", rightPath, (value) => { value.runner = "cursor-agent-paired-builder-v1"; }, /runner/i);
-rejected("Composer through native", leftPath, (value) => { value.runner = "codex-exec-builder-v3"; }, /runner/i);
+rejected("Composer through native", leftPath, (value) => { value.runner = "codex-exec-builder-v4"; }, /runner/i);
 rejected("execution manifest drift", rightPath, (value) => { value.execution_manifest_sha256 = `sha256:${"1".repeat(64)}`; }, /execution_manifest/i);
 rejected("stale run nonce", rightPath, (value) => { value.run_nonce = composer.run_nonce; }, /run_nonce|cross-wir/i);
 rejected("missing producer evidence", rightPath, (value) => { delete value.native_invocation_packet_sha256; }, /producer packet/i);

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "evidence_type": "codex-exec-completion-v3",
+  "evidence_type": "codex-exec-completion-v4",
   "invocation_packet_sha256": "{{PREPARED_INVOCATION_PACKET_SHA256}}",
   "invocation_id": "{{INVOCATION_ID}}",
   "experiment_id": "{{EXPERIMENT_ID}}",
