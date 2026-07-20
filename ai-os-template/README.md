@@ -24,8 +24,9 @@ adapter, schema, and positive/negative dogfood fixtures before advertising the g
 installed.
 
 The paired builder apparatus uses separate honest producers: Cursor Agent is restricted
-to Composer 2.5, while native Sol uses a deterministic prepare packet, one fresh Codex
-collaboration subagent at high reasoning, a source-bound root attestation, and
+to Composer 2.5, while native Sol uses a deterministic prepare packet, one ephemeral
+high-reasoning `codex exec` process with multi-agent disabled, parent-captured launch and
+transcript evidence, a least-privilege `native-proof-builder` permission profile, and
 deterministic finalization. The comparison is an end-to-end routing-stack viability
 experiment with runtime/producer surface recorded as a confound, not a pure model A/B.
 

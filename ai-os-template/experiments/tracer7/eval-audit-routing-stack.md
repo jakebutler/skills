@@ -6,13 +6,28 @@ Scope: the generic protocol, runner/finalizer evidence, paired comparator, and b
 review rubric. This audit assesses whether the decision rule supports its stated claim;
 it is not Tracer 7 product evidence.
 
+## Error analysis
+
+### The v3 route is grounded in observed apparatus failures
+
+**Status:** OK for the apparatus gate
+
+The route redesign responds to five reproduced P1 classes from the frozen v1 candidate:
+batch-level check snapshots, late repeat-run detection, symlink containment escape,
+worker knowledge of root evidence, and descendant-agent availability. Each now has a
+negative fixture that fails through the public producer/finalizer path.
+
+**Fix:** Preserve these five fixtures as permanent regression evidence. A novel P1 in
+the exact-candidate reviews invalidates this audit and requires another explicit
+remediation decision rather than being averaged into a score.
+
 ## Evaluator design
 
 ### The prior model-isolation claim was unsupported
 
 **Status:** Problem corrected in this candidate
 
-Composer runs through Cursor while Sol runs through native Codex collaboration. Model,
+Composer runs through Cursor while Sol runs through native `codex exec`. Model,
 runtime, producer surface, authentication, and orchestration mechanics therefore move
 together. The old protocol could not attribute correctness or speed differences solely
 to the model.
@@ -78,11 +93,26 @@ general backend default.
 
 ## Pipeline hygiene
 
+### The producer change required a fresh apparatus rehearsal
+
+**Status:** OK
+
+The collaboration-subagent route was replaced rather than patched in place. The live
+v2 rehearsal proved the initial native Codex and Cursor routing surfaces, but an exact-
+candidate review then found that the legacy sandbox still granted broad filesystem
+reads. It is historical only. The replacement v3 rehearsal exercised the least-
+privilege permission profile from separate clones, proved held-out/root-evidence read
+denial, produced equal working state, passed content-addressed checks, and passed the
+paired comparator.
+
+**Fix:** Re-run the live rehearsal after any change to native launch argv, packet
+delivery, sandbox controls, transcript parsing, route model, or paired comparator.
+
 ### Apparatus rehearsal is not quality evidence
 
 **Status:** Explicitly controlled
 
-A micro-fixture can prove source binding, native collaboration execution, finalization,
+A micro-fixture can prove source binding, native Codex CLI execution, finalization,
 and paired comparison mechanics. It cannot measure Tracer 7 implementation quality.
 
 **Fix:** Label rehearsal results apparatus-only, record any unavailable Composer parity

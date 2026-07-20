@@ -5,10 +5,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { executionManifest, repositoryIdentity, safeEnvironment } from "./builder-execution-contract.mjs";
+import { assertPathOutsideRepository, executionManifest, repositoryIdentity, safeEnvironment } from "./builder-execution-contract.mjs";
 
-const PRODUCER_VERSION = "native-codex-producer-v1";
-const FINALIZER_VERSION = "native-codex-finalizer-v1";
+const PRODUCER_VERSION = "native-codex-exec-producer-v3";
+const FINALIZER_VERSION = "native-codex-exec-finalizer-v3";
 const ALLOWED_CONFIG_KEYS = new Set([
   "schema_version", "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort",
   "repository", "baseline_commit", "prompt_path", "allowed_paths", "allowed_ignored_paths",
@@ -67,11 +67,6 @@ function ignoredState(repository, allowedIgnoredPaths) {
   return sha256(rows.sort().join("\n"));
 }
 
-function outsidePath(container, target, label) {
-  const relative = path.relative(container, target);
-  if (relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative))) fail(`${label} must be outside the builder repository`);
-}
-
 export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) {
   const resolvedConfigPath = path.resolve(configPath);
   const configBytes = fs.readFileSync(resolvedConfigPath);
@@ -104,12 +99,18 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
   }
 
   const repository = fs.realpathSync(path.resolve(config.repository));
-  outsidePath(repository, resolvedConfigPath, "arm config");
-  const outputDirectory = path.resolve(config.output_directory);
-  outsidePath(repository, outputDirectory, "output_directory");
+  assertPathOutsideRepository(repository, resolvedConfigPath, "arm config");
+  const outputDirectory = assertPathOutsideRepository(repository, path.resolve(config.output_directory), "output_directory");
+  for (const [index, command] of config.visible_checks.entries()) {
+    if (!path.isAbsolute(command[0])) fail(`visible_checks[${index}] executable must be an absolute external path`);
+    assertPathOutsideRepository(repository, path.resolve(command[0]), `visible_checks[${index}] executable`);
+    for (const [argumentIndex, argument] of command.slice(1).entries()) {
+      if (path.isAbsolute(argument)) fail(`visible_checks[${index}][${argumentIndex + 1}] must not expose an absolute path`);
+    }
+  }
   for (const [index, command] of config.held_out_checks.entries()) {
     if (!path.isAbsolute(command[0])) fail(`held_out_checks[${index}] executable must be an absolute external path`);
-    outsidePath(repository, path.resolve(command[0]), `held_out_checks[${index}] executable`);
+    assertPathOutsideRepository(repository, path.resolve(command[0]), `held_out_checks[${index}] executable`);
   }
 
   const head = git(repository, ["rev-parse", "HEAD"]).stdout.trim();
@@ -144,10 +145,21 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
     execution_manifest_sha256: fullExecution.sha256,
     environment_sha256: fullExecution.manifest.environment_sha256,
   })));
-  const evidenceDirectory = path.join(outputDirectory, config.arm_id);
+  const evidenceDirectory = assertPathOutsideRepository(repository, path.join(outputDirectory, config.arm_id), "native evidence directory");
   fs.mkdirSync(evidenceDirectory, { recursive: true });
-  const canonicalEvidenceDirectory = fs.realpathSync(evidenceDirectory);
-  const workerPacketPath = path.join(canonicalEvidenceDirectory, "native-worker-packet.json");
+  const canonicalEvidenceDirectory = assertPathOutsideRepository(repository, fs.realpathSync(evidenceDirectory), "native evidence directory");
+  const workerCapabilityDirectory = assertPathOutsideRepository(
+    repository,
+    path.join(path.dirname(outputDirectory), ".native-builder-worker-capabilities", invocationId.slice("sha256:".length)),
+    "native worker capability directory",
+  );
+  fs.mkdirSync(workerCapabilityDirectory, { recursive: true });
+  const canonicalWorkerCapabilityDirectory = assertPathOutsideRepository(
+    repository,
+    fs.realpathSync(workerCapabilityDirectory),
+    "native worker capability directory",
+  );
+  const workerPacketPath = path.join(canonicalWorkerCapabilityDirectory, "native-worker-packet.json");
   const invocationPacketPath = path.join(canonicalEvidenceDirectory, "native-invocation-packet.json");
   const resultPath = path.join(canonicalEvidenceDirectory, "native-result.json");
   const finalizeReceiptPath = path.join(canonicalEvidenceDirectory, "native-finalize-receipt.json");
@@ -156,7 +168,7 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
   }
   const workerPacket = {
     schema_version: 1,
-    packet_type: "native-codex-worker-invocation-v1",
+    packet_type: "native-codex-exec-worker-invocation-v3",
     producer_version: PRODUCER_VERSION,
     invocation_id: invocationId,
     experiment_id: config.experiment_id,
@@ -164,7 +176,7 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
     run_nonce: config.run_nonce,
     model: config.model,
     reasoning_effort: config.reasoning_effort,
-    execution_surface: "codex-collaboration-subagent",
+    execution_surface: "codex-exec",
     repository,
     baseline_commit: config.baseline_commit,
     baseline_tree: baselineTree,
@@ -183,7 +195,7 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
   const workerPacketSha256 = sha256(workerPacketBytes);
   const packet = {
     schema_version: 1,
-    packet_type: "native-codex-collaboration-invocation-v1",
+    packet_type: "native-codex-exec-invocation-v3",
     producer_version: PRODUCER_VERSION,
     finalizer_version: FINALIZER_VERSION,
     invocation_id: invocationId,
@@ -192,7 +204,7 @@ export async function prepareNativeBuilderArm(configPath, approvedConfigSha256) 
     run_nonce: config.run_nonce,
     model: config.model,
     reasoning_effort: config.reasoning_effort,
-    execution_surface: "codex-collaboration-subagent",
+    execution_surface: "codex-exec",
     repository,
     git_common_dir: identity.git_common_dir,
     git_dir: identity.git_dir,

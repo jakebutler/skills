@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 
 import { prepareNativeBuilderArm } from "../../scripts/prepare-native-builder-arm.mjs";
 import { finalizeNativeBuilderArm } from "../../scripts/finalize-native-builder-arm.mjs";
+import { nativeCodexExecContract } from "../../scripts/native-codex-exec-contract.mjs";
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "native-builder-arm-"));
 const repository = path.join(scratch, "repository");
@@ -24,8 +25,9 @@ const baseline = git("rev-parse", "HEAD");
 const promptPath = path.join(scratch, "prompt.md");
 fs.writeFileSync(promptPath, "Change allowed.txt to after.\n");
 const checkMutationFlag = path.join(scratch, "mutate-during-check");
+const checkRunCountPath = path.join(scratch, "check-run-count.log");
 const evaluatorPath = path.join(scratch, "evaluator.mjs");
-const evaluatorSource = `#!/usr/bin/env node\nimport fs from "node:fs";\nimport path from "node:path";\nif (fs.existsSync(${JSON.stringify(checkMutationFlag)})) fs.writeFileSync(path.join(process.cwd(), "post-check-outside.txt"), "mutated\\n");\nprocess.exit(0);\n`;
+const evaluatorSource = `#!/usr/bin/env node\nimport fs from "node:fs";\nimport path from "node:path";\nfs.appendFileSync(${JSON.stringify(checkRunCountPath)}, "check\\n");\nconst target = path.join(process.cwd(), "post-check-outside.txt");\nif (fs.existsSync(${JSON.stringify(checkMutationFlag)}) && process.argv[2] === "mutate") fs.writeFileSync(target, "mutated\\n");\nif (process.argv[2] === "restore") fs.rmSync(target, { force: true });\nprocess.exit(0);\n`;
 fs.writeFileSync(evaluatorPath, evaluatorSource, { mode: 0o755 });
 
 function config(overrides = {}) {
@@ -46,7 +48,7 @@ function config(overrides = {}) {
     check_timeout_ms: 10_000,
     intervention_budget: 0,
     remediation_generation_budget: 1,
-    visible_checks: [[evaluatorPath]],
+    visible_checks: [[evaluatorPath, "mutate"], [evaluatorPath, "restore"]],
     held_out_checks: [[evaluatorPath]],
     ...overrides,
   };
@@ -83,6 +85,26 @@ await assert.rejects(
   () => prepare({ reasoning_effort: "medium" }),
   /reasoning effort must be high/i,
 );
+await assert.rejects(
+  () => prepare({ visible_checks: [["node", "--version"]] }),
+  /visible_checks\[0\] executable must be an absolute external path/i,
+);
+await assert.rejects(
+  () => prepare({ visible_checks: [[evaluatorPath, path.join(scratch, "visible-input.txt")]] }),
+  /visible_checks\[0\]\[1\] must not expose an absolute path/i,
+);
+
+const symlinkEvidence = path.join(scratch, "symlink-evidence");
+fs.symlinkSync(repository, symlinkEvidence, "dir");
+await assert.rejects(
+  () => prepare({ output_directory: symlinkEvidence, arm_id: "symlink-arm", run_nonce: "symlink-run-001" }),
+  /output_directory.*outside|resolved.*inside.*repository/i,
+);
+assert.equal(
+  fs.existsSync(path.join(repository, "symlink-arm")),
+  false,
+  "prepare must reject a symlink escape before writing inside the builder repository",
+);
 
 const prepared = await prepare();
 assert.equal(prepared.packet.model, "gpt-5.6-sol");
@@ -91,12 +113,26 @@ assert.match(prepared.invocation_packet_sha256, /^sha256:[a-f0-9]{64}$/);
 assert.equal(fs.existsSync(prepared.invocation_packet_path), true);
 assert.match(prepared.worker_packet_sha256, /^sha256:[a-f0-9]{64}$/, "prepare must emit a source-bound worker packet");
 assert.equal(fs.existsSync(prepared.worker_packet_path), true);
+assert.notEqual(
+  path.dirname(prepared.worker_packet_path),
+  path.dirname(prepared.invocation_packet_path),
+  "worker capability material must not share a directory with root-only evidence",
+);
 assert.equal("held_out_checks" in prepared.worker_packet, false, "worker packet must not expose held-out checks");
 assert.equal("evidence_directory" in prepared.worker_packet, false, "worker packet must not expose root evidence paths");
 assert.equal(Buffer.from(prepared.worker_packet.prompt_base64, "base64").toString("utf8"), "Change allowed.txt to after.\n");
+fs.writeFileSync(path.join(prepared.packet.evidence_directory, "native-execution-claim.json"), `${JSON.stringify({
+  schema_version: 1,
+  claim_type: "native-codex-execution-claim-v1",
+  invocation_packet_sha256: prepared.invocation_packet_sha256,
+  invocation_id: prepared.packet.invocation_id,
+  experiment_id: prepared.packet.experiment_id,
+  arm_id: prepared.packet.arm_id,
+  run_nonce: prepared.packet.run_nonce,
+}, null, 2)}\n`, { flag: "wx" });
 
 async function finalize(attestation) {
-  const attestationPath = path.join(scratch, `attestation-${crypto.randomUUID()}.json`);
+  const attestationPath = path.join(prepared.packet.evidence_directory, "native-attestation.json");
   fs.writeFileSync(attestationPath, `${JSON.stringify(attestation, null, 2)}\n`);
   const attestationSha256 = `sha256:${crypto.createHash("sha256").update(fs.readFileSync(attestationPath)).digest("hex")}`;
   return finalizeNativeBuilderArm(
@@ -110,7 +146,7 @@ async function finalize(attestation) {
 await assert.rejects(
   () => finalize({
     schema_version: 1,
-    attestation_type: "codex-collaboration-subagent-builder-attestation-v1",
+    attestation_type: "codex-exec-builder-attestation-v3",
     invocation_packet_sha256: prepared.invocation_packet_sha256,
     model: "gpt-5.6-sol-high",
     reasoning_effort: "high",
@@ -121,26 +157,26 @@ await assert.rejects(
 await assert.rejects(
   () => finalize({
     schema_version: 1,
-    attestation_type: "codex-collaboration-subagent-builder-attestation-v1",
-    producer_version: "native-codex-producer-v1",
-    finalizer_version: "native-codex-finalizer-v1",
+    attestation_type: "codex-exec-builder-attestation-v3",
+    producer_version: "native-codex-exec-producer-v3",
+    finalizer_version: "native-codex-exec-finalizer-v3",
     invocation_packet_sha256: prepared.invocation_packet_sha256,
     invocation_id: prepared.packet.invocation_id,
     experiment_id: prepared.packet.experiment_id,
     arm_id: prepared.packet.arm_id,
     run_nonce: prepared.packet.run_nonce,
-    canonical_task: "/root/native_fixture",
+    native_session_id: "fixture-run-001",
     run_id: "fixture-run-001",
     model: "gpt-5.6-sol",
     reasoning_effort: "high",
-    execution_surface: "codex-collaboration-subagent",
+    execution_surface: "codex-exec",
     status: "completed",
   }),
   /completion evidence hash is required/i,
 );
 
 fs.writeFileSync(path.join(repository, "allowed.txt"), "after\n");
-const completionPath = path.join(scratch, "completion-evidence.json");
+const completionPath = path.join(prepared.packet.evidence_directory, "native-completion.json");
 const controlsSha256 = sha256(Buffer.from(JSON.stringify({
   allowed_paths: prepared.packet.allowed_paths,
   allowed_ignored_paths: prepared.packet.allowed_ignored_paths,
@@ -156,12 +192,12 @@ const controlsSha256 = sha256(Buffer.from(JSON.stringify({
 })));
 const completion = {
   schema_version: 1,
-  evidence_type: "codex-collaboration-subagent-completion-v1",
+  evidence_type: "codex-exec-completion-v3",
   invocation_packet_sha256: prepared.invocation_packet_sha256,
   invocation_id: prepared.packet.invocation_id,
   experiment_id: prepared.packet.experiment_id,
   arm_id: prepared.packet.arm_id,
-  canonical_task: "/root/native_fixture",
+  native_session_id: "fixture-run-001",
   run_id: "fixture-run-001",
   model: "gpt-5.6-sol",
   reasoning_effort: "high",
@@ -175,23 +211,52 @@ const completion = {
 };
 fs.writeFileSync(completionPath, `${JSON.stringify(completion, null, 2)}\n`);
 const completionSha256 = sha256(fs.readFileSync(completionPath));
+const transcriptPath = path.join(prepared.packet.evidence_directory, "native-codex.stdout.jsonl");
+const transcriptBytes = Buffer.from([
+  JSON.stringify({ type: "thread.started", thread_id: completion.native_session_id }),
+  JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: completion.returned_completion } }),
+  JSON.stringify({ type: "turn.completed", usage: { input_tokens: 10, output_tokens: 5 } }),
+  "",
+].join("\n"));
+fs.writeFileSync(transcriptPath, transcriptBytes);
+const stderrPath = path.join(prepared.packet.evidence_directory, "native-codex.stderr.log");
+fs.writeFileSync(stderrPath, "");
+const executablePath = fs.realpathSync(process.execPath);
+const workerPacketBytes = fs.readFileSync(prepared.worker_packet_path);
+const launchContract = nativeCodexExecContract(workerPacketBytes, prepared.worker_packet_sha256);
 const attestation = {
   schema_version: 1,
-  attestation_type: "codex-collaboration-subagent-builder-attestation-v1",
-  producer_version: "native-codex-producer-v1",
-  finalizer_version: "native-codex-finalizer-v1",
+  attestation_type: "codex-exec-builder-attestation-v3",
+  producer_version: "native-codex-exec-producer-v3",
+  finalizer_version: "native-codex-exec-finalizer-v3",
   invocation_packet_sha256: prepared.invocation_packet_sha256,
   invocation_id: prepared.packet.invocation_id,
   experiment_id: prepared.packet.experiment_id,
   arm_id: prepared.packet.arm_id,
   run_nonce: prepared.packet.run_nonce,
-  canonical_task: completion.canonical_task,
+  native_session_id: completion.native_session_id,
   run_id: completion.run_id,
   model: completion.model,
   reasoning_effort: completion.reasoning_effort,
-  execution_surface: "codex-collaboration-subagent",
-  platform_version: "codex-collaboration-tool",
+  execution_surface: "codex-exec",
+  platform_version: "codex-cli fixture",
+  codex_executable_path: executablePath,
+  codex_executable_sha256: sha256(fs.readFileSync(executablePath)),
+  launch_contract_sha256: launchContract.sha256,
+  worker_packet_delivery: "stdin-bytes",
+  multi_agent_enabled: false,
+  network_access: false,
+  writable_tmp: false,
+  sandbox_mode: "permission-profile",
+  permission_profile: "native-proof-builder",
+  filesystem_read_scope: "minimal+workspace+visible-executables",
+  transcript_path: transcriptPath,
+  transcript_sha256: sha256(transcriptBytes),
+  stderr_path: stderrPath,
+  stderr_sha256: sha256(Buffer.from("")),
   status: "completed",
+  agent_exit_status: 0,
+  agent_signal: null,
   agent_timed_out: false,
   started_at: "2026-07-20T00:00:00.000Z",
   finished_at: "2026-07-20T00:00:01.000Z",
@@ -314,15 +379,27 @@ fs.writeFileSync(promptPath, "Change allowed.txt to after.\n");
 
 fs.writeFileSync(checkMutationFlag, "trigger\n");
 await assert.rejects(() => finalize(attestation), /check.*mutat|outside allowed paths|post-check/i);
+await assert.rejects(() => finalize(attestation), /already.*claim|already.*finaliz/i);
 fs.rmSync(checkMutationFlag);
 fs.rmSync(path.join(repository, "post-check-outside.txt"), { force: true });
+for (const name of ["native-finalization-claim.json", "visible-1.stdout.log", "visible-1.stderr.log"]) {
+  fs.rmSync(path.join(prepared.packet.evidence_directory, name), { force: true });
+}
 
-const result = await finalize(attestation);
+const checksBeforeConcurrentFinalize = fs.readFileSync(checkRunCountPath, "utf8").split("\n").filter(Boolean).length;
+const concurrentFinalizations = await Promise.allSettled([finalize(attestation), finalize(attestation)]);
+const successfulFinalizations = concurrentFinalizations.filter((entry) => entry.status === "fulfilled");
+assert.equal(successfulFinalizations.length, 1, "exactly one concurrent finalizer may claim the invocation");
+const checksAfterConcurrentFinalize = fs.readFileSync(checkRunCountPath, "utf8").split("\n").filter(Boolean).length;
+assert.equal(checksAfterConcurrentFinalize - checksBeforeConcurrentFinalize, 3, "a losing concurrent finalizer must fail before running checks");
+const result = successfulFinalizations[0].value;
 assert.equal(result.status, "completed");
 assert.equal(result.native_run_id, "fixture-run-001");
 assert.equal(result.changed_paths[0], "allowed.txt");
 assert.equal(result.visible_checks[0].status, 0);
 assert.equal(result.held_out_checks[0].status, 0);
+assert.equal(fs.existsSync(result.execution_claim_path), true);
+assert.equal(fs.existsSync(result.finalization_claim_path), true);
 await assert.rejects(() => finalize(attestation), /already been finalized/i);
 
 console.log("native builder arm fixtures passed");

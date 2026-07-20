@@ -70,9 +70,10 @@ Composer is not the general backend default. Tracer 7 is a paired routing-stack
 viability test after the proof-required design gate removes unresolved architecture
 and security decisions.
 
-- Native control route: one fresh Codex collaboration subagent using `gpt-5.6-sol` at
-  high reasoning through native Codex subscription access, with deterministic
-  prepare/attest/finalize evidence.
+- Native control route: one ephemeral `codex exec` process using `gpt-5.6-sol` at high
+  reasoning through native Codex subscription access, with multi-agent disabled and
+  deterministic prepare/run/finalize evidence under the least-privilege
+  `native-proof-builder` permission profile.
 - Experimental route: Cursor Agent using only `composer-2.5` through Cursor
   subscription access.
 - D0, builder prompt, allowed paths, ignored policy, visible/held-out commands, budgets,

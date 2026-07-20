@@ -1,8 +1,9 @@
-# Native Codex Sol builder orchestration contract
+# Native Codex Sol builder execution contract
 
-This contract is the producer boundary for the native control route. A local Node
-process cannot invoke Codex collaboration tools, so the root Codex orchestrator owns
-the single collaboration call and records what the platform actually returned.
+This contract is the producer boundary for the native control route. The v3 route
+uses one parent-controlled, ephemeral `codex exec` process instead of a collaboration
+subagent. That change makes the one-agent boundary and worker capability boundary
+launch-time controls rather than unverifiable worker promises.
 
 ## Phase 1: deterministic prepare
 
@@ -14,55 +15,67 @@ the single collaboration call and records what the platform actually returned.
    node scripts/prepare-native-builder-arm.mjs <config.json> <approved-sha256>
    ```
 
-3. Preserve the emitted root invocation packet and minimal worker packet paths and
-   SHA-256 values. Do not edit either packet.
-   Preparation fails unless the config, prompt, baseline HEAD/tree/index/ref, clean
-   state, allowed paths, ignored-file state, evaluator vectors, budgets, environment
-   name/value digest, content-addressed evaluator executables, exact `gpt-5.6-sol`
-   model, and `high` reasoning route are valid. The root packet binds its own canonical
-   worker, evidence, result, and finalize-receipt paths;
-   copying it to another directory does not create a new admissible run.
+3. Preserve the emitted root invocation packet, worker packet, and SHA-256 values.
+   Do not edit them. The root packet lives in the root evidence directory; worker
+   capability material lives in a separate content-addressed directory.
 
-## Phase 2: exactly one native collaboration call
+Preparation fails unless config, prompt, baseline HEAD/tree/index/ref, clean state,
+allowed paths, ignored-file state, evaluator vectors, budgets, environment digest,
+content-addressed evaluator executables, exact `gpt-5.6-sol` model, and `high`
+reasoning route are valid. Every external path is checked after symlink resolution.
 
-The root orchestrator spawns exactly one fresh-context collaboration subagent with
-model `gpt-5.6-sol` and reasoning effort `high`. No fallback is permitted. The task
-name must be unique and its canonical `/root/...` name plus returned agent ID are the
-run identity.
+## Phase 2: one sealed native Codex process
 
-The delegation contains only:
+Run:
 
-- the absolute **worker-packet** path and its approved SHA-256;
-- an instruction to decode and verify the exact embedded prompt bytes;
-- permission to modify only `allowed_paths` in the packet repository;
-- a requirement to run only visible checks named in the packet; and
-- the prohibitions and return contract below.
+```text
+node scripts/run-native-builder-execution.mjs \
+  <native-invocation-packet.json> <approved-packet-sha256>
+```
 
-Do not add model-specific hints, solution coaching, acceptance criteria, or a summary
-of the sibling route. The subagent must not inspect held-out evaluator source, another
-arm, or post-run evidence.
+The parent runner validates the prepared source state and constructs the immutable
+`native-codex-exec-launch-v3` contract. The worker receives the exact worker packet
+bytes over stdin. It receives no packet pathname, root invocation path, evidence
+directory, result path, receipt path, held-out command, or sibling-arm identity.
+Before version probing or model launch, the runner exclusively creates the canonical
+`native-execution-claim.json`. A second sequential or concurrent invocation with the
+same identity therefore fails before any model process can start.
 
-The worker packet deliberately omits held-out commands, evidence directories, result
-paths, and receipt paths. The subagent must not commit, stage, switch or create refs, push, publish, deploy,
-migrate, access production, use secrets, modify external state, or write outside the
-packet repository. It stops on ambiguity, missing design, scope expansion, timeout, or
-any requested intervention.
+The launch contract fixes all of these controls and hashes their exact argv/stdin
+identity:
 
-Its final response must report the verified packet hash; canonical task; repository;
-start and end HEAD/index/ref identities; actual changed paths; working-state SHA-256
-using the producer's path/mode/content algorithm; visible checks; any intervention;
-and a concise completion. It must echo the worker-packet hash and independently
-observed prompt hash. A failed or timed-out call remains a failed outcome.
+- native subscription route `gpt-5.6-sol` with `model_reasoning_effort="high"`;
+- `--ignore-user-config`, `--ignore-rules`, `--strict-config`, and `--ephemeral`;
+- JSONL transcript output and approval policy `never`;
+- custom `native-proof-builder` permission profile: minimal runtime reads, repository
+  writes with `.git` read-only, exact visible-check executable reads, and network disabled;
+- project instruction discovery disabled with `project_doc_max_bytes=0`;
+- both `/tmp` and `$TMPDIR` excluded from writable roots; and
+- `multi_agent`, apps, browsers, image generation, memories, plugins, and remote
+  plugins disabled.
 
-## Phase 3: root evidence and deterministic finalize
+Disabling `multi_agent` removes the spawn/send/wait agent tools from the worker's
+surface, so the experiment has one model process rather than a self-attested
+one-agent convention. Ignoring user config and project rules prevents a local route
+override or MCP/plugin injection. The Codex host still needs provider transport to
+OpenAI; `network_access=false` describes model-generated sandboxed commands, not that
+host transport.
 
-The root writes the verbatim returned completion into an external completion-evidence
-record using `native-completion.template.json`. It then writes
-`native-attestation.template.json` from the actual collaboration call, without
-claiming unavailable provider metadata. Every intervention or manual edit is listed;
-an empty ledger is an assertion that none occurred.
+The worker may modify only `allowed_paths` in the packet repository and may run only
+the visible checks named in the packet. It must not stage, commit, change refs, push,
+publish, deploy, migrate, access production, use secrets, inspect held-out evidence,
+or write outside the repository. The parent independently measures all repository
+effects and rejects violations.
 
-Hash both files, then run:
+The parent captures the CLI version and executable content identity, exact launch
+contract hash, JSONL transcript/session ID, stderr, exit status, timeout status,
+start/end Git state, changed paths, working-state hash, and verbatim final completion.
+It writes `native-attestation.json` and `native-completion.json`; operators do not
+hand-author either artifact.
+
+## Phase 3: deterministic finalize
+
+Hash the runner-emitted attestation, then run:
 
 ```text
 node scripts/finalize-native-builder-arm.mjs \
@@ -70,24 +83,24 @@ node scripts/finalize-native-builder-arm.mjs \
   <native-attestation.json> <approved-attestation-sha256>
 ```
 
-Finalization independently checks root/worker packet, attestation, and completion hashes and bindings,
-single-use receipt state, route/version/status, exact source identities, scope, index
-and ref immutability, ignored drift, completion working-state evidence, intervention
-budget, prompt bytes, evaluator executable/environment manifests, visible and held-out
-commands, and check results. It re-attests the complete repository state and evaluator
-identity after each check phase. Only its `native-result.json`
-may enter paired validation.
+Finalization reproduces the launch contract from worker bytes, verifies the CLI
+binary, transcript/session/completion bindings, single-use receipt state, route,
+status, exact source identities, scope, index/ref immutability, ignored drift,
+intervention budget, prompt bytes, evaluator executable/environment manifests, and
+visible/held-out commands. Repository state and evaluator identity are checked after
+every individual evaluator command, so one check cannot mutate state and rely on a
+later check to restore it. Only `native-result.json` may enter paired validation.
+Before any evaluator runs, finalization exclusively creates the canonical
+`native-finalization-claim.json`; concurrent finalizers cannot both execute checks or
+overwrite check logs. Results and receipts hash-bind both execution claims and the
+native finalization claim, and paired validation reopens them from external evidence.
 
 ## Trust boundary
 
-This is an auditable orchestration attestation, not cryptographic provider proof. The
-deterministic layers can reject missing, inconsistent, stale, cross-wired, replayed,
-wrong-route, failed, or repository-divergent evidence. They cannot stop a malicious
-root operator with filesystem write access from fabricating an internally consistent
-packet and transcript. The collaboration surface also does not currently expose a
-capability sandbox that proves network, credential, or external-write denial. Those
-prohibitions are therefore honest-worker/root-HITL assumptions: any observed violation
-invalidates the run, but the artifacts do not claim prevention the platform cannot
-enforce. Human review therefore verifies the root task/run identity and
-retained Codex task evidence at the checkpoint gate; no artifact may claim a provider
-signature that the platform did not supply.
+The deterministic layers prove local launch configuration, transcript bytes, process
+status, and repository/evaluator evidence. They do not provide a cryptographic
+provider signature proving the remote model identity, and a malicious parent process
+with the same filesystem authority could fabricate internally consistent local
+artifacts. The route therefore retains root-process and HITL trust while removing the
+two avoidable worker capabilities: knowledge of root-only evidence paths and access
+to descendant-agent tools. No artifact may claim stronger provider proof.

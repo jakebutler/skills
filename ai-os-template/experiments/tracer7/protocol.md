@@ -49,7 +49,7 @@ Before either builder writes product code:
 
 | Property | Native control route | Experimental route |
 |---|---|---|
-| Runtime/producer | Codex collaboration subagent with prepare/attest/finalize | Cursor Agent hardened runner |
+| Runtime/producer | Ephemeral native `codex exec` with prepare/run/finalize | Cursor Agent hardened runner |
 | Model | `gpt-5.6-sol` | `composer-2.5` |
 | Reasoning | high | Cursor route setting supplied by the installed model |
 | Authentication | native Codex subscription access | Cursor subscription access |
@@ -88,27 +88,35 @@ evaluator identity drift, or any repository mutation caused by checks.
 Follow `native-builder-orchestration.md` exactly:
 
 1. deterministic prepare validates the separately approved native config and emits a
-   canonical source-bound root packet plus a minimal worker packet containing embedded
-   prompt bytes and no held-out/evidence paths;
-2. the root Codex orchestrator makes one fresh-context `gpt-5.6-sol` collaboration call
-   at high reasoning, without fallback or route-specific coaching;
-3. root records the actual task/run identity and returned completion in external
-   completion and attestation records; and
+   canonical source-bound root packet plus a separately stored minimal worker packet
+   containing embedded prompt bytes and no held-out/evidence paths;
+2. the parent runner launches one ephemeral `gpt-5.6-sol` `codex exec` process at high
+   reasoning, sends worker bytes over stdin, and disables multi-agent/tools/config
+   surfaces that could expand the capability; a custom permission profile limits reads
+   to minimal runtime paths, the repository, and exact visible-check executables while
+   denying network, held-out, sibling, and root-evidence access;
+3. the parent captures the actual CLI/session/transcript/process identities and writes
+   external completion and attestation records; and
 4. deterministic finalization binds the packet, completion, route provenance, exact
    start/end source state, worktree identity, prompt/evaluator/environment identities,
    scope/ignored state, interventions, and check results into
    the only admissible native result.
 
-The root owns Git and all external effects. The native worker may not commit, stage,
+The parent runner owns evidence and finalization. The native worker may not commit, stage,
 switch refs, push, publish, deploy, migrate, access production, inspect held-out source,
 or modify external state.
 
-The platform supplies auditable task/run identity, not a cryptographic provider
-signature. The apparatus detects missing, inconsistent, stale, replayed, cross-wired,
-wrong-route, failed, or repository-divergent evidence, but retains an explicit trust in
-the root orchestrator's truthful recording of the collaboration call. Capability-level
-network, credential, and external-write denial is not claimed where the collaboration
-surface cannot expose such a sandbox; any observed breach invalidates the run.
+Each route atomically claims its canonical run identity before model launch. Native
+finalization separately claims its identity before executing evaluators. A duplicate,
+including a concurrent duplicate, must fail before model launch, check execution, or
+log writes; result validation reopens and hash-checks those external claim artifacts.
+
+The CLI supplies an auditable session/transcript/process identity, not a cryptographic
+provider signature. The apparatus detects missing, inconsistent, stale, replayed,
+cross-wired, wrong-route, failed, or repository-divergent evidence. It hash-binds the
+launch contract, disables descendant-agent tools, and denies sandboxed command network
+and temporary-directory writes. Trust in the local parent process and HITL remains
+explicit; any observed breach invalidates the run.
 
 ## Held-out and leakage controls
 

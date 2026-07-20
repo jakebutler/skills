@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { assertStateUnchanged, executionManifest, repositoryIdentity, repositoryState, safeEnvironment as contractEnvironment } from "./builder-execution-contract.mjs";
+import { assertPathOutsideRepository, executionManifest, repositoryIdentity, repositoryState, runGuardedChecks, safeEnvironment as contractEnvironment } from "./builder-execution-contract.mjs";
 
 function fail(message) {
   throw new Error(message);
@@ -13,6 +13,17 @@ function fail(message) {
 
 function sha256(value) {
   return `sha256:${crypto.createHash("sha256").update(value).digest("hex")}`;
+}
+
+function writeExclusiveClaim(target, value, label) {
+  const bytes = Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+  try {
+    fs.writeFileSync(target, bytes, { flag: "wx" });
+  } catch (error) {
+    if (error?.code === "EEXIST") fail(`${label} is already claimed`);
+    throw error;
+  }
+  return sha256(bytes);
 }
 
 function git(repo, args, encoding = "utf8") {
@@ -116,32 +127,6 @@ async function runProcess(executable, args, options) {
   });
 }
 
-function runChecks(checks, cwd, timeoutMs, evidenceDirectory, prefix, environment) {
-  return checks.map((command, index) => {
-    if (!Array.isArray(command) || command.length === 0) fail(`${prefix} check ${index} is invalid`);
-    const result = spawnSync(command[0], command.slice(1), {
-      cwd,
-      encoding: "utf8",
-      timeout: timeoutMs,
-      maxBuffer: 64 * 1024 * 1024,
-      env: environment,
-    });
-    const stdoutPath = `${prefix}-${index + 1}.stdout.log`;
-    const stderrPath = `${prefix}-${index + 1}.stderr.log`;
-    fs.writeFileSync(path.join(evidenceDirectory, stdoutPath), result.stdout ?? "");
-    fs.writeFileSync(path.join(evidenceDirectory, stderrPath), result.stderr ?? result.error?.message ?? "");
-    return {
-      command,
-      status: result.status,
-      signal: result.signal,
-      stdout_path: stdoutPath,
-      stderr_path: stderrPath,
-      stdout_sha256: sha256(result.stdout ?? ""),
-      stderr_sha256: sha256(result.stderr ?? result.error?.message ?? ""),
-    };
-  });
-}
-
 export async function runBuilderArm(configPath, testOverrides = {}) {
   const resolvedConfigPath = path.resolve(configPath);
   const configBytes = fs.readFileSync(resolvedConfigPath);
@@ -182,16 +167,10 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   }
   const repo = fs.realpathSync(path.resolve(config.repository));
   const repoIdentity = repositoryIdentity(repo);
-  const configRelative = path.relative(repo, resolvedConfigPath);
-  if (configRelative === "" || (!configRelative.startsWith("..") && !path.isAbsolute(configRelative))) {
-    fail("arm config must be outside the builder repository");
-  }
+  assertPathOutsideRepository(repo, resolvedConfigPath, "arm config");
   for (const [index, command] of config.held_out_checks.entries()) {
     if (!path.isAbsolute(command[0])) fail(`held_out_checks[${index}] executable must be an absolute external path`);
-    const commandRelative = path.relative(repo, path.resolve(command[0]));
-    if (commandRelative === "" || (!commandRelative.startsWith("..") && !path.isAbsolute(commandRelative))) {
-      fail(`held_out_checks[${index}] executable must be outside the builder repository`);
-    }
+    assertPathOutsideRepository(repo, path.resolve(command[0]), `held_out_checks[${index}] executable`);
   }
   const head = git(repo, ["rev-parse", "HEAD"]).trim();
   if (head !== config.baseline_commit) fail(`baseline mismatch: expected ${config.baseline_commit}, got ${head}`);
@@ -203,13 +182,24 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   const initialIgnoredState = ignoredState(repo, config.allowed_ignored_paths);
 
   const prompt = fs.readFileSync(path.resolve(config.prompt_path));
-  const requestedEvidenceDirectory = path.join(path.resolve(config.output_directory), config.arm_id);
-  const relativeEvidence = path.relative(repo, requestedEvidenceDirectory);
-  if (relativeEvidence === "" || (!relativeEvidence.startsWith("..") && !path.isAbsolute(relativeEvidence))) {
-    fail("output_directory must be outside the builder repository");
-  }
+  const outputDirectory = assertPathOutsideRepository(repo, path.resolve(config.output_directory), "output_directory");
+  const requestedEvidenceDirectory = assertPathOutsideRepository(repo, path.join(outputDirectory, config.arm_id), "Composer evidence directory");
   fs.mkdirSync(requestedEvidenceDirectory, { recursive: true });
-  const evidenceDirectory = fs.realpathSync(requestedEvidenceDirectory);
+  const evidenceDirectory = assertPathOutsideRepository(repo, fs.realpathSync(requestedEvidenceDirectory), "Composer evidence directory");
+  const resultPath = path.join(evidenceDirectory, "result.json");
+  const receiptPath = path.join(evidenceDirectory, "result-receipt.json");
+  const executionClaimPath = path.join(evidenceDirectory, "execution-claim.json");
+  if (fs.existsSync(resultPath) || fs.existsSync(receiptPath) || fs.existsSync(executionClaimPath)) {
+    fail("Composer run identity has already produced result evidence");
+  }
+  const executionClaimSha256 = writeExclusiveClaim(executionClaimPath, {
+    schema_version: 1,
+    claim_type: "cursor-agent-execution-claim-v1",
+    runner_config_sha256: configHash,
+    experiment_id: config.experiment_id,
+    arm_id: config.arm_id,
+    run_nonce: config.run_nonce,
+  }, "Composer run identity");
   const executable = testOverrides.agentExecutable ?? "cursor-agent";
   const prefix = testOverrides.agentPrefixArgs ?? [];
   const checkEnvironment = contractEnvironment();
@@ -239,8 +229,8 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     timeoutMs: config.timeout_ms ?? 3_600_000,
     env: agentEnvironment,
   });
-  fs.writeFileSync(path.join(evidenceDirectory, "agent.stdout.jsonl"), agent.stdout);
-  fs.writeFileSync(path.join(evidenceDirectory, "agent.stderr.log"), agent.stderr);
+  fs.writeFileSync(path.join(evidenceDirectory, "agent.stdout.jsonl"), agent.stdout, { flag: "wx" });
+  fs.writeFileSync(path.join(evidenceDirectory, "agent.stderr.log"), agent.stderr, { flag: "wx" });
   const finalHead = git(repo, ["rev-parse", "HEAD"]).trim();
   const finalIndexTree = git(repo, ["write-tree"]).trim();
   const finalRefResult = spawnSync("git", ["-C", repo, "symbolic-ref", "-q", "HEAD"], { encoding: "utf8" });
@@ -253,20 +243,23 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   const outside = paths.filter((target) => !pathAllowed(target, config.allowed_paths));
   const gitControlViolation = finalHead !== config.baseline_commit || finalIndexTree !== startIndexTree || stagedPaths.length > 0 || finalRef !== startRef || finalRefTarget !== startRefTarget;
   const preCheckState = repositoryState(repo, config.baseline_commit, config.allowed_ignored_paths);
+  const checkContext = {
+    repository: repo,
+    baseline: config.baseline_commit,
+    allowedIgnoredPaths: config.allowed_ignored_paths,
+    timeoutMs: config.check_timeout_ms ?? 600_000,
+    evidenceDirectory,
+    environment: checkEnvironment,
+    expectedState: preCheckState,
+    allChecks: [...config.visible_checks, ...config.held_out_checks],
+    expectedExecutionManifestSha256: approvedExecution.sha256,
+  };
   const visibleChecks = outside.length === 0 && ignoredStateChanges.length === 0 && !gitControlViolation
-    ? runChecks(config.visible_checks ?? [], repo, config.check_timeout_ms ?? 600_000, evidenceDirectory, "visible", checkEnvironment)
+    ? runGuardedChecks({ ...checkContext, checks: config.visible_checks ?? [], prefix: "visible" })
     : [];
-  if (visibleChecks.length > 0) {
-    assertStateUnchanged(repositoryState(repo, config.baseline_commit, config.allowed_ignored_paths), preCheckState, "visible checks");
-    if (executionManifest([...config.visible_checks, ...config.held_out_checks], checkEnvironment).sha256 !== approvedExecution.sha256) fail("visible checks changed the execution manifest content identity");
-  }
   const heldOutChecks = outside.length === 0 && ignoredStateChanges.length === 0 && !gitControlViolation
-    ? runChecks(config.held_out_checks ?? [], repo, config.check_timeout_ms ?? 600_000, evidenceDirectory, "held-out", checkEnvironment)
+    ? runGuardedChecks({ ...checkContext, checks: config.held_out_checks ?? [], prefix: "held-out" })
     : [];
-  if (heldOutChecks.length > 0) {
-    assertStateUnchanged(repositoryState(repo, config.baseline_commit, config.allowed_ignored_paths), preCheckState, "held-out checks");
-    if (executionManifest([...config.visible_checks, ...config.held_out_checks], checkEnvironment).sha256 !== approvedExecution.sha256) fail("held-out checks changed the execution manifest content identity");
-  }
   if (sha256(fs.readFileSync(path.resolve(config.prompt_path))) !== sha256(prompt)) fail("approved prompt identity changed during Cursor execution");
   const checksPassed = [...visibleChecks, ...heldOutChecks].every((check) => check.status === 0);
   const status = finalHead !== config.baseline_commit
@@ -320,6 +313,8 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     agent_timed_out: agent.timed_out,
     agent_stdout_sha256: sha256(agent.stdout),
     agent_stderr_sha256: sha256(agent.stderr),
+    execution_claim_path: executionClaimPath,
+    execution_claim_sha256: executionClaimSha256,
     changed_paths: paths,
     start_index_tree: startIndexTree,
     start_ref: startRef,
@@ -342,11 +337,8 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     intervention_events: [],
     manual_edits: false,
   };
-  const resultPath = path.join(evidenceDirectory, "result.json");
-  const receiptPath = path.join(evidenceDirectory, "result-receipt.json");
   result.result_path = resultPath;
   result.result_receipt_path = receiptPath;
-  if (fs.existsSync(resultPath) || fs.existsSync(receiptPath)) fail("Composer run identity has already produced result evidence");
   const resultBytes = Buffer.from(`${JSON.stringify(result, null, 2)}\n`);
   fs.writeFileSync(resultPath, resultBytes, { flag: "wx" });
   fs.writeFileSync(receiptPath, `${JSON.stringify({
@@ -358,6 +350,7 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     runner_config_sha256: result.runner_config_sha256,
     agent_stdout_sha256: result.agent_stdout_sha256,
     agent_stderr_sha256: result.agent_stderr_sha256,
+    execution_claim_sha256: result.execution_claim_sha256,
     result_sha256: sha256(resultBytes),
   }, null, 2)}\n`, { flag: "wx" });
   return result;

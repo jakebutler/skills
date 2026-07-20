@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "purpose": "apparatus-only remediated producer rehearsal; not Tracer 7 model-quality evidence",
+  "purpose": "historical v1 collaboration apparatus rehearsal; superseded after five P1 findings and not admissible as v2 or Tracer 7 evidence",
   "supersedes": "the earlier same-worktree rehearsal recorded before content-addressed paired execution remediation",
   "fixture": {
     "repository_topology": "two distinct disposable Git clones from one baseline",
@@ -75,5 +75,5 @@
     "working_state_sha256_equal": true
   },
   "trust_boundary": "The minimal worker packet omits held-out and root evidence fields, but the collaboration surface exposes no cryptographic provider signature or capability proof for network, credentials, or external writes. Root attestation and HITL remain explicit trust roots.",
-  "conclusion": "Both routes completed the byte-identical micro task from distinct exact-baseline clones, produced the same working-state hash, passed the same content-addressed visible and held-out checks, and passed the strengthened comparator. This validates apparatus only and is not model-quality evidence."
+  "conclusion": "Historical result only. The run reproduced the v1 apparatus but later review found five P1 control failures; it does not approve or validate the v2 native exec route."
 }

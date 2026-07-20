@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { nativeCodexExecContract, parseNativeCodexTranscript } from "./native-codex-exec-contract.mjs";
 
 const CONTROL_FIELDS = [
   "baseline_commit",
@@ -24,7 +25,7 @@ const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const OBJECT_ID = /^[a-f0-9]{40}$/;
 const RUNNERS_BY_MODEL = new Map([
   ["composer-2.5", "cursor-agent-paired-builder-v1"],
-  ["gpt-5.6-sol", "codex-collaboration-subagent-builder-v1"],
+  ["gpt-5.6-sol", "codex-exec-builder-v3"],
 ]);
 
 function fail(message) {
@@ -60,7 +61,7 @@ function readBoundJson(target, expectedSha256, label) {
 }
 
 function requireOutside(repository, target, label) {
-  const relative = path.relative(repository, path.resolve(target));
+  const relative = path.relative(fs.realpathSync(repository), fs.realpathSync(path.resolve(target)));
   if (relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative))) {
     fail(`${label} must be outside the builder repository`);
   }
@@ -114,10 +115,21 @@ function validateResult(result, label, resultPath) {
 
   if (result.model === "composer-2.5") {
     if (result.producer_version !== "cursor-agent-producer-v1") fail(`${label}.producer_version must be cursor-agent-producer-v1`);
-    for (const field of ["result_receipt_path", "agent_stdout_sha256", "agent_stderr_sha256"]) requireString(result[field], `${label}.${field}`);
+    for (const field of ["result_receipt_path", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_path", "execution_claim_sha256"]) requireString(result[field], `${label}.${field}`);
     requireOutside(result.repository, result.result_receipt_path, `${label}.Composer result receipt`);
+    requireOutside(result.repository, result.execution_claim_path, `${label}.Composer execution claim`);
+    const claim = readBoundJson(result.execution_claim_path, result.execution_claim_sha256, `${label}.Composer execution claim`);
+    const expectedClaim = {
+      schema_version: 1,
+      claim_type: "cursor-agent-execution-claim-v1",
+      runner_config_sha256: result.runner_config_sha256,
+      experiment_id: result.experiment_id,
+      arm_id: result.arm_id,
+      run_nonce: result.run_nonce,
+    };
+    if (JSON.stringify(claim) !== JSON.stringify(expectedClaim)) fail(`${label}.Composer execution claim is cross-wired`);
     const receipt = JSON.parse(fs.readFileSync(path.resolve(result.result_receipt_path), "utf8"));
-    for (const field of ["producer_version", "experiment_id", "arm_id", "run_nonce", "runner_config_sha256", "agent_stdout_sha256", "agent_stderr_sha256"]) {
+    for (const field of ["producer_version", "experiment_id", "arm_id", "run_nonce", "runner_config_sha256", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_sha256"]) {
       if (receipt[field] !== result[field]) fail(`${label}.Composer result receipt is cross-wired: ${field}`);
     }
     const resultSha256 = `sha256:${crypto.createHash("sha256").update(fs.readFileSync(path.resolve(resultPath))).digest("hex")}`;
@@ -126,16 +138,19 @@ function validateResult(result, label, resultPath) {
 
   if (result.model === "gpt-5.6-sol") {
     if (result.reasoning_effort !== "high") fail(`${label}.reasoning_effort must be high for native Sol`);
-    for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256"]) {
+    for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256", "launch_contract_sha256", "transcript_sha256", "execution_claim_sha256", "finalization_claim_sha256"]) {
       if (!SHA256.test(result[field] ?? "")) fail(`${label}.${field} producer packet identity is required`);
     }
-    if (result.producer_version !== "native-codex-producer-v1") fail(`${label}.producer_version must be native-codex-producer-v1`);
-    if (result.finalizer_version !== "native-codex-finalizer-v1") fail(`${label}.finalizer_version must be native-codex-finalizer-v1`);
+    if (result.producer_version !== "native-codex-exec-producer-v3") fail(`${label}.producer_version must be native-codex-exec-producer-v3`);
+    if (result.finalizer_version !== "native-codex-exec-finalizer-v3") fail(`${label}.finalizer_version must be native-codex-exec-finalizer-v3`);
     requireString(result.native_run_id, `${label}.native_run_id`);
-    requireString(result.canonical_task, `${label}.canonical_task`);
-    if (!result.canonical_task.startsWith("/root/")) fail(`${label}.canonical_task is invalid`);
+    requireString(result.native_session_id, `${label}.native_session_id`);
+    if (result.native_run_id !== result.native_session_id) fail(`${label}.native run/session identity is cross-wired`);
+    if (result.worker_packet_delivery !== "stdin-bytes" || result.multi_agent_enabled !== false || result.network_access !== false || result.writable_tmp !== false || result.sandbox_mode !== "permission-profile" || result.permission_profile !== "native-proof-builder" || result.filesystem_read_scope !== "minimal+workspace+visible-executables") {
+      fail(`${label}.native Codex execution controls are invalid`);
+    }
     const packet = readBoundJson(result.native_invocation_packet_path, result.native_invocation_packet_sha256, `${label}.native invocation packet`);
-    if (packet.packet_type !== "native-codex-collaboration-invocation-v1") fail(`${label}.native invocation packet type is invalid`);
+    if (packet.packet_type !== "native-codex-exec-invocation-v3") fail(`${label}.native invocation packet type is invalid`);
     requireString(packet.repository, `${label}.native invocation packet repository`);
     const repository = fs.realpathSync(path.resolve(packet.repository));
     if (path.resolve(packet.result_path ?? "") !== path.resolve(resultPath)) fail(`${label}.native result path is not the prepared canonical result path`);
@@ -143,9 +158,35 @@ function validateResult(result, label, resultPath) {
       ["native invocation packet", result.native_invocation_packet_path],
       ["native attestation", result.native_attestation_path],
       ["completion evidence", result.completion_evidence_path],
+      ["native transcript", result.transcript_path],
       ["native finalize receipt", result.native_finalize_receipt_path],
+      ["native execution claim", result.execution_claim_path],
+      ["native finalization claim", result.finalization_claim_path],
       ["native result", resultPath],
     ]) requireOutside(repository, artifactPath, `${label}.${artifactLabel}`);
+    const executionClaim = readBoundJson(result.execution_claim_path, result.execution_claim_sha256, `${label}.native execution claim`);
+    const expectedExecutionClaim = {
+      schema_version: 1,
+      claim_type: "native-codex-execution-claim-v1",
+      invocation_packet_sha256: result.native_invocation_packet_sha256,
+      invocation_id: packet.invocation_id,
+      experiment_id: result.experiment_id,
+      arm_id: result.arm_id,
+      run_nonce: result.run_nonce,
+    };
+    if (JSON.stringify(executionClaim) !== JSON.stringify(expectedExecutionClaim)) fail(`${label}.native execution claim is cross-wired`);
+    const finalizationClaim = readBoundJson(result.finalization_claim_path, result.finalization_claim_sha256, `${label}.native finalization claim`);
+    const expectedFinalizationClaim = {
+      schema_version: 1,
+      claim_type: "native-codex-finalization-claim-v1",
+      invocation_packet_sha256: result.native_invocation_packet_sha256,
+      native_attestation_sha256: result.native_attestation_sha256,
+      invocation_id: packet.invocation_id,
+      experiment_id: result.experiment_id,
+      arm_id: result.arm_id,
+      run_nonce: result.run_nonce,
+    };
+    if (JSON.stringify(finalizationClaim) !== JSON.stringify(expectedFinalizationClaim)) fail(`${label}.native finalization claim is cross-wired`);
     for (const field of ["experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort", "repository", "git_common_dir", "git_dir", "baseline_commit", "baseline_tree", "prompt_sha256", "runner_config_sha256", "worker_packet_sha256", ...CONTROL_FIELDS]) {
       if (JSON.stringify(packet[field]) !== JSON.stringify(result[field])) fail(`${label}.native invocation packet cross-wiring: ${field}`);
     }
@@ -155,8 +196,8 @@ function validateResult(result, label, resultPath) {
       }
     }
     const attestation = readBoundJson(result.native_attestation_path, result.native_attestation_sha256, `${label}.native attestation`);
-    if (attestation.attestation_type !== "codex-collaboration-subagent-builder-attestation-v1") fail(`${label}.native attestation type is invalid`);
-    if (attestation.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || attestation.run_id !== result.native_run_id || attestation.canonical_task !== result.canonical_task) {
+    if (attestation.attestation_type !== "codex-exec-builder-attestation-v3") fail(`${label}.native attestation type is invalid`);
+    if (attestation.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || attestation.run_id !== result.native_run_id || attestation.native_session_id !== result.native_session_id) {
       fail(`${label}.native attestation is cross-wired`);
     }
     for (const field of ["experiment_id", "arm_id", "model", "reasoning_effort", "producer_version", "finalizer_version", "prompt_sha256", "runner_config_sha256"]) {
@@ -164,9 +205,15 @@ function validateResult(result, label, resultPath) {
     }
     if (attestation.controls_sha256 !== packet.controls_sha256) fail(`${label}.native attestation cross-wiring: controls_sha256`);
     if (attestation.worker_packet_sha256 !== packet.worker_packet_sha256 || attestation.observed_prompt_sha256 !== packet.prompt_sha256) fail(`${label}.native attestation worker/prompt binding is invalid`);
-    if (attestation.status !== "completed" || attestation.agent_timed_out !== false) fail(`${label}.native attestation did not complete`);
+    if (attestation.status !== "completed" || attestation.agent_exit_status !== 0 || attestation.agent_signal !== null || attestation.agent_timed_out !== false) fail(`${label}.native attestation did not complete`);
+    if (attestation.launch_contract_sha256 !== result.launch_contract_sha256 || attestation.worker_packet_delivery !== "stdin-bytes" || attestation.multi_agent_enabled !== false || attestation.network_access !== false || attestation.writable_tmp !== false || attestation.sandbox_mode !== "permission-profile" || attestation.permission_profile !== "native-proof-builder" || attestation.filesystem_read_scope !== "minimal+workspace+visible-executables") {
+      fail(`${label}.native attestation launch controls are invalid`);
+    }
+    const transcriptBytes = fs.readFileSync(path.resolve(result.transcript_path));
+    if (`sha256:${crypto.createHash("sha256").update(transcriptBytes).digest("hex")}` !== result.transcript_sha256) fail(`${label}.native transcript hash mismatch`);
+    if (parseNativeCodexTranscript(transcriptBytes).sessionId !== result.native_session_id) fail(`${label}.native transcript session identity is cross-wired`);
     const completion = readBoundJson(result.completion_evidence_path, result.completion_evidence_sha256, `${label}.completion evidence`);
-    if (completion.evidence_type !== "codex-collaboration-subagent-completion-v1" || completion.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || completion.run_id !== result.native_run_id || completion.status !== "completed") {
+    if (completion.evidence_type !== "codex-exec-completion-v3" || completion.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || completion.run_id !== result.native_run_id || completion.native_session_id !== result.native_session_id || completion.status !== "completed") {
       fail(`${label}.completion evidence is incomplete or cross-wired`);
     }
     for (const field of ["experiment_id", "arm_id", "model", "reasoning_effort"]) {
@@ -175,11 +222,14 @@ function validateResult(result, label, resultPath) {
     if (completion.controls_sha256 !== packet.controls_sha256) fail(`${label}.completion evidence cross-wiring: controls_sha256`);
     if (completion.worker_packet_sha256 !== packet.worker_packet_sha256 || completion.observed_prompt_sha256 !== packet.prompt_sha256) fail(`${label}.completion worker/prompt binding is invalid`);
     const workerPacket = readBoundJson(packet.worker_packet_path, packet.worker_packet_sha256, `${label}.native worker packet`);
-    if (workerPacket.packet_type !== "native-codex-worker-invocation-v1" || "held_out_checks" in workerPacket || "evidence_directory" in workerPacket || "result_path" in workerPacket) {
+    if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v3" || "held_out_checks" in workerPacket || "evidence_directory" in workerPacket || "result_path" in workerPacket) {
       fail(`${label}.native worker packet exposes root-only fields`);
     }
+    if (nativeCodexExecContract(fs.readFileSync(path.resolve(packet.worker_packet_path)), packet.worker_packet_sha256).sha256 !== result.launch_contract_sha256) {
+      fail(`${label}.native launch contract is not reproducible`);
+    }
     const receipt = JSON.parse(fs.readFileSync(path.resolve(result.native_finalize_receipt_path), "utf8"));
-    for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256"]) {
+    for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256", "execution_claim_sha256", "finalization_claim_sha256"]) {
       const receiptField = field === "native_invocation_packet_sha256" ? "invocation_packet_sha256" : field;
       if (receipt[receiptField] !== result[field]) fail(`${label}.native finalize receipt is cross-wired: ${receiptField}`);
     }

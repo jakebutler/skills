@@ -6,19 +6,19 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "evidence_type", "invocation_packet_sha256", "invocation_id",
-    "experiment_id", "arm_id", "canonical_task", "run_id", "model",
+    "experiment_id", "arm_id", "native_session_id", "run_id", "model",
     "reasoning_effort", "status", "controls_sha256", "worker_packet_sha256",
     "observed_prompt_sha256", "changed_paths",
     "observed_working_state_sha256", "returned_completion"
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "evidence_type": { "const": "codex-collaboration-subagent-completion-v1" },
+    "evidence_type": { "const": "codex-exec-completion-v3" },
     "invocation_packet_sha256": { "$ref": "#/$defs/sha256" },
     "invocation_id": { "$ref": "#/$defs/sha256" },
     "experiment_id": { "$ref": "#/$defs/string" },
     "arm_id": { "$ref": "#/$defs/string" },
-    "canonical_task": { "type": "string", "pattern": "^/root/" },
+    "native_session_id": { "$ref": "#/$defs/string" },
     "run_id": { "$ref": "#/$defs/string" },
     "model": { "const": "gpt-5.6-sol" },
     "reasoning_effort": { "const": "high" },

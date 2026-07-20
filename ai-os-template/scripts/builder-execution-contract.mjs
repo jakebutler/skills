@@ -25,6 +25,34 @@ export function pathAllowed(target, allowed) {
   return allowed.some((entry) => target === entry || (entry.endsWith("/") && target.startsWith(entry)));
 }
 
+export function canonicalPathThroughExistingAncestor(target) {
+  let cursor = path.resolve(target);
+  const missing = [];
+  while (true) {
+    try {
+      fs.lstatSync(cursor);
+      break;
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+      const parent = path.dirname(cursor);
+      if (parent === cursor) throw error;
+      missing.unshift(path.basename(cursor));
+      cursor = parent;
+    }
+  }
+  return path.join(fs.realpathSync(cursor), ...missing);
+}
+
+export function assertPathOutsideRepository(repository, target, label) {
+  const canonicalRepository = fs.realpathSync(repository);
+  const canonicalTarget = canonicalPathThroughExistingAncestor(target);
+  const relative = path.relative(canonicalRepository, canonicalTarget);
+  if (relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative))) {
+    throw new Error(`${label} must resolve outside the builder repository`);
+  }
+  return canonicalTarget;
+}
+
 export function safeEnvironment(source = process.env) {
   return Object.fromEntries(SAFE_ENVIRONMENT_NAMES
     .filter((name) => typeof source[name] === "string")
@@ -125,4 +153,51 @@ export function assertStateUnchanged(actual, expected, label) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`${label} mutated builder repository state`);
   }
+}
+
+export function runGuardedChecks({
+  checks,
+  repository,
+  baseline,
+  allowedIgnoredPaths,
+  timeoutMs,
+  evidenceDirectory,
+  prefix,
+  environment,
+  expectedState,
+  allChecks,
+  expectedExecutionManifestSha256,
+}) {
+  const results = [];
+  for (const [index, command] of checks.entries()) {
+    const result = spawnSync(command[0], command.slice(1), {
+      cwd: repository,
+      encoding: "utf8",
+      timeout: timeoutMs,
+      maxBuffer: 64 * 1024 * 1024,
+      env: environment,
+    });
+    const stdoutPath = `${prefix}-${index + 1}.stdout.log`;
+    const stderrPath = `${prefix}-${index + 1}.stderr.log`;
+    fs.writeFileSync(path.join(evidenceDirectory, stdoutPath), result.stdout ?? "", { flag: "wx" });
+    fs.writeFileSync(path.join(evidenceDirectory, stderrPath), result.stderr ?? result.error?.message ?? "", { flag: "wx" });
+    assertStateUnchanged(
+      repositoryState(repository, baseline, allowedIgnoredPaths),
+      expectedState,
+      `${prefix} check ${index + 1}`,
+    );
+    if (executionManifest(allChecks, environment).sha256 !== expectedExecutionManifestSha256) {
+      throw new Error(`${prefix} check ${index + 1} changed the execution manifest content identity`);
+    }
+    results.push({
+      command,
+      status: result.status,
+      signal: result.signal,
+      stdout_path: stdoutPath,
+      stderr_path: stderrPath,
+      stdout_sha256: sha256(result.stdout ?? ""),
+      stderr_sha256: sha256(result.stderr ?? result.error?.message ?? ""),
+    });
+  }
+  return results;
 }

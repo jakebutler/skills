@@ -14,9 +14,9 @@ are approved for implementation. Manual HITL gates still control `B0` acceptance
 FreshProof instance installation, experiment-arm start, candidate selection, and any
 routing promotion.
 
-**Native producer correction (2026-07-20):** the control builder now uses a native
-`gpt-5.6-sol` collaboration subagent at high reasoning with deterministic
-prepare/attest/finalize evidence. Composer remains Cursor-only. The comparison is an
+**Native producer correction (2026-07-20):** the control builder now uses one ephemeral
+native `gpt-5.6-sol` `codex exec` process at high reasoning with multi-agent disabled
+and deterministic prepare/run/finalize evidence. Composer remains Cursor-only. The comparison is an
 end-to-end routing-stack experiment with runtime/producer surface as a fixed confound,
 not a pure model-isolation A/B test.
 
@@ -1102,8 +1102,8 @@ the model.
 The paired treatment is the complete primary implementation/remediation route:
 
 - experimental arm: Composer 2.5 through Cursor performs approved builder work;
-- control arm: native `gpt-5.6-sol` at high reasoning through a Codex collaboration
-  subagent performs approved builder work under prepare/attest/finalize controls; and
+- control arm: native `gpt-5.6-sol` at high reasoning through one ephemeral `codex exec`
+  process performs approved builder work under prepare/run/finalize controls; and
 - both arms use the same `D0`, updated harness, design history, allowed paths,
   ignored policy, evaluator vectors, budgets, intervention policy, verification,
   reviewer models, fan-in, convergence rules, and HITL gates.
@@ -1142,8 +1142,9 @@ Create two arms from the exact same clean baseline and give them byte-identical 
 packets:
 
 - Arm A: Composer 2.5 through Cursor is primary builder.
-- Arm B: native `gpt-5.6-sol` through one Codex collaboration subagent at high
-  reasoning is primary builder.
+- Arm B: native `gpt-5.6-sol` through one ephemeral `codex exec` process at high
+  reasoning, with multi-agent disabled and the least-privilege
+  `native-proof-builder` permission profile, is primary builder.
 
 Each arm implements the same architecture-approved Tracer 7 review units. It may stop
 and escalate a missing design requirement, but may not independently redesign the

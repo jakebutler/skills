@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "purpose": "live disposable native Codex exec v2 plus Cursor Composer apparatus rehearsal; not Tracer 7 model-quality evidence",
+  "scratch_directory": "/var/folders/pw/1bhhcywd66b16lrd5wbhg9940000gn/T/native-codex-exec-live-rehearsal-KzRrDz",
+  "artifact_retention": "temporary fixture path retained at checkpoint time; durable identities are recorded below",
+  "fixture": {
+    "baseline_commit": "e9f9e64507a7f43d36b7eb2c7134d76fa2d63a59",
+    "baseline_tree": "69bd8e977db05d96f87cdf626a89587d3dff63a2",
+    "prompt_sha256": "sha256:5e73bd0d667e98fced70cc173b31c7aee4991d012687ed37b70593d3f4375b30",
+    "execution_manifest_sha256": "sha256:df472f01bd098022841ca6735264d15a3bfff8830b8a2d5b72add8982db8709e",
+    "working_state_sha256_equal": true
+  },
+  "native_sol": {
+    "status": "completed",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "runner": "codex-exec-builder-v2",
+    "producer_version": "native-codex-exec-producer-v2",
+    "finalizer_version": "native-codex-exec-finalizer-v2",
+    "agent_version": "codex-cli 0.144.6",
+    "native_session_id": "019f8079-b783-7131-947b-7aa49c1e140d",
+    "launch_contract_sha256": "sha256:5453382e402e42aadf802b2b32b89c65329db361a31af582d2585cb7c8d3ae8e",
+    "transcript_sha256": "sha256:0be05625b5a878de320e41bbf2c6df5733be69bf2c40edad176747512b3e0fb1",
+    "invocation_packet_sha256": "sha256:6a725d49cbd4904441cccfd0a7611c4f9ef2148720894f89235ebca6ecb0f37f",
+    "worker_packet_sha256": "sha256:9e533703820f0797451f83549e73b21d4a1f58c1ab3b4a9e6b8a7eb8caa3fe23",
+    "attestation_sha256": "sha256:2fbf871fb0ed5b838321a0122d0634d65afc083236ae11a07d3e271bc8a5cdec",
+    "completion_evidence_sha256": "sha256:ad3b10fa1d0f4d4b5500c211fffc9bd9d1ed3abcdbe89c78374ac232c78d4793",
+    "duration_ms": 19506,
+    "changed_paths": ["math.mjs"],
+    "visible_checks_passed": 1,
+    "held_out_checks_passed": 1,
+    "multi_agent_enabled": false,
+    "network_access": false,
+    "writable_tmp": false,
+    "interventions": []
+  },
+  "composer_cursor": {
+    "status": "completed",
+    "model": "composer-2.5",
+    "runner": "cursor-agent-paired-builder-v1",
+    "producer_version": "cursor-agent-producer-v1",
+    "agent_version": "2026.07.16-899851b",
+    "duration_ms": 10089,
+    "changed_paths": ["math.mjs"],
+    "visible_checks_passed": 1,
+    "held_out_checks_passed": 1,
+    "interventions": []
+  },
+  "paired_validation": {
+    "comparable": true,
+    "models": ["composer-2.5", "gpt-5.6-sol"],
+    "route_bindings": {
+      "composer-2.5": "cursor-agent-paired-builder-v1",
+      "gpt-5.6-sol": "codex-exec-builder-v2"
+    },
+    "controlled_fields": [
+      "baseline_commit",
+      "baseline_tree",
+      "prompt_sha256",
+      "allowed_paths",
+      "allowed_ignored_paths",
+      "ignored_baseline_sha256",
+      "timeout_ms",
+      "check_timeout_ms",
+      "intervention_budget",
+      "remediation_generation_budget",
+      "environment_names",
+      "environment_sha256",
+      "execution_manifest_sha256",
+      "visible_checks.command",
+      "held_out_checks.command"
+    ]
+  },
+  "conclusion": "Both actual subscription routes completed the byte-identical disposable task under v2 controls and produced comparable results. This validates apparatus only."
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "purpose": "live disposable native Codex exec v3 permission-profile plus Cursor Composer apparatus rehearsal; not Tracer 7 model-quality evidence",
+  "scratch_directory": "/var/folders/pw/1bhhcywd66b16lrd5wbhg9940000gn/T/native-codex-exec-live-rehearsal-3xNoJY",
+  "fixture": {
+    "baseline_commit": "2dee1e566869e2867aeaa46b4ee5e9c67da92f7f",
+    "baseline_tree": "69bd8e977db05d96f87cdf626a89587d3dff63a2",
+    "prompt_sha256": "sha256:5e73bd0d667e98fced70cc173b31c7aee4991d012687ed37b70593d3f4375b30",
+    "execution_manifest_sha256": "sha256:5aa9f95df3019b50625c3036381fe8c0f1d75761b3bcf71b088efecfa18e58d2",
+    "working_state_sha256_equal": true
+  },
+  "native_sol": {
+    "status": "completed",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "runner": "codex-exec-builder-v3",
+    "producer_version": "native-codex-exec-producer-v3",
+    "finalizer_version": "native-codex-exec-finalizer-v3",
+    "agent_version": "codex-cli 0.144.6",
+    "codex_executable_path": "/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "codex_executable_sha256": "sha256:80a3933d11a9d13ef806aa24f7bb8afc9169cfe4e9b09d6da6a92922cbde9cff",
+    "native_session_id": "019f80b0-29fa-7733-bfd3-b1dc94d4ddca",
+    "launch_contract_sha256": "sha256:d998dde7d63d5c6ffcfdb2a946e2e6d08a0711b937a4be02f8de940dbf5423fa",
+    "transcript_sha256": "sha256:e32938d1479ab05f2d64777329f7c85b23813f1bf467842ebef9afc2d4e5c7a3",
+    "invocation_packet_sha256": "sha256:117154bfed7c6d4db43543934b2da7883ad721c99ba43a812c12931feaddd92e",
+    "worker_packet_sha256": "sha256:5ca676fe1dc10d2f3804f71eace94c51d68a1d96c52d15683e46603813c4f325",
+    "attestation_sha256": "sha256:0cb86796b3b1a5f03cfb3a9b7bfff3ae65584d2362d3563c2664f5148e12a9ea",
+    "completion_evidence_sha256": "sha256:bec8fa7eb2540be9f6aff64892dd6620d10943876a0f581ec3ce0d4a67cedf23",
+    "execution_claim_sha256": "sha256:4f75861ea94b0d17b621007e52a2262a4e0e5887861fee3ce5e7cfa579ea753c",
+    "finalization_claim_sha256": "sha256:d14e9d08e5338b8d785c1fa6c13bebe655642c9b7b9159c2c0655d112619f6e3",
+    "duration_ms": 21966,
+    "changed_paths": ["math.mjs"],
+    "visible_checks_passed": 1,
+    "held_out_checks_passed": 1,
+    "multi_agent_enabled": false,
+    "network_access": false,
+    "writable_tmp": false,
+    "permission_profile": "native-proof-builder",
+    "filesystem_read_scope": "minimal+workspace+visible-executables",
+    "interventions": []
+  },
+  "permission_profile_probe": {
+    "profile": "native-proof-builder",
+    "workspace_read_write": true,
+    "visible_executable_read": true,
+    "held_out_executable_denied": true,
+    "root_invocation_packet_denied": true
+  },
+  "composer_cursor": {
+    "status": "completed",
+    "model": "composer-2.5",
+    "runner": "cursor-agent-paired-builder-v1",
+    "producer_version": "cursor-agent-producer-v1",
+    "agent_version": "2026.07.17-3e2a980",
+    "execution_claim_sha256": "sha256:294a9c72c43a5eb665a69631048815a66564c9938f85a3ac33ad9c1c914df086",
+    "duration_ms": 13325,
+    "changed_paths": ["math.mjs"],
+    "visible_checks_passed": 1,
+    "held_out_checks_passed": 1,
+    "interventions": []
+  },
+  "paired_validation": {
+    "comparable": true,
+    "models": ["composer-2.5", "gpt-5.6-sol"],
+    "route_bindings": {
+      "composer-2.5": "cursor-agent-paired-builder-v1",
+      "gpt-5.6-sol": "codex-exec-builder-v3"
+    },
+    "controlled_fields": [
+      "baseline_commit",
+      "baseline_tree",
+      "prompt_sha256",
+      "allowed_paths",
+      "allowed_ignored_paths",
+      "ignored_baseline_sha256",
+      "timeout_ms",
+      "check_timeout_ms",
+      "intervention_budget",
+      "remediation_generation_budget",
+      "environment_names",
+      "environment_sha256",
+      "execution_manifest_sha256",
+      "visible_checks.command",
+      "held_out_checks.command"
+    ]
+  },
+  "conclusion": "Both actual subscription routes completed the byte-identical disposable task under v3 controls and produced comparable results. This validates apparatus only."
+}
