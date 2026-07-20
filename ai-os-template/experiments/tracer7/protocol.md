@@ -53,6 +53,7 @@ Before either builder writes product code:
 | Model | `gpt-5.6-sol` | `composer-2.5` |
 | Reasoning | high | Cursor route setting supplied by the installed model |
 | Authentication | native Codex subscription access | Cursor subscription access |
+| Filesystem read boundary | minimal runtime, workspace, and visible evaluators | trusted host; external reads allowed and recorded |
 | Start | D0 | D0 |
 | Prompt and builder packet | byte-identical | byte-identical |
 | Allowed paths and ignored policy | identical | identical |
@@ -121,11 +122,14 @@ explicit; any observed breach invalidates the run.
 ## Held-out and leakage controls
 
 Held-out evaluator source stays outside both builder worktrees and outside the minimal
-worker packet. It runs only after each builder exits. Its resolved executable bytes,
-command vector, and execution-environment digest are content-bound in the root control
-packet and rechecked around execution. A committed D0 test is visible, not
-held-out. Neither builder may inspect the sibling worktree, route output, transcript,
-or evidence. Any cross-arm contamination invalidates both arms.
+native worker packet. It runs only after each builder exits. Its resolved executable
+bytes, command vector, and execution-environment digest are content-bound in the root
+control packet and rechecked around execution. A committed D0 test is visible, not
+held-out. The native route enforces read denial. The Composer route is explicitly
+trusted-host and can technically read external paths; those paths are not disclosed in
+its prompt, and transcript evidence plus HITL review must show no observed sibling,
+route-output, transcript, or held-out inspection. Any observed cross-arm contamination
+invalidates both arms. The experiment must not claim mechanical Composer blindness.
 
 ## Intervention and invalidation policy
 

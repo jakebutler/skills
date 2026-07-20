@@ -27,6 +27,7 @@
     "git_dir": { "$ref": "#/$defs/string" },
     "result_path": { "$ref": "#/$defs/string" },
     "agent_version": { "$ref": "#/$defs/string" },
+    "cursor_filesystem_policy": { "const": "trusted-host-external-reads-allowed" },
     "baseline_commit": { "$ref": "#/$defs/objectId" },
     "baseline_tree": { "$ref": "#/$defs/objectId" },
     "prompt_sha256": { "$ref": "#/$defs/sha256" },
@@ -84,10 +85,11 @@
     {
       "if": { "properties": { "model": { "const": "composer-2.5" } }, "required": ["model"] },
       "then": {
-        "required": ["producer_version", "result_receipt_path", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_path", "execution_claim_sha256"],
+        "required": ["producer_version", "cursor_filesystem_policy", "filesystem_read_scope", "result_receipt_path", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_path", "execution_claim_sha256"],
         "properties": {
           "runner": { "const": "cursor-agent-paired-builder-v1" },
-          "producer_version": { "const": "cursor-agent-producer-v1" }
+          "producer_version": { "const": "cursor-agent-producer-v1" },
+          "filesystem_read_scope": { "const": "host-readable" }
         }
       }
     },

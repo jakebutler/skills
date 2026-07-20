@@ -120,6 +120,7 @@ const composerConfig = {
   arm_id: "composer-v4",
   run_nonce: "composer-v4-live-001",
   model: "composer-2.5",
+  cursor_filesystem_policy: "trusted-host-external-reads-allowed",
   repository: composerRepository,
 };
 const composerConfigPath = path.join(scratch, "composer-config.json");
@@ -177,7 +178,7 @@ try {
     native_sol: nativeSummary,
     permission_profile_probe: permissionProfileProbe,
     composer_cursor: { status: "not-launched" },
-    conclusion: "Native v4 controls completed; paired rehearsal stopped because host Cursor lacks a verified workspace-only read boundary.",
+    conclusion: "Native v4 controls completed; the explicitly trusted-host Cursor arm failed before producing a valid result.",
   };
   fs.writeFileSync(path.join(scratch, "rehearsal-blocked.json"), `${JSON.stringify(blockedRecord, null, 2)}\n`, { flag: "wx" });
   console.error(JSON.stringify(blockedRecord, null, 2));
@@ -188,7 +189,7 @@ if (composerResult) {
   const paired = validatePairedControls(composerResult.result_path, nativeResult.result_path);
   const record = {
     schema_version: 1,
-    purpose: "live disposable native Codex exec v4 plus isolated Cursor Composer apparatus rehearsal; not Tracer 7 model-quality evidence",
+    purpose: "live disposable native Codex exec v4 plus trusted-host Cursor Composer apparatus rehearsal; not Tracer 7 model-quality evidence",
     scratch_directory: scratch,
     fixture: {
       baseline_commit: baselineCommit,

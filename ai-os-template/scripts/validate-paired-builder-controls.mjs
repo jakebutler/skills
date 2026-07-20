@@ -115,6 +115,8 @@ function validateResult(result, label, resultPath) {
 
   if (result.model === "composer-2.5") {
     if (result.producer_version !== "cursor-agent-producer-v1") fail(`${label}.producer_version must be cursor-agent-producer-v1`);
+    if (result.cursor_filesystem_policy !== "trusted-host-external-reads-allowed") fail(`${label}.cursor_filesystem_policy must explicitly allow trusted-host external reads`);
+    if (result.filesystem_read_scope !== "host-readable") fail(`${label}.filesystem_read_scope must be host-readable for the trusted-host Composer route`);
     for (const field of ["result_receipt_path", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_path", "execution_claim_sha256"]) requireString(result[field], `${label}.${field}`);
     requireOutside(result.repository, result.result_receipt_path, `${label}.Composer result receipt`);
     requireOutside(result.repository, result.execution_claim_path, `${label}.Composer execution claim`);

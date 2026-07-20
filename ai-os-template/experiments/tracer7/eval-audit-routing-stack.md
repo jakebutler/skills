@@ -97,13 +97,12 @@ general backend default.
 
 **Status:** OK
 
-The collaboration-subagent route was replaced rather than patched in place. The live
-v2 rehearsal proved the initial native Codex and Cursor routing surfaces, but an exact-
-candidate review then found that the legacy sandbox still granted broad filesystem
-reads. It is historical only. The replacement v3 rehearsal exercised the least-
-privilege permission profile from separate clones, proved held-out/root-evidence read
-denial, produced equal working state, passed content-addressed checks, and passed the
-paired comparator.
+The collaboration-subagent route was replaced rather than patched in place. Native v4
+now exercises a measured least-privilege permission profile and proves held-out/root-
+evidence read denial. The Composer route intentionally uses the authenticated host
+Cursor CLI and records `trusted-host-external-reads-allowed`; it does not claim the
+same read boundary. That asymmetry is an accepted producer/runtime confound, while
+byte-identical D0, prompt, scope, checks, and budgets remain controlled.
 
 **Fix:** Re-run the live rehearsal after any change to native launch argv, packet
 delivery, sandbox controls, transcript parsing, route model, or paired comparator.

@@ -4,6 +4,7 @@
   "arm_id": "{{PRIVATE_ARM_ID}}",
   "run_nonce": "{{SEPARATELY_APPROVED_UNIQUE_RUN_NONCE}}",
   "model": "composer-2.5",
+  "cursor_filesystem_policy": "trusted-host-external-reads-allowed",
   "repository": "{{ISOLATED_ARM_WORKTREE}}",
   "baseline_commit": "{{D0_COMMIT}}",
   "prompt_path": "{{BYTE_IDENTICAL_BUILDER_PROMPT_PATH}}",

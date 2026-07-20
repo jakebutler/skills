@@ -143,6 +143,7 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     "schema_version", "experiment_id", "arm_id", "run_nonce", "model", "repository", "baseline_commit",
     "prompt_path", "allowed_paths", "allowed_ignored_paths", "output_directory", "timeout_ms", "check_timeout_ms",
     "intervention_budget", "remediation_generation_budget", "visible_checks", "held_out_checks",
+    "cursor_filesystem_policy",
   ]);
   for (const key of Object.keys(config)) if (!allowedConfigKeys.has(key)) fail(`unsupported config field: ${key}`);
   if (![config.experiment_id, config.arm_id, config.run_nonce].every((value) => /^[A-Za-z0-9._-]+$/.test(value))) {
@@ -169,8 +170,9 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     && testOverrides.agentExecutable === process.execPath
     && typeof testOverrides.agentVersion === "string"
     && testOverrides.agentVersion.startsWith("fixture-");
-  if (!testDoubleIsolation) {
-    fail("Composer requires a verified workspace-only isolation boundary; host Cursor execution is prohibited because held-out and root evidence reads are not denied");
+  const trustedHostExecution = config.cursor_filesystem_policy === "trusted-host-external-reads-allowed";
+  if (!testDoubleIsolation && !trustedHostExecution) {
+    fail("Composer requires an explicit trusted-host filesystem policy or a verified workspace-only isolation boundary");
   }
   const repo = fs.realpathSync(path.resolve(config.repository));
   const repoIdentity = repositoryIdentity(repo);
@@ -301,6 +303,8 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     git_common_dir: repoIdentity.git_common_dir,
     git_dir: repoIdentity.git_dir,
     agent_version: agentVersion,
+    cursor_filesystem_policy: config.cursor_filesystem_policy ?? "test-double",
+    filesystem_read_scope: config.cursor_filesystem_policy === "trusted-host-external-reads-allowed" ? "host-readable" : "fixture-controlled",
     baseline_commit: config.baseline_commit,
     baseline_tree: git(repo, ["show", "-s", "--format=%T", config.baseline_commit]).trim(),
     prompt_sha256: sha256(prompt),

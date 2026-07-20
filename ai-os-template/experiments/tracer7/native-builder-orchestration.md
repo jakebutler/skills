@@ -115,10 +115,13 @@ artifacts. The route therefore retains root-process and HITL trust while removin
 two avoidable worker capabilities: knowledge of root-only evidence paths and access
 to descendant-agent tools. No artifact may claim stronger provider proof.
 
-## Paired-arm stop condition
+## Paired-arm trusted-host boundary
 
-The current host Cursor CLI advertises an unspecified read boundary and can read
-external held-out/root evidence even with `--sandbox enabled`. The Composer runner
-therefore fails closed before inference unless a separately verified workspace-only
-container or VM execution lane is implemented. A host Cursor run is not comparable
-and must not be used for Tracer 7.
+The current host Cursor CLI can read outside its declared workspace even with
+`--sandbox enabled`. Tracer 7 explicitly accepts that route characteristic through
+the exact config value `trusted-host-external-reads-allowed`. The Composer result
+records `filesystem_read_scope: host-readable`; neither the runner nor paired
+validator may describe the route as workspace-isolated or cryptographically blind.
+Held-out and sibling paths remain undisclosed in the builder prompt, and any observed
+inspection of them invalidates the run, but absence of such a read is transcript and
+HITL evidence rather than a filesystem-enforced guarantee.

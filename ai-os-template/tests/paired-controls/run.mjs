@@ -59,6 +59,7 @@ const composerConfig = {
   arm_id: "composer-a",
   run_nonce: "composer-run-001",
   model: "composer-2.5",
+  cursor_filesystem_policy: "trusted-host-external-reads-allowed",
   repository: composerRepo,
 };
 const composerConfigPath = path.join(root, "composer-config.json");
@@ -151,6 +152,8 @@ rejected("missing check status", rightPath, (value) => { delete value.held_out_c
 rejected("wrong native reasoning", rightPath, (value) => { value.reasoning_effort = "medium"; }, /reasoning_effort/i);
 rejected("Sol through Cursor", rightPath, (value) => { value.runner = "cursor-agent-paired-builder-v1"; }, /runner/i);
 rejected("Composer through native", leftPath, (value) => { value.runner = "codex-exec-builder-v4"; }, /runner/i);
+rejected("missing Composer filesystem policy", leftPath, (value) => { delete value.cursor_filesystem_policy; }, /cursor_filesystem_policy/i);
+rejected("misstated Composer filesystem scope", leftPath, (value) => { value.filesystem_read_scope = "workspace-only"; }, /filesystem_read_scope/i);
 rejected("execution manifest drift", rightPath, (value) => { value.execution_manifest_sha256 = `sha256:${"1".repeat(64)}`; }, /execution_manifest/i);
 rejected("stale run nonce", rightPath, (value) => { value.run_nonce = composer.run_nonce; }, /run_nonce|cross-wir/i);
 rejected("missing producer evidence", rightPath, (value) => { delete value.native_invocation_packet_sha256; }, /producer packet/i);

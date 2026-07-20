@@ -40,9 +40,9 @@ if (process.env.FAKE_MODE === "ref") execFileSync("git", ["-C", workspace, "chec
 console.log(JSON.stringify({type:"result",result:"done"}));
 `);
 
-async function run(target = "allowed.txt", mode = "edit", checksPass = true, model = "composer-2.5", checkMutation = false, outputDirectory = output, isolationBoundary = "test-double") {
+async function run(target = "allowed.txt", mode = "edit", checksPass = true, model = "composer-2.5", checkMutation = false, outputDirectory = output, isolationBoundary = "test-double", cursorFilesystemPolicy) {
   const fixtureIdentity = crypto.createHash("sha256")
-    .update(JSON.stringify({ target, mode, checksPass, model, checkMutation, outputDirectory, isolationBoundary }))
+    .update(JSON.stringify({ target, mode, checksPass, model, checkMutation, outputDirectory, isolationBoundary, cursorFilesystemPolicy }))
     .digest("hex")
     .slice(0, 16);
   const config = {
@@ -67,7 +67,8 @@ async function run(target = "allowed.txt", mode = "edit", checksPass = true, mod
           [process.execPath, "-e", "require('fs').writeFileSync('post-check-outside.txt','mutated\\n');process.exit(0)"],
           [process.execPath, "-e", "require('fs').rmSync('post-check-outside.txt',{force:true});process.exit(0)"],
         ]
-      : [[process.execPath, "-e", "process.exit(0)"]]
+      : [[process.execPath, "-e", "process.exit(0)"]],
+    ...(cursorFilesystemPolicy !== undefined && { cursor_filesystem_policy: cursorFilesystemPolicy }),
   };
   const configPath = path.join(fixture, `config-${target.replaceAll("/", "-")}.json`);
   fs.writeFileSync(configPath, JSON.stringify(config));
@@ -89,13 +90,28 @@ async function run(target = "allowed.txt", mode = "edit", checksPass = true, mod
 
 const unisolated = await run("allowed.txt", "edit", true, "composer-2.5", false, output, null);
 assert.equal(unisolated.status, 1);
-assert.match(unisolated.error, /verified workspace-only isolation boundary/i);
+assert.match(unisolated.error, /explicit trusted-host filesystem policy/i);
 assert.equal(fs.existsSync(agentLaunchCountPath), false, "unisolated Composer must fail before agent launch");
+
+const trustedHost = await run(
+  "allowed.txt",
+  "edit",
+  true,
+  "composer-2.5",
+  false,
+  output,
+  null,
+  "trusted-host-external-reads-allowed",
+);
+assert.equal(trustedHost.status, 0, trustedHost.error);
+assert.equal(trustedHost.result.cursor_filesystem_policy, "trusted-host-external-reads-allowed");
+assert.equal(trustedHost.result.filesystem_read_scope, "host-readable");
+git("reset", "--hard", baseline);
 
 const concurrentStarts = await Promise.all([run(), run()]);
 const successfulStarts = concurrentStarts.filter((entry) => entry.status === 0);
 assert.equal(successfulStarts.length, 1, "exactly one concurrent Composer start may claim the run identity");
-assert.equal(fs.readFileSync(agentLaunchCountPath, "utf8"), "launch\n", "a losing concurrent start must fail before agent launch");
+assert.equal(fs.readFileSync(agentLaunchCountPath, "utf8"), "launch\nlaunch\n", "a losing concurrent start must fail before agent launch");
 const good = successfulStarts[0];
 assert.equal(good.status, 0, good.error);
 const evidence = JSON.parse(fs.readFileSync(good.result.result_path, "utf8"));
