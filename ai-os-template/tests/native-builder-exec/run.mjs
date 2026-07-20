@@ -87,6 +87,7 @@ if (process.argv.includes("features") && process.argv.includes("list")) {
 }
 if (process.argv.includes("sandbox")) {
   const permissive = process.env.PROOF_PROBE_ROOT_EVIDENCE.includes("permissive-capability");
+  fs.writeFileSync(process.env.PROOF_PROBE_TMP_PATH, "probe\\n");
   for (const [label, status] of [
     ["workspace_read", 0],
     ["visible_command_read", 0],

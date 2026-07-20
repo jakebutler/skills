@@ -261,10 +261,10 @@ export async function runNativeBuilderExecution(
     const status = observations[label]?.status;
     if (status === undefined || (expected === 0 ? status !== 0 : status === 0)) fail(`native Codex capability probe failed: ${label}`);
   }
-  if (fs.existsSync(probeTmpPath)) {
-    fs.rmSync(probeTmpPath, { force: true });
-    fail("native Codex capability probe unexpectedly wrote to the temporary directory");
+  if (!fs.existsSync(probeTmpPath)) {
+    fail("native Codex capability probe did not write to the temporary directory");
   }
+  fs.rmSync(probeTmpPath, { force: true });
   const capabilityProbeEvidence = {
     schema_version: 1,
     evidence_type: "native-codex-capability-probe-v1",
