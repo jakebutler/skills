@@ -25,6 +25,10 @@ This skill should offload the bulk of implementation work to Codex while keeping
 ## Command shape
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
 ```
 
@@ -39,7 +43,7 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Write a self-contained prompt to `$PROMPT`, then run:
 
 ```bash
-codex -a on-request -s workspace-write exec -C "$PWD" \
+codex -a on-request -s workspace-write exec -C "$REPO_ROOT" \
   --add-dir "$ARTIFACT_DIR" -o "$REPORT" - < "$PROMPT"
 ```
 

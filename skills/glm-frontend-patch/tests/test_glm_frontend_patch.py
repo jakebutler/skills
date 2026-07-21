@@ -1,8 +1,10 @@
 import importlib.util
 import json
+import threading
 import sys
 import tempfile
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest import mock
 
@@ -88,6 +90,69 @@ class ResponseTests(unittest.TestCase):
 
 
 class GenerationTests(unittest.TestCase):
+    def test_redirect_does_not_forward_provider_credential(self):
+        forwarded_authorization = []
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.send_response(302)
+                self.send_header("Location", "/redirect-target")
+                self.end_headers()
+
+            def do_GET(self):
+                forwarded_authorization.append(self.headers.get("Authorization"))
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.end_headers()
+                self.wfile.write(b"data: [DONE]\n\n")
+
+            def log_message(self, format, *args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with self.assertRaisesRegex(runner.RunnerError, "302"):
+                list(
+                    runner.stream_completion(
+                        url=f"http://127.0.0.1:{server.server_port}/start",
+                        api_key="test-secret",
+                        model=runner.DEFAULT_MODEL,
+                        messages=[],
+                        timeout=1,
+                    )
+                )
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+        self.assertEqual(forwarded_authorization, [])
+
+    def test_provider_wait_is_bounded_by_remaining_route_deadline(self):
+        request_timeouts = []
+
+        def fake_stream(**kwargs):
+            request_timeouts.append(kwargs["timeout"])
+            yield runner.END_RESPONSE
+
+        with mock.patch.object(runner, "stream_completion", side_effect=fake_stream):
+            runner.generate(
+                messages=[],
+                url=runner.DEFAULT_URL,
+                api_key="test-key",
+                model=runner.DEFAULT_MODEL,
+                timeout=10,
+                max_continuations=0,
+                max_seconds=0.25,
+                heartbeat_seconds=10,
+            )
+
+        self.assertEqual(len(request_timeouts), 1)
+        self.assertGreater(request_timeouts[0], 0)
+        self.assertLessEqual(request_timeouts[0], 0.25)
+
     def test_continues_from_accumulated_checkpoint(self):
         calls = []
 
@@ -144,7 +209,9 @@ class GenerationTests(unittest.TestCase):
         def fake_stream(**kwargs):
             yield "partial"
 
-        with mock.patch.object(runner, "stream_completion", side_effect=fake_stream):
+        with mock.patch.object(
+            runner.time, "monotonic", side_effect=[0, 0, 1]
+        ), mock.patch.object(runner, "stream_completion", side_effect=fake_stream):
             with self.assertRaisesRegex(runner.ProviderUnavailable, "route deadline"):
                 runner.generate(
                     messages=[],
@@ -153,7 +220,7 @@ class GenerationTests(unittest.TestCase):
                     model=runner.DEFAULT_MODEL,
                     timeout=1,
                     max_continuations=0,
-                    max_seconds=0,
+                    max_seconds=0.5,
                     heartbeat_seconds=10,
                     checkpoint_callback=lambda response, continuations, retries: checkpoints.append(response),
                 )

@@ -56,6 +56,14 @@ class TransientProviderError(RunnerError):
     """A provider transport failure eligible for one retry."""
 
 
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirectHandler())
+
+
 @dataclass(frozen=True)
 class Packet:
     raw: dict
@@ -297,7 +305,7 @@ def stream_completion(
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with NO_REDIRECT_OPENER.open(request, timeout=timeout) as response:
             for raw_line in response:
                 line = raw_line.decode("utf-8", errors="replace").strip()
                 if not line or line.startswith(":") or not line.startswith("data:"):
@@ -315,7 +323,10 @@ def stream_completion(
                 if isinstance(content, str):
                     yield content
     except urllib.error.HTTPError as exc:
-        message = _error_message(exc.read()).replace(api_key, "[REDACTED]")
+        try:
+            message = _error_message(exc.read()).replace(api_key, "[REDACTED]")
+        finally:
+            exc.close()
         if exc.code in UNAVAILABLE_STATUSES:
             raise ProviderUnavailable(f"Z.ai unavailable ({exc.code}): {message}") from exc
         if exc.code in TRANSIENT_STATUSES:
@@ -345,22 +356,33 @@ def generate(
     current_messages = list(base_messages)
     started_at = time.monotonic()
     last_heartbeat = started_at
+
+    def raise_deadline_exceeded() -> None:
+        if checkpoint_callback:
+            checkpoint_callback(accumulated, continuations, retries)
+        raise ProviderUnavailable(
+            f"Z.ai exceeded the {max_seconds:g}-second route deadline with an incomplete response"
+        )
+
     while True:
+        remaining_seconds = max_seconds - (time.monotonic() - started_at)
+        if remaining_seconds <= 0:
+            raise_deadline_exceeded()
         received_this_round = ""
         try:
             for chunk in stream_completion(
-                url=url, api_key=api_key, model=model, messages=current_messages, timeout=timeout
+                url=url,
+                api_key=api_key,
+                model=model,
+                messages=current_messages,
+                timeout=min(timeout, remaining_seconds),
             ):
                 received_this_round += chunk
                 accumulated += chunk
                 now = time.monotonic()
                 elapsed = now - started_at
                 if elapsed >= max_seconds:
-                    if checkpoint_callback:
-                        checkpoint_callback(accumulated, continuations, retries)
-                    raise ProviderUnavailable(
-                        f"Z.ai exceeded the {max_seconds:g}-second route deadline with an incomplete response"
-                    )
+                    raise_deadline_exceeded()
                 if now - last_heartbeat >= heartbeat_seconds:
                     if checkpoint_callback:
                         checkpoint_callback(accumulated, continuations, retries)
@@ -387,7 +409,10 @@ def generate(
                         "content": "Continue exactly where the previous stream stopped. Do not repeat content. Finish with the required response marker.",
                     },
                 ]
-            time.sleep(0.25)
+            remaining_seconds = max_seconds - (time.monotonic() - started_at)
+            if remaining_seconds <= 0:
+                raise_deadline_exceeded()
+            time.sleep(min(0.25, remaining_seconds))
             continue
         if END_RESPONSE in accumulated:
             return GenerationResult(accumulated, continuations, retries)
