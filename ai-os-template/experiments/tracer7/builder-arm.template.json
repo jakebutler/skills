@@ -18,9 +18,23 @@
   "intervention_budget": 0,
   "remediation_generation_budget": 1,
   "visible_checks": [
-    ["pnpm", "exec", "vitest", "run", "{{VISIBLE_TEST_PATH}}"]
+    [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "{{VISIBLE_TEST_PATH}}"
+    ]
   ],
   "held_out_checks": [
-    ["{{EXTERNAL_HELD_OUT_RUNNER}}"]
+    [
+      "{{EXTERNAL_HELD_OUT_RUNNER}}"
+    ]
+  ],
+  "held_out_evaluator_self_tests": [
+    [
+      "{{EXTERNAL_HELD_OUT_RUNNER}}",
+      "--proof-harness-self-test"
+    ]
   ]
 }

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "attestation_type": "codex-exec-builder-attestation-v4",
-  "producer_version": "native-codex-exec-producer-v4",
-  "finalizer_version": "native-codex-exec-finalizer-v4",
+  "attestation_type": "codex-exec-builder-attestation-v5",
+  "producer_version": "native-codex-exec-producer-v5",
+  "finalizer_version": "native-codex-exec-finalizer-v5",
   "invocation_packet_sha256": "{{PREPARED_INVOCATION_PACKET_SHA256}}",
   "invocation_id": "{{INVOCATION_ID}}",
   "experiment_id": "{{EXPERIMENT_ID}}",

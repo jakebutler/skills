@@ -29,6 +29,10 @@ high-reasoning `codex exec` process with multi-agent disabled, parent-captured l
 transcript evidence, a least-privilege `native-proof-builder` permission profile, and
 deterministic finalization. The comparison is an end-to-end routing-stack viability
 experiment with runtime/producer surface recorded as a confound, not a pure model A/B.
+Failed checks now produce validator-readable terminal evidence, and one explicitly
+budgeted remediation generation can continue from the exact authenticated dirty parent
+state. Source-inspecting held-out evaluators carry executable semantic self-tests so
+formatting or constant indirection cannot masquerade as a product failure.
 
 The included TypeScript/Convex adapter is intentionally fail-visible and heuristic;
 project installation still requires planner and reviewer reconciliation rather than

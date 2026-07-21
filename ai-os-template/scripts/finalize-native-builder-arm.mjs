@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 import { assertPathOutsideRepository, executionManifest, repositoryIdentity, repositoryState, runGuardedChecks } from "./builder-execution-contract.mjs";
 import { nativeCodexCapabilityProbeContract, nativeCodexExecContract, parseNativeCodexTranscript } from "./native-codex-exec-contract.mjs";
 
-const PRODUCER_VERSION = "native-codex-exec-producer-v4";
-const FINALIZER_VERSION = "native-codex-exec-finalizer-v4";
+const PRODUCER_VERSION = "native-codex-exec-producer-v5";
+const FINALIZER_VERSION = "native-codex-exec-finalizer-v5";
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const ATTESTATION_KEYS = new Set([
   "schema_version", "attestation_type", "producer_version", "finalizer_version",
@@ -54,6 +54,12 @@ function sha256(value) {
 
 function fail(message) {
   throw new Error(message);
+}
+
+function terminalFailure(message, result) {
+  const error = new Error(message);
+  error.result = result;
+  throw error;
 }
 
 function writeExclusiveClaim(target, value, label) {
@@ -120,8 +126,10 @@ function controlsSha256(packet) {
     check_timeout_ms: packet.check_timeout_ms,
     intervention_budget: packet.intervention_budget,
     remediation_generation_budget: packet.remediation_generation_budget,
+    remediation_generation: packet.remediation_generation,
     visible_checks: packet.visible_checks,
     held_out_checks: packet.held_out_checks,
+    held_out_evaluator_self_tests: packet.held_out_evaluator_self_tests.map((row) => row.command),
     execution_manifest_sha256: packet.execution_manifest_sha256,
     environment_sha256: packet.environment_sha256,
   })));
@@ -144,7 +152,7 @@ export async function finalizeNativeBuilderArm(
   const packetBytes = fs.readFileSync(path.resolve(invocationPacketPath));
   if (sha256(packetBytes) !== approvedInvocationPacketSha256) fail("invocation packet hash mismatch");
   const packet = JSON.parse(packetBytes.toString("utf8"));
-  if (packet.packet_type !== "native-codex-exec-invocation-v4") fail("invocation packet type is invalid");
+  if (packet.packet_type !== "native-codex-exec-invocation-v5") fail("invocation packet type is invalid");
   if (packet.producer_version !== PRODUCER_VERSION || packet.finalizer_version !== FINALIZER_VERSION) {
     fail("producer/finalizer version mismatch in invocation packet");
   }
@@ -180,12 +188,19 @@ export async function finalizeNativeBuilderArm(
   const workerPacketBytes = fs.readFileSync(path.resolve(packet.worker_packet_path));
   if (sha256(workerPacketBytes) !== packet.worker_packet_sha256) fail("worker packet content identity mismatch");
   const workerPacket = JSON.parse(workerPacketBytes.toString("utf8"));
-  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v4") fail("worker packet type is invalid");
+  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v5") fail("worker packet type is invalid");
   if (Buffer.from(workerPacket.prompt_base64, "base64").compare(promptBytes) !== 0) fail("worker packet prompt identity mismatch");
-  for (const field of ["invocation_id", "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort", "repository", "baseline_commit", "baseline_tree", "prompt_sha256"]) {
+  for (const field of ["invocation_id", "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort", "repository", "baseline_commit", "baseline_tree", "prompt_sha256", "remediation_generation"]) {
     requireExact(workerPacket[field], packet[field], `worker packet ${field}`);
   }
-  if ("held_out_checks" in workerPacket || "evidence_directory" in workerPacket || "result_path" in workerPacket) {
+  if (packet.remediation_parent_result_sha256 !== undefined) {
+    requireExact(
+      workerPacket.remediation_parent_result_sha256,
+      packet.remediation_parent_result_sha256,
+      "worker packet remediation_parent_result_sha256",
+    );
+  }
+  if ("held_out_checks" in workerPacket || "held_out_evaluator_self_tests" in workerPacket || "evidence_directory" in workerPacket || "result_path" in workerPacket) {
     fail("worker packet exposes root-only held-out or evidence fields");
   }
   const launchContract = nativeCodexExecContract(workerPacketBytes, packet.worker_packet_sha256);
@@ -208,7 +223,7 @@ export async function finalizeNativeBuilderArm(
   if (!SHA256.test(attestation.completion_evidence_sha256 ?? "")) {
     fail("completion evidence hash is required");
   }
-  if (attestation.schema_version !== 1 || attestation.attestation_type !== "codex-exec-builder-attestation-v4") {
+  if (attestation.schema_version !== 1 || attestation.attestation_type !== "codex-exec-builder-attestation-v5") {
     fail("native attestation type is invalid");
   }
   requireExact(attestation.producer_version, PRODUCER_VERSION, "attestation producer_version");
@@ -314,7 +329,7 @@ export async function finalizeNativeBuilderArm(
   if (sha256(completionBytes) !== attestation.completion_evidence_sha256) fail("completion evidence hash mismatch");
   const completion = JSON.parse(completionBytes.toString("utf8"));
   for (const key of Object.keys(completion)) if (!COMPLETION_KEYS.has(key)) fail(`unsupported completion evidence field: ${key}`);
-  if (completion.schema_version !== 1 || completion.evidence_type !== "codex-exec-completion-v4") fail("completion evidence type is invalid");
+  if (completion.schema_version !== 1 || completion.evidence_type !== "codex-exec-completion-v5") fail("completion evidence type is invalid");
   for (const field of ["invocation_id", "experiment_id", "arm_id", "model", "reasoning_effort"]) {
     requireExact(completion[field], packet[field], `completion ${field}`);
   }
@@ -354,7 +369,11 @@ export async function finalizeNativeBuilderArm(
   if (ignoredFinalSha256 !== packet.ignored_baseline_sha256) fail("native builder changed ignored-file state");
 
   const environment = Object.fromEntries(packet.environment_names.filter((name) => typeof process.env[name] === "string").map((name) => [name, process.env[name]]));
-  const currentExecution = executionManifest([...packet.visible_checks, ...packet.held_out_checks], environment);
+  const heldOutEvaluatorSelfTestCommands = packet.held_out_evaluator_self_tests.map((row) => row.command);
+  const currentExecution = executionManifest(
+    [...packet.visible_checks, ...packet.held_out_checks, ...heldOutEvaluatorSelfTestCommands],
+    environment,
+  );
   requireExact(currentExecution.sha256, packet.execution_manifest_sha256, "execution manifest content identity");
   requireExact(currentExecution.manifest.environment_sha256, packet.environment_sha256, "execution environment identity");
   const preCheckState = repositoryState(repository, packet.baseline_commit, packet.allowed_ignored_paths);
@@ -376,12 +395,12 @@ export async function finalizeNativeBuilderArm(
     evidenceDirectory,
     environment,
     expectedState: preCheckState,
-    allChecks: [...packet.visible_checks, ...packet.held_out_checks],
+    allChecks: [...packet.visible_checks, ...packet.held_out_checks, ...heldOutEvaluatorSelfTestCommands],
     expectedExecutionManifestSha256: packet.execution_manifest_sha256,
   };
   const visibleChecks = runGuardedChecks({ ...checkContext, checks: packet.visible_checks, prefix: "visible" });
   const heldOutChecks = runGuardedChecks({ ...checkContext, checks: packet.held_out_checks, prefix: "held-out" });
-  if (![...visibleChecks, ...heldOutChecks].every((check) => check.status === 0)) fail("native builder checks failed");
+  const checksPassed = [...visibleChecks, ...heldOutChecks].every((check) => check.status === 0);
 
   const result = {
     schema_version: 1,
@@ -390,7 +409,7 @@ export async function finalizeNativeBuilderArm(
     run_nonce: packet.run_nonce,
     model: packet.model,
     reasoning_effort: packet.reasoning_effort,
-    runner: "codex-exec-builder-v4",
+    runner: "codex-exec-builder-v5",
     producer_version: PRODUCER_VERSION,
     finalizer_version: FINALIZER_VERSION,
     runner_config_sha256: packet.runner_config_sha256,
@@ -445,9 +464,16 @@ export async function finalizeNativeBuilderArm(
     check_timeout_ms: packet.check_timeout_ms,
     intervention_budget: packet.intervention_budget,
     remediation_generation_budget: packet.remediation_generation_budget,
-    status: "completed",
+    remediation_generation: packet.remediation_generation,
+    ...(packet.remediation_parent_result_sha256 && {
+      remediation_parent_result_path: packet.remediation_parent_result_path,
+      remediation_parent_result_sha256: packet.remediation_parent_result_sha256,
+    }),
+    status: checksPassed ? "completed" : "checks-failed",
     agent_timed_out: false,
     changed_paths: paths,
+    start_status_sha256: packet.start_status_sha256,
+    start_working_state_sha256: packet.start_working_state_sha256,
     final_head: finalHead,
     final_index_tree: finalIndexTree,
     final_ref: finalRef,
@@ -456,9 +482,11 @@ export async function finalizeNativeBuilderArm(
     outside_allowed_paths: outside,
     ignored_state_changed_paths: [],
     ignored_final_sha256: ignoredFinalSha256,
+    final_status_sha256: preCheckState.status_sha256,
     working_state_sha256: workingState,
     visible_checks: visibleChecks,
     held_out_checks: heldOutChecks,
+    held_out_evaluator_self_tests: packet.held_out_evaluator_self_tests,
     environment_names: packet.environment_names,
     intervention_events: attestation.intervention_events,
     manual_edits: attestation.manual_edits,
@@ -475,9 +503,14 @@ export async function finalizeNativeBuilderArm(
     capability_probe_evidence_sha256: attestation.capability_probe_evidence_sha256,
     execution_claim_sha256: executionClaimSha256,
     finalization_claim_sha256: finalizationClaimSha256,
+    remediation_generation: packet.remediation_generation,
+    ...(packet.remediation_parent_result_sha256 && {
+      remediation_parent_result_sha256: packet.remediation_parent_result_sha256,
+    }),
     result_sha256: sha256(resultBytes),
   };
   fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { flag: "wx" });
+  if (!checksPassed) terminalFailure("native builder checks failed: checks-failed", result);
   return result;
 }
 

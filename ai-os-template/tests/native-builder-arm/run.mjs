@@ -25,9 +25,10 @@ const baseline = git("rev-parse", "HEAD");
 const promptPath = path.join(scratch, "prompt.md");
 fs.writeFileSync(promptPath, "Change allowed.txt to after.\n");
 const checkMutationFlag = path.join(scratch, "mutate-during-check");
+const checkFailureFlag = path.join(scratch, "fail-held-out-check");
 const checkRunCountPath = path.join(scratch, "check-run-count.log");
 const evaluatorPath = path.join(scratch, "evaluator.mjs");
-const evaluatorSource = `#!/usr/bin/env node\nimport fs from "node:fs";\nimport path from "node:path";\nfs.appendFileSync(${JSON.stringify(checkRunCountPath)}, "check\\n");\nconst target = path.join(process.cwd(), "post-check-outside.txt");\nif (fs.existsSync(${JSON.stringify(checkMutationFlag)}) && process.argv[2] === "mutate") fs.writeFileSync(target, "mutated\\n");\nif (process.argv[2] === "restore") fs.rmSync(target, { force: true });\nprocess.exit(0);\n`;
+const evaluatorSource = `#!/usr/bin/env node\nimport fs from "node:fs";\nimport path from "node:path";\nfs.appendFileSync(${JSON.stringify(checkRunCountPath)}, "check\\n");\nconst target = path.join(process.cwd(), "post-check-outside.txt");\nif (fs.existsSync(${JSON.stringify(checkMutationFlag)}) && process.argv[2] === "mutate") fs.writeFileSync(target, "mutated\\n");\nif (process.argv[2] === "restore") fs.rmSync(target, { force: true });\nprocess.exit(fs.existsSync(${JSON.stringify(checkFailureFlag)}) && process.argv.length === 2 ? 1 : 0);\n`;
 fs.writeFileSync(evaluatorPath, evaluatorSource, { mode: 0o755 });
 const approvedCodexExecutablePath = fs.realpathSync(process.execPath);
 const approvedCodexExecutableSha256 = `sha256:${crypto.createHash("sha256").update(fs.readFileSync(approvedCodexExecutablePath)).digest("hex")}`;
@@ -55,6 +56,7 @@ function config(overrides = {}) {
     remediation_generation_budget: 1,
     visible_checks: [[evaluatorPath, "mutate"], [evaluatorPath, "restore"]],
     held_out_checks: [[evaluatorPath]],
+    held_out_evaluator_self_tests: [[evaluatorPath, "--proof-harness-self-test"]],
     ...overrides,
   };
 }
@@ -137,6 +139,8 @@ assert.notEqual(
   "worker capability material must not share a directory with root-only evidence",
 );
 assert.equal("held_out_checks" in prepared.worker_packet, false, "worker packet must not expose held-out checks");
+assert.equal("held_out_evaluator_self_tests" in prepared.worker_packet, false, "worker packet must not expose held-out oracle evidence");
+assert.equal(prepared.packet.held_out_evaluator_self_tests[0].status, 0);
 assert.equal("evidence_directory" in prepared.worker_packet, false, "worker packet must not expose root evidence paths");
 assert.equal(Buffer.from(prepared.worker_packet.prompt_base64, "base64").toString("utf8"), "Change allowed.txt to after.\n");
 fs.writeFileSync(path.join(prepared.packet.evidence_directory, "native-execution-claim.json"), `${JSON.stringify({
@@ -164,7 +168,7 @@ async function finalize(attestation) {
 await assert.rejects(
   () => finalize({
     schema_version: 1,
-    attestation_type: "codex-exec-builder-attestation-v4",
+    attestation_type: "codex-exec-builder-attestation-v5",
     invocation_packet_sha256: prepared.invocation_packet_sha256,
     model: "gpt-5.6-sol-high",
     reasoning_effort: "high",
@@ -175,9 +179,9 @@ await assert.rejects(
 await assert.rejects(
   () => finalize({
     schema_version: 1,
-    attestation_type: "codex-exec-builder-attestation-v4",
-    producer_version: "native-codex-exec-producer-v4",
-    finalizer_version: "native-codex-exec-finalizer-v4",
+    attestation_type: "codex-exec-builder-attestation-v5",
+    producer_version: "native-codex-exec-producer-v5",
+    finalizer_version: "native-codex-exec-finalizer-v5",
     invocation_packet_sha256: prepared.invocation_packet_sha256,
     invocation_id: prepared.packet.invocation_id,
     experiment_id: prepared.packet.experiment_id,
@@ -203,14 +207,16 @@ const controlsSha256 = sha256(Buffer.from(JSON.stringify({
   check_timeout_ms: prepared.packet.check_timeout_ms,
   intervention_budget: prepared.packet.intervention_budget,
   remediation_generation_budget: prepared.packet.remediation_generation_budget,
+  remediation_generation: prepared.packet.remediation_generation,
   visible_checks: prepared.packet.visible_checks,
   held_out_checks: prepared.packet.held_out_checks,
+  held_out_evaluator_self_tests: prepared.packet.held_out_evaluator_self_tests.map((row) => row.command),
   execution_manifest_sha256: prepared.packet.execution_manifest_sha256,
   environment_sha256: prepared.packet.environment_sha256,
 })));
 const completion = {
   schema_version: 1,
-  evidence_type: "codex-exec-completion-v4",
+  evidence_type: "codex-exec-completion-v5",
   invocation_packet_sha256: prepared.invocation_packet_sha256,
   invocation_id: prepared.packet.invocation_id,
   experiment_id: prepared.packet.experiment_id,
@@ -286,9 +292,9 @@ const capabilityProbeBytes = Buffer.from(`${JSON.stringify(capabilityProbeEviden
 fs.writeFileSync(capabilityProbePath, capabilityProbeBytes);
 const attestation = {
   schema_version: 1,
-  attestation_type: "codex-exec-builder-attestation-v4",
-  producer_version: "native-codex-exec-producer-v4",
-  finalizer_version: "native-codex-exec-finalizer-v4",
+  attestation_type: "codex-exec-builder-attestation-v5",
+  producer_version: "native-codex-exec-producer-v5",
+  finalizer_version: "native-codex-exec-finalizer-v5",
   invocation_packet_sha256: prepared.invocation_packet_sha256,
   invocation_id: prepared.packet.invocation_id,
   experiment_id: prepared.packet.experiment_id,
@@ -454,19 +460,61 @@ for (const name of ["native-finalization-claim.json", "visible-1.stdout.log", "v
 }
 
 const checksBeforeConcurrentFinalize = fs.readFileSync(checkRunCountPath, "utf8").split("\n").filter(Boolean).length;
+fs.writeFileSync(checkFailureFlag, "fail held-out\n");
 const concurrentFinalizations = await Promise.allSettled([finalize(attestation), finalize(attestation)]);
 const successfulFinalizations = concurrentFinalizations.filter((entry) => entry.status === "fulfilled");
-assert.equal(successfulFinalizations.length, 1, "exactly one concurrent finalizer may claim the invocation");
+assert.equal(successfulFinalizations.length, 0, "a checks-failed finalization must not return success");
+const terminalFinalizations = concurrentFinalizations.filter(
+  (entry) => entry.status === "rejected" && entry.reason?.result?.status === "checks-failed",
+);
+assert.equal(terminalFinalizations.length, 1, "exactly one concurrent finalizer must emit terminal failure evidence");
 const checksAfterConcurrentFinalize = fs.readFileSync(checkRunCountPath, "utf8").split("\n").filter(Boolean).length;
 assert.equal(checksAfterConcurrentFinalize - checksBeforeConcurrentFinalize, 3, "a losing concurrent finalizer must fail before running checks");
-const result = successfulFinalizations[0].value;
-assert.equal(result.status, "completed");
+const result = terminalFinalizations[0].reason.result;
+assert.equal(result.status, "checks-failed");
+assert.equal(result.remediation_generation, 0);
 assert.equal(result.native_run_id, "fixture-run-001");
 assert.equal(result.changed_paths[0], "allowed.txt");
 assert.equal(result.visible_checks[0].status, 0);
-assert.equal(result.held_out_checks[0].status, 0);
+assert.equal(result.held_out_checks[0].status, 1);
 assert.equal(fs.existsSync(result.execution_claim_path), true);
 assert.equal(fs.existsSync(result.finalization_claim_path), true);
 await assert.rejects(() => finalize(attestation), /already been finalized/i);
+
+fs.rmSync(checkFailureFlag);
+const terminalCandidateBytes = fs.readFileSync(path.join(repository, "allowed.txt"));
+fs.writeFileSync(path.join(repository, "allowed.txt"), "diverged-after-native-failure\n");
+await assert.rejects(
+  () => prepare({
+    run_nonce: "native-fixture-run-diverged",
+    remediation_generation: 1,
+    remediation_parent_result_path: result.result_path,
+    remediation_parent_result_sha256: sha256(fs.readFileSync(result.result_path)),
+  }),
+  /does not match the exact terminal parent state/i,
+);
+fs.writeFileSync(path.join(repository, "allowed.txt"), terminalCandidateBytes);
+await assert.rejects(
+  () => prepare({
+    run_nonce: "native-fixture-run-dropped-self-test",
+    remediation_generation: 1,
+    remediation_parent_result_path: result.result_path,
+    remediation_parent_result_sha256: sha256(fs.readFileSync(result.result_path)),
+    held_out_evaluator_self_tests: [],
+  }),
+  /native remediation parent control mismatch: held_out_evaluator_self_tests/i,
+);
+const preparedRemediation = await prepare({
+  run_nonce: "native-fixture-run-002",
+  remediation_generation: 1,
+  remediation_parent_result_path: result.result_path,
+  remediation_parent_result_sha256: sha256(fs.readFileSync(result.result_path)),
+});
+assert.equal(preparedRemediation.packet.remediation_generation, 1);
+assert.equal(preparedRemediation.packet.remediation_parent_result_path, result.result_path);
+assert.equal(
+  preparedRemediation.packet.remediation_parent_result_sha256,
+  sha256(fs.readFileSync(result.result_path)),
+);
 
 console.log("native builder arm fixtures passed");

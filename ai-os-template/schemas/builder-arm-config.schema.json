@@ -4,45 +4,186 @@
   "title": "Paired Builder Arm Configuration",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "experiment_id", "arm_id", "run_nonce", "model", "repository", "baseline_commit", "prompt_path", "allowed_paths", "allowed_ignored_paths", "output_directory", "timeout_ms", "check_timeout_ms", "intervention_budget", "remediation_generation_budget", "visible_checks", "held_out_checks"],
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "arm_id",
+    "run_nonce",
+    "model",
+    "repository",
+    "baseline_commit",
+    "prompt_path",
+    "allowed_paths",
+    "allowed_ignored_paths",
+    "output_directory",
+    "timeout_ms",
+    "check_timeout_ms",
+    "intervention_budget",
+    "remediation_generation_budget",
+    "visible_checks",
+    "held_out_checks"
+  ],
   "properties": {
-    "schema_version": { "const": 1 },
-    "experiment_id": { "type": "string", "minLength": 1 },
-    "arm_id": { "type": "string", "minLength": 1 },
-    "model": { "enum": ["composer-2.5", "gpt-5.6-sol"] },
-    "reasoning_effort": { "const": "high" },
-    "codex_executable_path": { "type": "string", "minLength": 1 },
-    "codex_executable_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-    "codex_version": { "type": "string", "minLength": 1 },
-    "cursor_filesystem_policy": { "const": "trusted-host-external-reads-allowed" },
-    "run_nonce": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$", "minLength": 1 },
-    "repository": { "type": "string", "minLength": 1 },
-    "baseline_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-    "prompt_path": { "type": "string", "minLength": 1 },
-    "allowed_paths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
-    "allowed_ignored_paths": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
-    "output_directory": { "type": "string", "minLength": 1 },
-    "timeout_ms": { "type": "integer", "minimum": 1000 },
-    "check_timeout_ms": { "type": "integer", "minimum": 1000 },
-    "intervention_budget": { "type": "integer", "minimum": 0 },
-    "remediation_generation_budget": { "type": "integer", "minimum": 0 },
-    "visible_checks": { "$ref": "#/$defs/commands" },
-    "held_out_checks": { "$ref": "#/$defs/commands" }
+    "schema_version": {
+      "const": 1
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "arm_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "enum": [
+        "composer-2.5",
+        "gpt-5.6-sol"
+      ]
+    },
+    "reasoning_effort": {
+      "const": "high"
+    },
+    "codex_executable_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "codex_executable_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "codex_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cursor_filesystem_policy": {
+      "const": "trusted-host-external-reads-allowed"
+    },
+    "run_nonce": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "prompt_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "allowed_ignored_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "output_directory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 1000
+    },
+    "check_timeout_ms": {
+      "type": "integer",
+      "minimum": 1000
+    },
+    "intervention_budget": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_generation_budget": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_parent_result_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remediation_parent_result_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "visible_checks": {
+      "$ref": "#/$defs/commands"
+    },
+    "held_out_checks": {
+      "$ref": "#/$defs/commands"
+    },
+    "held_out_evaluator_self_tests": {
+      "$ref": "#/$defs/commands"
+    }
   },
   "allOf": [
     {
-      "if": { "properties": { "model": { "const": "composer-2.5" } }, "required": ["model"] },
-      "then": { "required": ["cursor_filesystem_policy"] }
+      "if": {
+        "properties": {
+          "model": {
+            "const": "composer-2.5"
+          }
+        },
+        "required": [
+          "model"
+        ]
+      },
+      "then": {
+        "required": [
+          "cursor_filesystem_policy"
+        ]
+      }
     },
     {
-      "if": { "properties": { "model": { "const": "gpt-5.6-sol" } }, "required": ["model"] },
-      "then": { "required": ["reasoning_effort", "codex_executable_path", "codex_executable_sha256", "codex_version"] }
+      "if": {
+        "properties": {
+          "model": {
+            "const": "gpt-5.6-sol"
+          }
+        },
+        "required": [
+          "model"
+        ]
+      },
+      "then": {
+        "required": [
+          "reasoning_effort",
+          "codex_executable_path",
+          "codex_executable_sha256",
+          "codex_version"
+        ]
+      }
     }
   ],
   "$defs": {
     "commands": {
       "type": "array",
-      "items": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string"
+        }
+      }
     }
   }
 }

@@ -50,6 +50,7 @@ const commonConfig = {
   remediation_generation_budget: 1,
   visible_checks: checks,
   held_out_checks: checks,
+  held_out_evaluator_self_tests: [[evaluatorPath, "--proof-harness-self-test"]],
 };
 
 const fakeAgent = path.join(root, "fake-agent.mjs");
@@ -148,11 +149,11 @@ function rejectedArtifact(label, targetPath, mutation, pattern) {
   fs.writeFileSync(targetPath, original);
 }
 
-rejected("nonzero check status", rightPath, (value) => { value.visible_checks[0].status = 1; }, /status must be 0/i);
-rejected("missing check status", rightPath, (value) => { delete value.held_out_checks[0].status; }, /status must be 0/i);
+rejected("nonzero check status", rightPath, (value) => { value.visible_checks[0].status = 1; }, /completed result contains a failed check/i);
+rejected("missing check status", rightPath, (value) => { delete value.held_out_checks[0].status; }, /status must be an integer/i);
 rejected("wrong native reasoning", rightPath, (value) => { value.reasoning_effort = "medium"; }, /reasoning_effort/i);
-rejected("Sol through Cursor", rightPath, (value) => { value.runner = "cursor-agent-paired-builder-v1"; }, /runner/i);
-rejected("Composer through native", leftPath, (value) => { value.runner = "codex-exec-builder-v4"; }, /runner/i);
+rejected("Sol through Cursor", rightPath, (value) => { value.runner = "cursor-agent-paired-builder-v2"; }, /runner/i);
+rejected("Composer through native", leftPath, (value) => { value.runner = "codex-exec-builder-v5"; }, /runner/i);
 rejected("missing Composer filesystem policy", leftPath, (value) => { delete value.cursor_filesystem_policy; }, /cursor_filesystem_policy/i);
 rejected("misstated Composer filesystem scope", leftPath, (value) => { value.filesystem_read_scope = "workspace-only"; }, /filesystem_read_scope/i);
 rejected("execution manifest drift", rightPath, (value) => { value.execution_manifest_sha256 = `sha256:${"1".repeat(64)}`; }, /execution_manifest/i);
@@ -182,4 +183,90 @@ assert.throws(() => validatePairedControls(leftPath, rightPath), /executable con
 fs.writeFileSync(evaluatorPath, evaluatorSource, { mode: 0o755 });
 
 assert.equal(validatePairedControls(leftPath, rightPath).comparable, true);
+
+function rewriteAsTimedOutCheckFailure(resultPath, receiptPath) {
+  const value = JSON.parse(fs.readFileSync(resultPath, "utf8"));
+  value.status = "checks-failed";
+  value.held_out_checks[0] = {
+    ...value.held_out_checks[0],
+    status: null,
+    signal: "SIGTERM",
+    timed_out: true,
+    skipped: false,
+  };
+  fs.writeFileSync(resultPath, `${JSON.stringify(value, null, 2)}\n`);
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
+  receipt.result_sha256 = sha256(fs.readFileSync(resultPath));
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+}
+
+rewriteAsTimedOutCheckFailure(leftPath, composer.result_receipt_path);
+const timedOutTerminal = validatePairedControls(leftPath, rightPath);
+assert.equal(timedOutTerminal.comparable, false);
+assert.deepEqual(timedOutTerminal.arm_statuses, { left: "checks-failed", right: "completed" });
+fs.writeFileSync(leftPath, leftBytes);
+fs.writeFileSync(composer.result_receipt_path, leftReceiptBytes);
+
+function rewriteAsSignaledCheckFailure(resultPath, receiptPath) {
+  const value = JSON.parse(fs.readFileSync(resultPath, "utf8"));
+  value.status = "checks-failed";
+  value.held_out_checks[0] = {
+    ...value.held_out_checks[0],
+    status: null,
+    signal: "SIGTERM",
+    timed_out: false,
+    skipped: false,
+  };
+  fs.writeFileSync(resultPath, `${JSON.stringify(value, null, 2)}\n`);
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
+  receipt.result_sha256 = sha256(fs.readFileSync(resultPath));
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+}
+
+rewriteAsSignaledCheckFailure(leftPath, composer.result_receipt_path);
+const signaledTerminal = validatePairedControls(leftPath, rightPath);
+assert.equal(signaledTerminal.comparable, false);
+assert.deepEqual(signaledTerminal.arm_statuses, { left: "checks-failed", right: "completed" });
+fs.writeFileSync(leftPath, leftBytes);
+fs.writeFileSync(composer.result_receipt_path, leftReceiptBytes);
+
+function rewriteAsInvalidTerminal(resultPath, receiptPath) {
+  const value = JSON.parse(fs.readFileSync(resultPath, "utf8"));
+  value.status = "invalid-out-of-scope";
+  value.visible_checks = value.visible_checks.map((row) => ({ ...row, status: null, signal: null, timed_out: false, skipped: true }));
+  value.held_out_checks = value.held_out_checks.map((row) => ({ ...row, status: null, signal: null, timed_out: false, skipped: true }));
+  fs.writeFileSync(resultPath, `${JSON.stringify(value, null, 2)}\n`);
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
+  receipt.result_sha256 = sha256(fs.readFileSync(resultPath));
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+}
+
+rewriteAsInvalidTerminal(leftPath, composer.result_receipt_path);
+const invalidTerminal = validatePairedControls(leftPath, rightPath);
+assert.equal(invalidTerminal.comparable, false);
+assert.equal(invalidTerminal.disposition, "terminal-arm-outcome-not-eligible-for-blinded-scoring");
+assert.deepEqual(invalidTerminal.arm_statuses, { left: "invalid-out-of-scope", right: "completed" });
+fs.writeFileSync(leftPath, leftBytes);
+fs.writeFileSync(composer.result_receipt_path, leftReceiptBytes);
+
+function rewriteAsTerminalCheckFailure(resultPath, receiptPath) {
+  const value = JSON.parse(fs.readFileSync(resultPath, "utf8"));
+  value.status = "checks-failed";
+  value.held_out_checks[0].status = 1;
+  fs.writeFileSync(resultPath, `${JSON.stringify(value, null, 2)}\n`);
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
+  receipt.result_sha256 = sha256(fs.readFileSync(resultPath));
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+}
+
+rewriteAsTerminalCheckFailure(leftPath, composer.result_receipt_path);
+const mixedTerminal = validatePairedControls(leftPath, rightPath);
+assert.equal(mixedTerminal.comparable, false);
+assert.equal(mixedTerminal.disposition, "terminal-arm-outcome-not-eligible-for-blinded-scoring");
+assert.deepEqual(mixedTerminal.arm_statuses, { left: "checks-failed", right: "completed" });
+
+rewriteAsTerminalCheckFailure(rightPath, native.native_finalize_receipt_path);
+const failedPair = validatePairedControls(leftPath, rightPath);
+assert.equal(failedPair.comparable, false);
+assert.deepEqual(failedPair.arm_statuses, { left: "checks-failed", right: "checks-failed" });
 console.log("paired control fixtures passed");

@@ -24,6 +24,15 @@ const DISABLED_FEATURES = Object.freeze([
 ]);
 
 const PERMISSION_PROFILE = "native-proof-builder";
+const WORKER_PACKET_KEYS = new Set([
+  "schema_version", "packet_type", "producer_version", "invocation_id",
+  "experiment_id", "arm_id", "run_nonce", "model", "reasoning_effort",
+  "execution_surface", "repository", "baseline_commit", "baseline_tree",
+  "prompt_sha256", "prompt_base64", "allowed_paths", "allowed_ignored_paths",
+  "timeout_ms", "intervention_budget", "remediation_generation",
+  "remediation_parent_result_sha256", "visible_checks",
+  "visible_execution_manifest", "visible_execution_manifest_sha256",
+]);
 
 function sha256(value) {
   return `sha256:${crypto.createHash("sha256").update(value).digest("hex")}`;
@@ -54,8 +63,11 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
     fail("worker packet hash does not match the approved identity");
   }
   const workerPacket = JSON.parse(Buffer.from(workerPacketBytes).toString("utf8"));
-  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v4") fail("worker packet type is invalid");
-  if (workerPacket.producer_version !== "native-codex-exec-producer-v4") fail("worker packet producer version is invalid");
+  for (const key of Object.keys(workerPacket)) {
+    if (!WORKER_PACKET_KEYS.has(key)) fail(`unsupported worker packet field: ${key}`);
+  }
+  if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v5") fail("worker packet type is invalid");
+  if (workerPacket.producer_version !== "native-codex-exec-producer-v5") fail("worker packet producer version is invalid");
   if (workerPacket.execution_surface !== "codex-exec") fail("worker packet execution surface is invalid");
   if (workerPacket.model !== "gpt-5.6-sol") fail("native Codex exec model must be gpt-5.6-sol");
   if (workerPacket.reasoning_effort !== "high") fail("native Codex exec reasoning effort must be high");
@@ -116,7 +128,7 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
 
   const contract = {
     schema_version: 1,
-    contract_type: "native-codex-exec-launch-v4",
+    contract_type: "native-codex-exec-launch-v5",
     argv,
     stdin_sha256: sha256(stdin),
     worker_packet_sha256: approvedWorkerPacketSha256,
@@ -140,7 +152,7 @@ export function nativeCodexExecContract(workerPacketBytes, approvedWorkerPacketS
 }
 
 export function nativeCodexCapabilityProbeContract(launchContract, paths) {
-  if (launchContract?.contract_type !== "native-codex-exec-launch-v4") fail("native launch contract is invalid for capability probing");
+  if (launchContract?.contract_type !== "native-codex-exec-launch-v5") fail("native launch contract is invalid for capability probing");
   for (const key of ["repository", "visible_command_path", "visible_executable_path", "held_out_executable_path", "root_evidence_path", "codex_executable_path"]) {
     if (typeof paths?.[key] !== "string" || paths[key] === "") fail(`capability probe ${key} is required`);
   }

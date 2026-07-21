@@ -11,6 +11,12 @@ function fail(message) {
   throw new Error(message);
 }
 
+function terminalFailure(message, result) {
+  const error = new Error(message);
+  error.result = result;
+  throw error;
+}
+
 function sha256(value) {
   return `sha256:${crypto.createHash("sha256").update(value).digest("hex")}`;
 }
@@ -144,6 +150,8 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     "prompt_path", "allowed_paths", "allowed_ignored_paths", "output_directory", "timeout_ms", "check_timeout_ms",
     "intervention_budget", "remediation_generation_budget", "visible_checks", "held_out_checks",
     "cursor_filesystem_policy",
+    "remediation_generation", "remediation_parent_result_path", "remediation_parent_result_sha256",
+    "held_out_evaluator_self_tests",
   ]);
   for (const key of Object.keys(config)) if (!allowedConfigKeys.has(key)) fail(`unsupported config field: ${key}`);
   if (![config.experiment_id, config.arm_id, config.run_nonce].every((value) => /^[A-Za-z0-9._-]+$/.test(value))) {
@@ -157,11 +165,34 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   config.allowed_ignored_paths.forEach((entry, index) => validateRelativePath(entry, `allowed_ignored_paths[${index}]`));
   validateCommands(config.visible_checks, "visible_checks");
   validateCommands(config.held_out_checks, "held_out_checks");
+  const heldOutEvaluatorSelfTests = config.held_out_evaluator_self_tests ?? [];
+  validateCommands(heldOutEvaluatorSelfTests, "held_out_evaluator_self_tests");
+  if (heldOutEvaluatorSelfTests.length > 0) {
+    if (heldOutEvaluatorSelfTests.length !== config.held_out_checks.length) {
+      fail("held_out_evaluator_self_tests must map one-to-one to held_out_checks");
+    }
+    heldOutEvaluatorSelfTests.forEach((command, index) => {
+      if (command[0] !== config.held_out_checks[index][0] || !command.includes("--proof-harness-self-test")) {
+        fail(`held_out_evaluator_self_tests[${index}] must invoke the same evaluator with --proof-harness-self-test`);
+      }
+    });
+  }
   for (const field of ["timeout_ms", "check_timeout_ms"]) {
     if (!Number.isInteger(config[field]) || config[field] < 1000) fail(`${field} must be an integer of at least 1000`);
   }
   for (const field of ["intervention_budget", "remediation_generation_budget"]) {
     if (!Number.isInteger(config[field]) || config[field] < 0) fail(`${field} must be a non-negative integer`);
+  }
+  const remediationGeneration = config.remediation_generation ?? 0;
+  if (!Number.isInteger(remediationGeneration) || remediationGeneration < 0 || remediationGeneration > config.remediation_generation_budget) {
+    fail("remediation_generation must be within the approved remediation budget");
+  }
+  const remediationFields = [config.remediation_parent_result_path, config.remediation_parent_result_sha256];
+  if (remediationGeneration === 0 && remediationFields.some((value) => value !== undefined)) {
+    fail("initial builder runs must not declare remediation parent evidence");
+  }
+  if (remediationGeneration > 0 && remediationFields.some((value) => typeof value !== "string" || value === "")) {
+    fail("remediation runs require an exact parent result path and SHA-256 identity");
   }
   if (config.agent_executable !== undefined || config.agent_prefix_args !== undefined || config.agent_environment !== undefined) {
     fail("agent executable, prefix arguments, and environment are runner-owned, not config-controlled");
@@ -183,16 +214,87 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   }
   const head = git(repo, ["rev-parse", "HEAD"]).trim();
   if (head !== config.baseline_commit) fail(`baseline mismatch: expected ${config.baseline_commit}, got ${head}`);
-  if (changedPaths(repo, config.baseline_commit).length > 0) fail("builder worktree must be clean at start");
   const startIndexTree = git(repo, ["write-tree"]).trim();
   const startRefResult = spawnSync("git", ["-C", repo, "symbolic-ref", "-q", "HEAD"], { encoding: "utf8" });
   const startRef = startRefResult.status === 0 ? startRefResult.stdout.trim() : "DETACHED";
   const startRefTarget = startRef === "DETACHED" ? head : git(repo, ["rev-parse", startRef]).trim();
   const initialIgnoredState = ignoredState(repo, config.allowed_ignored_paths);
+  const startPaths = changedPaths(repo, config.baseline_commit);
+  const startWorkingStateSha256 = workingStateHash(repo, startPaths);
+  const startStatusSha256 = sha256(git(repo, ["status", "--porcelain=v1", "-z"], null));
+  let remediationParent = null;
+  let remediationParentPath = null;
+  if (remediationGeneration === 0) {
+    if (startPaths.length > 0) fail("builder worktree must be clean at start");
+  } else {
+    remediationParentPath = assertPathOutsideRepository(
+      repo,
+      path.resolve(config.remediation_parent_result_path),
+      "remediation parent result",
+    );
+    const parentBytes = fs.readFileSync(remediationParentPath);
+    if (sha256(parentBytes) !== config.remediation_parent_result_sha256) fail("remediation parent result hash mismatch");
+    remediationParent = JSON.parse(parentBytes.toString("utf8"));
+    if (path.resolve(remediationParent.result_path ?? "") !== remediationParentPath) fail("remediation parent result path is not canonical");
+    const parentReceiptPath = assertPathOutsideRepository(
+      repo,
+      path.resolve(remediationParent.result_receipt_path ?? ""),
+      "remediation parent receipt",
+    );
+    const parentReceipt = JSON.parse(fs.readFileSync(parentReceiptPath, "utf8"));
+    if (
+      parentReceipt.result_sha256 !== sha256(parentBytes) ||
+      parentReceipt.producer_version !== remediationParent.producer_version ||
+      parentReceipt.experiment_id !== remediationParent.experiment_id ||
+      parentReceipt.arm_id !== remediationParent.arm_id ||
+      parentReceipt.run_nonce !== remediationParent.run_nonce ||
+      parentReceipt.runner_config_sha256 !== remediationParent.runner_config_sha256 ||
+      parentReceipt.execution_claim_sha256 !== remediationParent.execution_claim_sha256 ||
+      parentReceipt.remediation_generation !== remediationParent.remediation_generation ||
+      parentReceipt.remediation_parent_result_sha256 !== remediationParent.remediation_parent_result_sha256
+    ) {
+      fail("remediation parent receipt is invalid or cross-wired");
+    }
+    if (remediationParent.status !== "checks-failed") fail("only a checks-failed terminal result may be remediated");
+    if (remediationParent.remediation_generation !== remediationGeneration - 1) fail("remediation generation is not the direct successor of its parent");
+    if (remediationParent.run_nonce === config.run_nonce) fail("remediation run_nonce must differ from its parent");
+    for (const field of ["experiment_id", "arm_id", "model", "repository", "baseline_commit", "remediation_generation_budget"]) {
+      const expected = field === "remediation_generation_budget"
+        ? config.remediation_generation_budget
+        : field === "repository"
+          ? repo
+          : config[field];
+      if (JSON.stringify(remediationParent[field]) !== JSON.stringify(expected)) {
+        fail(`remediation parent control mismatch: ${field}`);
+      }
+    }
+    for (const field of ["allowed_paths", "allowed_ignored_paths"]) {
+      if (JSON.stringify(remediationParent[field]) !== JSON.stringify(config[field])) fail(`remediation parent control mismatch: ${field}`);
+    }
+    for (const field of ["visible_checks", "held_out_checks", "held_out_evaluator_self_tests"]) {
+      const parentCommands = (remediationParent[field] ?? []).map((row) => row.command);
+      if (JSON.stringify(parentCommands) !== JSON.stringify(config[field] ?? [])) fail(`remediation parent control mismatch: ${field}`);
+    }
+    if (
+      remediationParent.final_head !== head ||
+      remediationParent.final_index_tree !== startIndexTree ||
+      remediationParent.final_ref !== startRef ||
+      remediationParent.final_ref_target !== startRefTarget ||
+      remediationParent.working_state_sha256 !== startWorkingStateSha256 ||
+      remediationParent.ignored_final_sha256 !== stateHash(initialIgnoredState) ||
+      JSON.stringify(remediationParent.changed_paths) !== JSON.stringify(startPaths)
+    ) {
+      fail("dirty remediation worktree does not match the exact terminal parent state");
+    }
+  }
 
   const prompt = fs.readFileSync(path.resolve(config.prompt_path));
   const outputDirectory = assertPathOutsideRepository(repo, path.resolve(config.output_directory), "output_directory");
-  const requestedEvidenceDirectory = assertPathOutsideRepository(repo, path.join(outputDirectory, config.arm_id), "Composer evidence directory");
+  const requestedEvidenceDirectory = assertPathOutsideRepository(
+    repo,
+    path.join(outputDirectory, config.arm_id, remediationGeneration === 0 ? "" : `remediation-${remediationGeneration}`),
+    "Composer evidence directory",
+  );
   fs.mkdirSync(requestedEvidenceDirectory, { recursive: true });
   const evidenceDirectory = assertPathOutsideRepository(repo, fs.realpathSync(requestedEvidenceDirectory), "Composer evidence directory");
   const resultPath = path.join(evidenceDirectory, "result.json");
@@ -213,7 +315,25 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
   const prefix = testOverrides.agentPrefixArgs ?? [];
   const checkEnvironment = contractEnvironment();
   const agentEnvironment = { ...checkEnvironment, ...(testOverrides.agentEnvironment ?? {}) };
-  const approvedExecution = executionManifest([...config.visible_checks, ...config.held_out_checks], checkEnvironment);
+  const allApprovedChecks = [...config.visible_checks, ...config.held_out_checks, ...heldOutEvaluatorSelfTests];
+  const approvedExecution = executionManifest(allApprovedChecks, checkEnvironment);
+  const oracleState = repositoryState(repo, config.baseline_commit, config.allowed_ignored_paths);
+  const heldOutEvaluatorSelfTestResults = runGuardedChecks({
+    checks: heldOutEvaluatorSelfTests,
+    repository: repo,
+    baseline: config.baseline_commit,
+    allowedIgnoredPaths: config.allowed_ignored_paths,
+    timeoutMs: config.check_timeout_ms ?? 600_000,
+    evidenceDirectory,
+    prefix: "held-out-evaluator-self-test",
+    environment: checkEnvironment,
+    expectedState: oracleState,
+    allChecks: allApprovedChecks,
+    expectedExecutionManifestSha256: approvedExecution.sha256,
+  });
+  if (heldOutEvaluatorSelfTestResults.some((check) => check.status !== 0)) {
+    fail("held-out evaluator semantic self-test failed");
+  }
   const versionPreflight = testOverrides.agentVersion === undefined
     ? spawnSync(executable, [...prefix, "--version"], { encoding: "utf8", env: agentEnvironment })
     : null;
@@ -260,15 +380,23 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     evidenceDirectory,
     environment: checkEnvironment,
     expectedState: preCheckState,
-    allChecks: [...config.visible_checks, ...config.held_out_checks],
+    allChecks: allApprovedChecks,
     expectedExecutionManifestSha256: approvedExecution.sha256,
   };
-  const visibleChecks = outside.length === 0 && ignoredStateChanges.length === 0 && !gitControlViolation
+  const checksMayRun = outside.length === 0 && ignoredStateChanges.length === 0 && !gitControlViolation;
+  const skippedChecks = (checks) => checks.map((command) => ({
+    command,
+    status: null,
+    signal: null,
+    timed_out: false,
+    skipped: true,
+  }));
+  const visibleChecks = checksMayRun
     ? runGuardedChecks({ ...checkContext, checks: config.visible_checks ?? [], prefix: "visible" })
-    : [];
-  const heldOutChecks = outside.length === 0 && ignoredStateChanges.length === 0 && !gitControlViolation
+    : skippedChecks(config.visible_checks ?? []);
+  const heldOutChecks = checksMayRun
     ? runGuardedChecks({ ...checkContext, checks: config.held_out_checks ?? [], prefix: "held-out" })
-    : [];
+    : skippedChecks(config.held_out_checks ?? []);
   if (sha256(fs.readFileSync(path.resolve(config.prompt_path))) !== sha256(prompt)) fail("approved prompt identity changed during Cursor execution");
   const checksPassed = [...visibleChecks, ...heldOutChecks].every((check) => check.status === 0);
   const status = finalHead !== config.baseline_commit
@@ -284,20 +412,14 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     : agent.status === 0 && !agent.timed_out
       ? checksPassed ? "completed" : "checks-failed"
       : "agent-failed";
-  if (outside.length > 0) fail(`changed paths outside allowed paths: ${outside.join(", ")}`);
-  if (finalHead !== config.baseline_commit) fail(`builder moved HEAD from baseline ${config.baseline_commit}`);
-  if (finalIndexTree !== startIndexTree || stagedPaths.length > 0) fail(`builder mutated the Git index: ${stagedPaths.join(", ")}`);
-  if (finalRef !== startRef || finalRefTarget !== startRefTarget) fail(`builder changed the checked-out ref from ${startRef} to ${finalRef}`);
-  if (ignoredStateChanges.length > 0) fail(`builder changed ignored-file state: ${ignoredStateChanges.join(", ")}`);
-  if (status !== "completed") fail(`builder agent did not complete: ${status}`);
   const result = {
     schema_version: 1,
     experiment_id: config.experiment_id,
     arm_id: config.arm_id,
     run_nonce: config.run_nonce,
     model: config.model,
-    runner: "cursor-agent-paired-builder-v1",
-    producer_version: "cursor-agent-producer-v1",
+    runner: "cursor-agent-paired-builder-v2",
+    producer_version: "cursor-agent-producer-v2",
     runner_config_sha256: configHash,
     repository: repoIdentity.repository,
     git_common_dir: repoIdentity.git_common_dir,
@@ -318,6 +440,11 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     check_timeout_ms: config.check_timeout_ms ?? 600_000,
     intervention_budget: config.intervention_budget,
     remediation_generation_budget: config.remediation_generation_budget,
+    remediation_generation: remediationGeneration,
+    ...(remediationParent && {
+      remediation_parent_result_path: remediationParentPath,
+      remediation_parent_result_sha256: config.remediation_parent_result_sha256,
+    }),
     status,
     agent_exit_status: agent.status,
     agent_signal: agent.signal,
@@ -328,6 +455,8 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     execution_claim_sha256: executionClaimSha256,
     changed_paths: paths,
     start_index_tree: startIndexTree,
+    start_status_sha256: startStatusSha256,
+    start_working_state_sha256: startWorkingStateSha256,
     start_ref: startRef,
     start_ref_target: startRefTarget,
     final_head: finalHead,
@@ -338,9 +467,11 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     outside_allowed_paths: outside,
     ignored_state_changed_paths: ignoredStateChanges,
     ignored_final_sha256: stateHash(finalIgnoredState),
+    final_status_sha256: preCheckState.status_sha256,
     working_state_sha256: workingStateHash(repo, paths),
     visible_checks: visibleChecks,
     held_out_checks: heldOutChecks,
+    held_out_evaluator_self_tests: heldOutEvaluatorSelfTestResults,
     environment_names: Object.keys(checkEnvironment).sort(),
     environment_sha256: approvedExecution.manifest.environment_sha256,
     execution_manifest: approvedExecution.manifest,
@@ -362,8 +493,26 @@ export async function runBuilderArm(configPath, testOverrides = {}) {
     agent_stdout_sha256: result.agent_stdout_sha256,
     agent_stderr_sha256: result.agent_stderr_sha256,
     execution_claim_sha256: result.execution_claim_sha256,
+    remediation_generation: result.remediation_generation,
+    ...(result.remediation_parent_result_sha256 && {
+      remediation_parent_result_sha256: result.remediation_parent_result_sha256,
+    }),
     result_sha256: sha256(resultBytes),
   }, null, 2)}\n`, { flag: "wx" });
+  if (status !== "completed") {
+    const detail = status === "invalid-out-of-scope"
+      ? `changed paths outside allowed paths: ${outside.join(", ")}`
+      : status === "invalid-head-moved"
+        ? `builder moved HEAD from baseline ${config.baseline_commit}`
+        : status === "invalid-index-mutated"
+          ? `builder mutated the Git index: ${stagedPaths.join(", ")}`
+          : status === "invalid-ref-moved"
+            ? `builder changed the checked-out ref from ${startRef} to ${finalRef}`
+            : status === "invalid-ignored-state"
+              ? `builder changed ignored-file state: ${ignoredStateChanges.join(", ")}`
+              : `builder agent did not complete: ${status}`;
+    terminalFailure(detail, result);
+  }
   return result;
 }
 

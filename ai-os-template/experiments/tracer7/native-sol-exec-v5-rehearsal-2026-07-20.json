@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "purpose": "live disposable native Codex exec v5 plus Cursor Composer v2 apparatus rehearsal; not Tracer 7 model-quality evidence",
+  "scratch_directory": "/Volumes/rexy/GitHub/proof-harness-evidence/apparatus-v5-rehearsal/native-codex-exec-v5-live-rehearsal-g1Mrkq",
+  "durable_manifest": {
+    "path": "/Volumes/rexy/GitHub/proof-harness-evidence/apparatus-v5-rehearsal/native-codex-exec-v5-live-rehearsal-g1Mrkq/SHA256SUMS",
+    "sha256": "sha256:9795ee2f150a51fa123400d4aacd45ccbcb3c9fd441f8c152f7b958e6a51c129",
+    "files": 125
+  },
+  "fixture": {
+    "baseline_commit": "4f1deedb07100b9096577ce59db05829a8ae940f",
+    "baseline_tree": "69bd8e977db05d96f87cdf626a89587d3dff63a2",
+    "prompt_sha256": "sha256:5e73bd0d667e98fced70cc173b31c7aee4991d012687ed37b70593d3f4375b30",
+    "execution_manifest_sha256": "sha256:60d0551eac226a72035c7311f9abf526a8513002ecae18b5740f2bd538c489fc",
+    "working_state_sha256_equal": true
+  },
+  "native_sol": {
+    "status": "completed",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "runner": "codex-exec-builder-v5",
+    "producer_version": "native-codex-exec-producer-v5",
+    "finalizer_version": "native-codex-exec-finalizer-v5",
+    "agent_version": "codex-cli 0.144.6",
+    "codex_executable_sha256": "sha256:80a3933d11a9d13ef806aa24f7bb8afc9169cfe4e9b09d6da6a92922cbde9cff",
+    "native_session_id": "019f8359-0a94-7fc3-8e66-35d7307ca3d5",
+    "launch_contract_sha256": "sha256:fad2f69002597ebffc97e2c595c1da01f23434f2a3c2a1e47ce2c11031f1544a",
+    "transcript_sha256": "sha256:d3fd20011d3bfa278bf5f9e391d84e44ba511f10af98b1d685f11217a2f5262f",
+    "invocation_packet_sha256": "sha256:b283694158dcf7ca089434e43d49bd15764cd3f68b7cd625ef5958ce79d18f5d",
+    "worker_packet_sha256": "sha256:78819ba5182ec1a7ed1dc9197a66a58979a365e0620a171d4355db8d690ea7d5",
+    "attestation_sha256": "sha256:cca1555e406bcca586b6efda6bd168bfefc7e1e0333deff409d81f5ca662df37",
+    "completion_evidence_sha256": "sha256:8ed29295dfb15d1b59ad4f0257db709cb39b15a247be5ebf103ecee829cce4b1",
+    "execution_claim_sha256": "sha256:5c731077bf53118ed7363395f911242806b4d72ea0b878b8fd182577691e0322",
+    "finalization_claim_sha256": "sha256:444b3e0266f785af93b93e273e8c8af67c7b3841e13dd8622aa3acc3f72da2a2",
+    "duration_ms": 19487,
+    "changed_paths": ["math.mjs"],
+    "visible_checks_passed": 1,
+    "held_out_checks_passed": 1,
+    "multi_agent_enabled": false,
+    "network_access": false,
+    "writable_tmp": true,
+    "permission_profile": "native-proof-builder",
+    "filesystem_read_scope": "minimal+workspace+approved-toolchain",
+    "interventions": []
+  },
+  "permission_profile_probe": {
+    "evidence_sha256": "sha256:1ec1334397b17f95492cf60c21760ce416cccad44924de49d2aaa9ec768662db",
+    "workspace_read": true,
+    "visible_command_read": true,
+    "visible_executable_read": true,
+    "held_out_executable_denied": true,
+    "root_evidence_denied": true,
+    "temporary_scratch_write": true,
+    "network_connect_denied": true,
+    "descendant_codex_agent_denied": true,
+    "passed": true
+  },
+  "composer_cursor": {
+    "status": "completed",
+    "model": "composer-2.5",
+    "runner": "cursor-agent-paired-builder-v2",
+    "producer_version": "cursor-agent-producer-v2",
+    "agent_version": "2026.07.17-3e2a980",
+    "execution_claim_sha256": "sha256:f772c9dbee686480926f882d7cc9d7fb6562ac45b10fee9a904dd2e68268e1a9",
+    "duration_ms": 13225,
+    "changed_paths": ["math.mjs"],
+    "visible_checks_passed": 1,
+    "held_out_checks_passed": 1,
+    "interventions": []
+  },
+  "paired_validation": {
+    "comparable": true,
+    "disposition": "comparable-initial-candidates",
+    "arm_statuses": {
+      "left": "completed",
+      "right": "completed"
+    },
+    "remediation_generation": 0,
+    "models": ["composer-2.5", "gpt-5.6-sol"],
+    "route_bindings": {
+      "composer-2.5": "cursor-agent-paired-builder-v2",
+      "gpt-5.6-sol": "codex-exec-builder-v5"
+    }
+  },
+  "conclusion": "Both actual subscription routes completed the byte-identical disposable task under v5 controls and produced comparable results. This validates apparatus only."
+}

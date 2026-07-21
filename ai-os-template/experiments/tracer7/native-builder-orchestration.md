@@ -1,9 +1,14 @@
 # Native Codex Sol builder execution contract
 
-This contract is the producer boundary for the native control route. The v4 route
+This contract is the producer boundary for the native control route. The v5 route
 uses one parent-controlled, ephemeral `codex exec` process instead of a collaboration
 subagent. That change makes the one-agent boundary and worker capability boundary
 launch-time controls rather than unverifiable worker promises.
+
+V5 adds content-bound held-out evaluator self-tests, canonical terminal
+`checks-failed` evidence, and one hash-bound dirty-parent remediation generation.
+These result and packet changes intentionally have new producer, finalizer, runner,
+invocation, worker, attestation, completion, and launch-contract identifiers.
 
 ## Phase 1: deterministic prepare
 
@@ -36,7 +41,7 @@ node scripts/run-native-builder-execution.mjs \
 ```
 
 The parent runner validates the prepared source state and constructs the immutable
-`native-codex-exec-launch-v4` contract. The worker receives the exact worker packet
+`native-codex-exec-launch-v5` contract. The worker receives the exact worker packet
 bytes over stdin. It receives no packet pathname, root invocation path, evidence
 directory, result path, receipt path, held-out command, or sibling-arm identity.
 Before any capability probe or model launch, the runner exclusively creates the

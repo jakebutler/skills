@@ -6,6 +6,8 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { runBuilderArm } from "../../scripts/run-builder-arm.mjs";
 
+const sha256 = (value) => `sha256:${crypto.createHash("sha256").update(value).digest("hex")}`;
+
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "builder-arm-"));
 const repo = path.join(fixture, "repo");
 const output = path.join(fixture, "evidence");
@@ -31,7 +33,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 fs.appendFileSync(${JSON.stringify(agentLaunchCountPath)}, "launch\\n");
 const workspace = process.argv[process.argv.indexOf("--workspace") + 1];
-fs.writeFileSync(path.join(workspace, process.env.FAKE_TARGET ?? "allowed.txt"), "after\\n");
+fs.writeFileSync(path.join(workspace, process.env.FAKE_TARGET ?? "allowed.txt"), process.env.FAKE_CONTENT ?? "after\\n");
 if (process.env.FAKE_MODE === "commit") {
   execFileSync("git", ["-C", workspace, "add", "-A"]);
   execFileSync("git", ["-C", workspace, "commit", "-qm", "forbidden"]);
@@ -40,15 +42,15 @@ if (process.env.FAKE_MODE === "ref") execFileSync("git", ["-C", workspace, "chec
 console.log(JSON.stringify({type:"result",result:"done"}));
 `);
 
-async function run(target = "allowed.txt", mode = "edit", checksPass = true, model = "composer-2.5", checkMutation = false, outputDirectory = output, isolationBoundary = "test-double", cursorFilesystemPolicy) {
+async function run(target = "allowed.txt", mode = "edit", checksPass = true, model = "composer-2.5", checkMutation = false, outputDirectory = output, isolationBoundary = "test-double", cursorFilesystemPolicy, remediationParent = null, selfTestPass = null, checkTimesOut = false, checkSignals = false) {
   const fixtureIdentity = crypto.createHash("sha256")
-    .update(JSON.stringify({ target, mode, checksPass, model, checkMutation, outputDirectory, isolationBoundary, cursorFilesystemPolicy }))
+    .update(JSON.stringify({ target, mode, checksPass, model, checkMutation, outputDirectory, isolationBoundary, cursorFilesystemPolicy, selfTestPass, checkTimesOut, checkSignals }))
     .digest("hex")
     .slice(0, 16);
   const config = {
     schema_version: 1,
     experiment_id: "fixture",
-    arm_id: `arm-${fixtureIdentity}`,
+    arm_id: remediationParent?.arm_id ?? `arm-${fixtureIdentity}`,
     run_nonce: `fixture-${fixtureIdentity}`,
     model,
     repository: repo,
@@ -58,16 +60,34 @@ async function run(target = "allowed.txt", mode = "edit", checksPass = true, mod
     allowed_ignored_paths: [],
     output_directory: outputDirectory,
     timeout_ms: 10000,
-    check_timeout_ms: 10000,
+    check_timeout_ms: checkTimesOut ? 1000 : 10000,
     intervention_budget: 0,
     remediation_generation_budget: 1,
-    visible_checks: [[process.execPath, "-e", `process.exit(${checksPass ? 0 : 1})`]],
+    visible_checks: [[process.execPath, "-e", checkTimesOut
+      ? "setTimeout(() => process.exit(0), 10000)"
+      : checkSignals
+        ? "process.kill(process.pid, 'SIGTERM')"
+        : "const fs=require('fs');process.exit(fs.readFileSync('allowed.txt','utf8')==='after\\n'?0:1)"]],
     held_out_checks: checkMutation
       ? [
           [process.execPath, "-e", "require('fs').writeFileSync('post-check-outside.txt','mutated\\n');process.exit(0)"],
           [process.execPath, "-e", "require('fs').rmSync('post-check-outside.txt',{force:true});process.exit(0)"],
         ]
       : [[process.execPath, "-e", "process.exit(0)"]],
+    ...(selfTestPass !== null && {
+      held_out_evaluator_self_tests: [[
+        process.execPath,
+        "-e",
+        `process.exit(${selfTestPass ? 0 : 1})`,
+        "--",
+        "--proof-harness-self-test",
+      ]],
+    }),
+    ...(remediationParent && {
+      remediation_generation: remediationParent.remediation_generation + 1,
+      remediation_parent_result_path: remediationParent.result_path,
+      remediation_parent_result_sha256: sha256(fs.readFileSync(remediationParent.result_path)),
+    }),
     ...(cursorFilesystemPolicy !== undefined && { cursor_filesystem_policy: cursorFilesystemPolicy }),
   };
   const configPath = path.join(fixture, `config-${target.replaceAll("/", "-")}.json`);
@@ -78,13 +98,17 @@ async function run(target = "allowed.txt", mode = "edit", checksPass = true, mod
       expectedConfigSha256,
       agentExecutable: process.execPath,
       agentPrefixArgs: [fake],
-      agentEnvironment: { FAKE_TARGET: target, FAKE_MODE: mode },
+      agentEnvironment: {
+        FAKE_TARGET: target,
+        FAKE_MODE: mode,
+        FAKE_CONTENT: checksPass ? "after\n" : "needs-remediation\n",
+      },
       agentVersion: "fixture-agent",
       isolationBoundary: isolationBoundary === null ? undefined : { enforcement: isolationBoundary },
     });
     return { status: 0, result, error: "" };
   } catch (error) {
-    return { status: 1, result: null, error: error.message };
+    return { status: 1, result: error.result ?? null, error: error.message };
   }
 }
 
@@ -92,6 +116,22 @@ const unisolated = await run("allowed.txt", "edit", true, "composer-2.5", false,
 assert.equal(unisolated.status, 1);
 assert.match(unisolated.error, /explicit trusted-host filesystem policy/i);
 assert.equal(fs.existsSync(agentLaunchCountPath), false, "unisolated Composer must fail before agent launch");
+
+const invalidOracle = await run(
+  "allowed.txt",
+  "edit",
+  true,
+  "composer-2.5",
+  false,
+  output,
+  "test-double",
+  undefined,
+  null,
+  false,
+);
+assert.equal(invalidOracle.status, 1);
+assert.match(invalidOracle.error, /held-out evaluator semantic self-test/i);
+assert.equal(fs.existsSync(agentLaunchCountPath), false, "an invalid held-out oracle must fail before agent launch");
 
 const trustedHost = await run(
   "allowed.txt",
@@ -155,6 +195,11 @@ git("reset", "--hard", baseline);
 const bad = await run("outside.txt");
 assert.equal(bad.status, 1);
 assert.match(bad.error, /outside allowed paths/);
+assert.equal(bad.result.status, "invalid-out-of-scope");
+assert.equal(bad.result.visible_checks.length, 1);
+assert.equal(bad.result.visible_checks[0].status, null);
+assert.equal(bad.result.held_out_checks.length, 1);
+assert.equal(bad.result.held_out_checks[0].status, null);
 
 execFileSync("git", ["-C", repo, "clean", "-fd"]);
 git("reset", "--hard", baseline);
@@ -170,9 +215,103 @@ git("checkout", "-q", baselineBranch);
 git("branch", "-D", "forbidden-ref");
 
 git("reset", "--hard", baseline);
+const timedOutCheck = await run("allowed.txt", "edit", true, "composer-2.5", false, output, "test-double", undefined, null, null, true);
+assert.equal(timedOutCheck.status, 1);
+assert.equal(timedOutCheck.result.status, "checks-failed");
+assert.equal(timedOutCheck.result.visible_checks[0].status, null);
+assert.equal(timedOutCheck.result.visible_checks[0].timed_out, true);
+assert.equal(timedOutCheck.result.visible_checks[0].skipped, false);
+
+git("reset", "--hard", baseline);
+const signaledCheck = await run("allowed.txt", "edit", true, "composer-2.5", false, output, "test-double", undefined, null, null, false, true);
+assert.equal(signaledCheck.status, 1);
+assert.equal(signaledCheck.result.status, "checks-failed");
+assert.equal(signaledCheck.result.visible_checks[0].status, null);
+assert.equal(signaledCheck.result.visible_checks[0].signal, "SIGTERM");
+assert.equal(signaledCheck.result.visible_checks[0].timed_out, false);
+assert.equal(signaledCheck.result.visible_checks[0].skipped, false);
+
+git("reset", "--hard", baseline);
 const failedCheck = await run("allowed.txt", "edit", false);
 assert.equal(failedCheck.status, 1);
 assert.match(failedCheck.error, /checks-failed/);
+assert.equal(failedCheck.result.status, "checks-failed");
+assert.equal(failedCheck.result.remediation_generation, 0);
+assert.equal(fs.existsSync(failedCheck.result.result_path), true, "failed checks must still emit a canonical result");
+assert.equal(fs.existsSync(failedCheck.result.result_receipt_path), true, "failed checks must still emit a bound receipt");
+
+const failedParentBytes = fs.readFileSync(failedCheck.result.result_path);
+const failedParentReceiptBytes = fs.readFileSync(failedCheck.result.result_receipt_path);
+const falselyCompletedParent = JSON.parse(failedParentBytes.toString("utf8"));
+falselyCompletedParent.status = "completed";
+fs.writeFileSync(failedCheck.result.result_path, `${JSON.stringify(falselyCompletedParent, null, 2)}\n`);
+const falselyCompletedReceipt = JSON.parse(failedParentReceiptBytes.toString("utf8"));
+falselyCompletedReceipt.result_sha256 = sha256(fs.readFileSync(failedCheck.result.result_path));
+fs.writeFileSync(failedCheck.result.result_receipt_path, `${JSON.stringify(falselyCompletedReceipt, null, 2)}\n`);
+const completedParentRemediation = await run("allowed.txt", "edit", true, "composer-2.5", false, output, "test-double", undefined, falselyCompletedParent);
+assert.equal(completedParentRemediation.status, 1);
+assert.match(completedParentRemediation.error, /only a checks-failed terminal result may be remediated/i);
+fs.writeFileSync(failedCheck.result.result_path, failedParentBytes);
+fs.writeFileSync(failedCheck.result.result_receipt_path, failedParentReceiptBytes);
+
+fs.writeFileSync(path.join(repo, "allowed.txt"), "diverged-after-failure\n");
+const divergentParentRemediation = await run("allowed.txt", "edit", true, "composer-2.5", false, output, "test-double", undefined, failedCheck.result);
+assert.equal(divergentParentRemediation.status, 1);
+assert.match(divergentParentRemediation.error, /does not match the exact terminal parent state/i);
+fs.writeFileSync(path.join(repo, "allowed.txt"), "needs-remediation\n");
+
+const remediatedCheck = await run(
+  "allowed.txt",
+  "edit",
+  true,
+  "composer-2.5",
+  false,
+  output,
+  "test-double",
+  undefined,
+  failedCheck.result,
+);
+assert.equal(remediatedCheck.status, 0, remediatedCheck.error);
+assert.equal(remediatedCheck.result.status, "completed");
+assert.equal(remediatedCheck.result.remediation_generation, 1);
+assert.equal(remediatedCheck.result.remediation_parent_result_path, failedCheck.result.result_path);
+assert.equal(
+  remediatedCheck.result.remediation_parent_result_sha256,
+  sha256(fs.readFileSync(failedCheck.result.result_path)),
+);
+const overBudgetRemediation = await run(
+  "allowed.txt",
+  "edit",
+  true,
+  "composer-2.5",
+  false,
+  output,
+  "test-double",
+  undefined,
+  remediatedCheck.result,
+);
+assert.equal(overBudgetRemediation.status, 1);
+assert.match(overBudgetRemediation.error, /within the approved remediation budget/i);
+
+git("reset", "--hard", baseline);
+const selfTestBoundFailure = await run("allowed.txt", "edit", false, "composer-2.5", false, output, "test-double", undefined, null, true);
+assert.equal(selfTestBoundFailure.status, 1, selfTestBoundFailure.error);
+assert.notEqual(selfTestBoundFailure.result, null, selfTestBoundFailure.error);
+assert.equal(selfTestBoundFailure.result.status, "checks-failed");
+const droppedSelfTestRemediation = await run(
+  "allowed.txt",
+  "edit",
+  true,
+  "composer-2.5",
+  false,
+  output,
+  "test-double",
+  undefined,
+  selfTestBoundFailure.result,
+  null,
+);
+assert.equal(droppedSelfTestRemediation.status, 1);
+assert.match(droppedSelfTestRemediation.error, /remediation parent control mismatch: held_out_evaluator_self_tests/i);
 
 git("reset", "--hard", baseline);
 const mutatingCheck = await run("allowed.txt", "edit", true, "composer-2.5", true);

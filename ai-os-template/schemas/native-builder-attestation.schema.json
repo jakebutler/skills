@@ -5,88 +5,272 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version", "attestation_type", "producer_version", "finalizer_version",
-    "invocation_packet_sha256", "invocation_id", "experiment_id", "arm_id",
-    "run_nonce", "native_session_id", "run_id", "model", "reasoning_effort",
-    "execution_surface", "platform_version", "codex_executable_path",
-    "codex_executable_sha256", "launch_contract_sha256", "capability_probe_contract_sha256",
-    "capability_probe_evidence_path", "capability_probe_evidence_sha256", "worker_packet_delivery",
-    "multi_agent_enabled", "network_access", "writable_tmp", "sandbox_mode",
-    "permission_profile", "filesystem_read_scope",
-    "transcript_path", "transcript_sha256", "stderr_path", "stderr_sha256",
-    "status", "agent_exit_status", "agent_signal", "agent_timed_out",
-    "started_at", "finished_at", "repository", "baseline_commit", "baseline_tree",
-    "start_head", "end_head", "start_index_tree", "end_index_tree", "start_ref",
-    "end_ref", "start_ref_target", "end_ref_target", "start_status_sha256",
-    "prompt_sha256", "runner_config_sha256", "controls_sha256",
-    "worker_packet_sha256", "observed_prompt_sha256",
-    "completion_evidence_path", "completion_evidence_sha256",
-    "intervention_events", "manual_edits"
+    "schema_version",
+    "attestation_type",
+    "producer_version",
+    "finalizer_version",
+    "invocation_packet_sha256",
+    "invocation_id",
+    "experiment_id",
+    "arm_id",
+    "run_nonce",
+    "native_session_id",
+    "run_id",
+    "model",
+    "reasoning_effort",
+    "execution_surface",
+    "platform_version",
+    "codex_executable_path",
+    "codex_executable_sha256",
+    "launch_contract_sha256",
+    "capability_probe_contract_sha256",
+    "capability_probe_evidence_path",
+    "capability_probe_evidence_sha256",
+    "worker_packet_delivery",
+    "multi_agent_enabled",
+    "network_access",
+    "writable_tmp",
+    "sandbox_mode",
+    "permission_profile",
+    "filesystem_read_scope",
+    "transcript_path",
+    "transcript_sha256",
+    "stderr_path",
+    "stderr_sha256",
+    "status",
+    "agent_exit_status",
+    "agent_signal",
+    "agent_timed_out",
+    "started_at",
+    "finished_at",
+    "repository",
+    "baseline_commit",
+    "baseline_tree",
+    "start_head",
+    "end_head",
+    "start_index_tree",
+    "end_index_tree",
+    "start_ref",
+    "end_ref",
+    "start_ref_target",
+    "end_ref_target",
+    "start_status_sha256",
+    "prompt_sha256",
+    "runner_config_sha256",
+    "controls_sha256",
+    "worker_packet_sha256",
+    "observed_prompt_sha256",
+    "completion_evidence_path",
+    "completion_evidence_sha256",
+    "intervention_events",
+    "manual_edits"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
-    "attestation_type": { "const": "codex-exec-builder-attestation-v4" },
-    "producer_version": { "const": "native-codex-exec-producer-v4" },
-    "finalizer_version": { "const": "native-codex-exec-finalizer-v4" },
-    "invocation_packet_sha256": { "$ref": "#/$defs/sha256" },
-    "invocation_id": { "$ref": "#/$defs/sha256" },
-    "experiment_id": { "$ref": "#/$defs/string" },
-    "arm_id": { "$ref": "#/$defs/string" },
-    "run_nonce": { "$ref": "#/$defs/string" },
-    "native_session_id": { "$ref": "#/$defs/string" },
-    "run_id": { "$ref": "#/$defs/string" },
-    "model": { "const": "gpt-5.6-sol" },
-    "reasoning_effort": { "const": "high" },
-    "execution_surface": { "const": "codex-exec" },
-    "platform_version": { "$ref": "#/$defs/string" },
-    "codex_executable_path": { "$ref": "#/$defs/string" },
-    "codex_executable_sha256": { "$ref": "#/$defs/sha256" },
-    "launch_contract_sha256": { "$ref": "#/$defs/sha256" },
-    "capability_probe_contract_sha256": { "$ref": "#/$defs/sha256" },
-    "capability_probe_evidence_path": { "$ref": "#/$defs/string" },
-    "capability_probe_evidence_sha256": { "$ref": "#/$defs/sha256" },
-    "worker_packet_delivery": { "const": "stdin-bytes" },
-    "multi_agent_enabled": { "const": false },
-    "network_access": { "const": false },
-    "writable_tmp": { "const": true },
-    "sandbox_mode": { "const": "permission-profile" },
-    "permission_profile": { "const": "native-proof-builder" },
-    "filesystem_read_scope": { "const": "minimal+workspace+approved-toolchain" },
-    "transcript_path": { "$ref": "#/$defs/string" },
-    "transcript_sha256": { "$ref": "#/$defs/sha256" },
-    "stderr_path": { "$ref": "#/$defs/string" },
-    "stderr_sha256": { "$ref": "#/$defs/sha256" },
-    "status": { "enum": ["completed", "failed", "timeout"] },
-    "agent_exit_status": { "type": ["integer", "null"] },
-    "agent_signal": { "type": ["string", "null"] },
-    "agent_timed_out": { "type": "boolean" },
-    "started_at": { "type": "string", "format": "date-time" },
-    "finished_at": { "type": "string", "format": "date-time" },
-    "repository": { "$ref": "#/$defs/string" },
-    "baseline_commit": { "$ref": "#/$defs/objectId" },
-    "baseline_tree": { "$ref": "#/$defs/objectId" },
-    "start_head": { "$ref": "#/$defs/objectId" },
-    "end_head": { "$ref": "#/$defs/objectId" },
-    "start_index_tree": { "$ref": "#/$defs/objectId" },
-    "end_index_tree": { "$ref": "#/$defs/objectId" },
-    "start_ref": { "$ref": "#/$defs/string" },
-    "end_ref": { "$ref": "#/$defs/string" },
-    "start_ref_target": { "$ref": "#/$defs/objectId" },
-    "end_ref_target": { "$ref": "#/$defs/objectId" },
-    "start_status_sha256": { "$ref": "#/$defs/sha256" },
-    "prompt_sha256": { "$ref": "#/$defs/sha256" },
-    "runner_config_sha256": { "$ref": "#/$defs/sha256" },
-    "controls_sha256": { "$ref": "#/$defs/sha256" },
-    "worker_packet_sha256": { "$ref": "#/$defs/sha256" },
-    "observed_prompt_sha256": { "$ref": "#/$defs/sha256" },
-    "completion_evidence_path": { "$ref": "#/$defs/string" },
-    "completion_evidence_sha256": { "$ref": "#/$defs/sha256" },
-    "intervention_events": { "type": "array", "items": { "type": "object" } },
-    "manual_edits": { "type": "boolean" }
+    "schema_version": {
+      "const": 1
+    },
+    "attestation_type": {
+      "const": "codex-exec-builder-attestation-v5"
+    },
+    "producer_version": {
+      "const": "native-codex-exec-producer-v5"
+    },
+    "finalizer_version": {
+      "const": "native-codex-exec-finalizer-v5"
+    },
+    "invocation_packet_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "invocation_id": {
+      "$ref": "#/$defs/sha256"
+    },
+    "experiment_id": {
+      "$ref": "#/$defs/string"
+    },
+    "arm_id": {
+      "$ref": "#/$defs/string"
+    },
+    "run_nonce": {
+      "$ref": "#/$defs/string"
+    },
+    "native_session_id": {
+      "$ref": "#/$defs/string"
+    },
+    "run_id": {
+      "$ref": "#/$defs/string"
+    },
+    "model": {
+      "const": "gpt-5.6-sol"
+    },
+    "reasoning_effort": {
+      "const": "high"
+    },
+    "execution_surface": {
+      "const": "codex-exec"
+    },
+    "platform_version": {
+      "$ref": "#/$defs/string"
+    },
+    "codex_executable_path": {
+      "$ref": "#/$defs/string"
+    },
+    "codex_executable_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "launch_contract_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "capability_probe_contract_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "capability_probe_evidence_path": {
+      "$ref": "#/$defs/string"
+    },
+    "capability_probe_evidence_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "worker_packet_delivery": {
+      "const": "stdin-bytes"
+    },
+    "multi_agent_enabled": {
+      "const": false
+    },
+    "network_access": {
+      "const": false
+    },
+    "writable_tmp": {
+      "const": true
+    },
+    "sandbox_mode": {
+      "const": "permission-profile"
+    },
+    "permission_profile": {
+      "const": "native-proof-builder"
+    },
+    "filesystem_read_scope": {
+      "const": "minimal+workspace+approved-toolchain"
+    },
+    "transcript_path": {
+      "$ref": "#/$defs/string"
+    },
+    "transcript_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "stderr_path": {
+      "$ref": "#/$defs/string"
+    },
+    "stderr_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "failed",
+        "timeout"
+      ]
+    },
+    "agent_exit_status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "agent_signal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "agent_timed_out": {
+      "type": "boolean"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "repository": {
+      "$ref": "#/$defs/string"
+    },
+    "baseline_commit": {
+      "$ref": "#/$defs/objectId"
+    },
+    "baseline_tree": {
+      "$ref": "#/$defs/objectId"
+    },
+    "start_head": {
+      "$ref": "#/$defs/objectId"
+    },
+    "end_head": {
+      "$ref": "#/$defs/objectId"
+    },
+    "start_index_tree": {
+      "$ref": "#/$defs/objectId"
+    },
+    "end_index_tree": {
+      "$ref": "#/$defs/objectId"
+    },
+    "start_ref": {
+      "$ref": "#/$defs/string"
+    },
+    "end_ref": {
+      "$ref": "#/$defs/string"
+    },
+    "start_ref_target": {
+      "$ref": "#/$defs/objectId"
+    },
+    "end_ref_target": {
+      "$ref": "#/$defs/objectId"
+    },
+    "start_status_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "prompt_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "runner_config_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "controls_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "worker_packet_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "observed_prompt_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "completion_evidence_path": {
+      "$ref": "#/$defs/string"
+    },
+    "completion_evidence_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "intervention_events": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "manual_edits": {
+      "type": "boolean"
+    }
   },
   "$defs": {
-    "string": { "type": "string", "minLength": 1 },
-    "objectId": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+    "string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objectId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
   }
 }

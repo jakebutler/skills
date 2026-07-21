@@ -40,7 +40,7 @@ if (typeof retentionRootInput !== "string" || !path.isAbsolute(retentionRootInpu
 }
 fs.mkdirSync(retentionRootInput, { recursive: true, mode: 0o700 });
 const retentionRoot = fs.realpathSync(retentionRootInput);
-const scratch = fs.mkdtempSync(path.join(retentionRoot, "native-codex-exec-v4-live-rehearsal-"));
+const scratch = fs.mkdtempSync(path.join(retentionRoot, "native-codex-exec-v5-live-rehearsal-"));
 const baselineRepository = path.join(scratch, "baseline");
 const nativeRepository = path.join(scratch, "native");
 const composerRepository = path.join(scratch, "composer");
@@ -73,7 +73,7 @@ fs.writeFileSync(heldOutEvaluator, `#!/usr/bin/env node\nimport path from "node:
 
 const common = {
   schema_version: 1,
-  experiment_id: "native-codex-exec-v4-live-rehearsal",
+  experiment_id: "native-codex-exec-v5-live-rehearsal",
   baseline_commit: baselineCommit,
   prompt_path: promptPath,
   allowed_paths: ["math.mjs"],
@@ -93,8 +93,8 @@ const codexVersion = execFileSync(codexExecutablePath, ["--version"], { encoding
 
 const nativeConfig = {
   ...common,
-  arm_id: "native-sol-v4",
-  run_nonce: "native-sol-v4-live-001",
+  arm_id: "native-sol-v5",
+  run_nonce: "native-sol-v5-live-001",
   model: "gpt-5.6-sol",
   reasoning_effort: "high",
   codex_executable_path: codexExecutablePath,
@@ -117,8 +117,8 @@ const capabilityProbe = JSON.parse(fs.readFileSync(nativeResult.capability_probe
 
 const composerConfig = {
   ...common,
-  arm_id: "composer-v4",
-  run_nonce: "composer-v4-live-001",
+  arm_id: "composer-v5",
+  run_nonce: "composer-v5-live-001",
   model: "composer-2.5",
   cursor_filesystem_policy: "trusted-host-external-reads-allowed",
   repository: composerRepository,
@@ -171,14 +171,14 @@ try {
 } catch (error) {
   const blockedRecord = {
     schema_version: 1,
-    purpose: "live disposable native Codex exec v4 capability rehearsal; not Tracer 7 model-quality evidence",
+    purpose: "live disposable native Codex exec v5 capability rehearsal; not Tracer 7 model-quality evidence",
     scratch_directory: scratch,
     status: "blocked-before-composer-inference",
     reason: error.message,
     native_sol: nativeSummary,
     permission_profile_probe: permissionProfileProbe,
     composer_cursor: { status: "not-launched" },
-    conclusion: "Native v4 controls completed; the explicitly trusted-host Cursor arm failed before producing a valid result.",
+    conclusion: "Native v5 controls completed; the explicitly trusted-host Cursor arm failed before producing a valid result.",
   };
   fs.writeFileSync(path.join(scratch, "rehearsal-blocked.json"), `${JSON.stringify(blockedRecord, null, 2)}\n`, { flag: "wx" });
   console.error(JSON.stringify(blockedRecord, null, 2));
@@ -189,7 +189,7 @@ if (composerResult) {
   const paired = validatePairedControls(composerResult.result_path, nativeResult.result_path);
   const record = {
     schema_version: 1,
-    purpose: "live disposable native Codex exec v4 plus trusted-host Cursor Composer apparatus rehearsal; not Tracer 7 model-quality evidence",
+    purpose: "live disposable native Codex exec v5 plus trusted-host Cursor Composer apparatus rehearsal; not Tracer 7 model-quality evidence",
     scratch_directory: scratch,
     fixture: {
       baseline_commit: baselineCommit,
@@ -214,7 +214,7 @@ if (composerResult) {
     interventions: composerResult.intervention_events,
     },
     paired_validation: paired,
-    conclusion: "Both actual subscription routes completed the byte-identical disposable task under v4 controls and produced comparable results. This validates apparatus only.",
+    conclusion: "Both actual subscription routes completed the byte-identical disposable task under v5 controls and produced comparable results. This validates apparatus only.",
   };
   fs.writeFileSync(path.join(scratch, "rehearsal-summary.json"), `${JSON.stringify(record, null, 2)}\n`, { flag: "wx" });
   console.log(JSON.stringify(record, null, 2));

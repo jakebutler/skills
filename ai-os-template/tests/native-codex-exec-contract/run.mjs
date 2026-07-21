@@ -10,8 +10,8 @@ const visibleCommandPath = "/tooling/bin/pnpm";
 
 const workerPacket = {
   schema_version: 1,
-  packet_type: "native-codex-exec-worker-invocation-v4",
-  producer_version: "native-codex-exec-producer-v4",
+  packet_type: "native-codex-exec-worker-invocation-v5",
+  producer_version: "native-codex-exec-producer-v5",
   invocation_id: `sha256:${"1".repeat(64)}`,
   experiment_id: "fixture",
   arm_id: "sol-a",
@@ -38,6 +38,15 @@ const workerPacket = {
 const workerPacketBytes = Buffer.from(`${JSON.stringify(workerPacket, null, 2)}\n`);
 const workerPacketSha256 = `sha256:${crypto.createHash("sha256").update(workerPacketBytes).digest("hex")}`;
 const contract = nativeCodexExecContract(workerPacketBytes, workerPacketSha256);
+
+const leakingWorkerPacketBytes = Buffer.from(`${JSON.stringify({
+  ...workerPacket,
+  held_out_evaluator_self_tests: [["/private/proof/held-out-check", "--proof-harness-self-test"]],
+}, null, 2)}\n`);
+assert.throws(
+  () => nativeCodexExecContract(leakingWorkerPacketBytes, `sha256:${crypto.createHash("sha256").update(leakingWorkerPacketBytes).digest("hex")}`),
+  /unsupported worker packet field|root-only/i,
+);
 
 assert.deepEqual(contract.argv.slice(0, 2), ["exec", "--ignore-user-config"]);
 assert.equal(contract.argv.includes("--ephemeral"), true);

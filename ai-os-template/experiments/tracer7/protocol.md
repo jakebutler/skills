@@ -83,6 +83,15 @@ environment are runner-owned. Configs cannot add executables, prefix arguments, 
 environment values. The runner emits a nonce-bound result receipt and rejects config
 drift, HEAD/index/ref escape, out-of-scope writes, ignored-file drift, prompt drift,
 evaluator identity drift, or any repository mutation caused by checks.
+Once model execution starts, every terminal check outcome is written as a canonical
+hash-receipted result before the runner returns a nonzero process status. A failed check
+is evidence, not an exception-shaped hole in the experiment record. When an earlier
+scope or Git-control violation prevents evaluator execution, the result preserves the
+approved command vector with `skipped: true` and `null` status for every deliberately
+skipped check. A timeout-killed evaluator instead records `timed_out: true`, preserving
+the distinction while remaining a validator-readable `checks-failed` outcome. An
+evaluator terminated by a signal without a harness timeout records that signal as a
+third executed-failure outcome rather than being confused with either case.
 
 ### Native Sol-on-Codex
 
@@ -132,6 +141,15 @@ its prompt, and transcript evidence plus HITL review must show no observed sibli
 route-output, transcript, or held-out inspection. Any observed cross-arm contamination
 invalidates both arms. The experiment must not claim mechanical Composer blindness.
 
+A held-out evaluator that inspects source structure must implement
+`--proof-harness-self-test`. Its self-test must execute both known-positive semantic
+variants (including named constants or equivalent indirection) and a known-negative
+variant. Lexical proximity, formatting, declaration order, or one exact source spelling
+cannot be the oracle. The apparatus runs the content-bound evaluator self-test before
+model launch, records the result, and requires identical self-test command vectors in
+both arms. Full-suite or runtime-only evaluators may leave this vector empty only when
+no source-shape assertion is made.
+
 ## Intervention and invalidation policy
 
 - Builders may ask questions but receive no model-specific coaching. A shared answer
@@ -140,6 +158,10 @@ invalidates both arms. The experiment must not claim mechanical Composer blindne
   invalidation, and environment drift as explicit intervention events.
 - Unrecorded manual editing, out-of-scope writes, HEAD/index/ref mutation, ignored
   drift, producer-version mismatch, and failed/timeout runs cannot finalize as success.
+- A `checks-failed` result may seed at most the predeclared number of remediation
+  generations. The next config must hash-bind that exact terminal parent, start from its
+  exact dirty working state, preserve route/scope/check/budget controls, use the direct
+  next generation number, and write evidence beneath a generation-specific directory.
 - A newly exposed surface or architecture/security decision stops the arm and returns
   to the shared design gate.
 - No builder may commit, push, publish, deploy, migrate, or access production.
@@ -170,7 +192,9 @@ lenses and resolver fan-in for both candidates.
 Before scoring, run `validate-paired-builder-controls.mjs`. It verifies exact route
 bindings, route-specific producer receipts, exact result paths, distinct worktrees and
 run nonces, while requiring equality of baseline, prompt, scope, ignored baseline,
-environment digest, evaluator manifests, and budgets. Runtime
+environment digest, evaluator manifests, evaluator self-tests, remediation generation,
+and budgets. It can authenticate completed, failed, and remediated terminal results;
+only a pair of completed results at the same generation is eligible for blinded scoring. Runtime
 and agent version are intentionally not equal and are reported as confounds.
 
 ## Decision rule

@@ -93,6 +93,20 @@ general backend default.
 
 ## Pipeline hygiene
 
+### The first product run exposed an oracle and terminal-evidence gap
+
+**Status:** Problem corrected in the apparatus
+
+Tracer 7 showed that a proximity regex can reject semantically correct named-constant
+indirection. The same run showed that exception-only check failure prevents normal
+paired validation and forces ad hoc remediation wrappers around dirty worktrees.
+
+**Fix:** Source-inspecting held-out evaluators now expose a content-bound semantic
+self-test with positive indirection and negative cases. Both producers emit canonical
+terminal check-failure results, authenticate one direct dirty-parent remediation within
+budget, and let the paired validator classify failed evidence without admitting it to
+blinded scoring.
+
 ### The producer change required a fresh apparatus rehearsal
 
 **Status:** OK
@@ -103,6 +117,9 @@ evidence read denial. The Composer route intentionally uses the authenticated ho
 Cursor CLI and records `trusted-host-external-reads-allowed`; it does not claim the
 same read boundary. That asymmetry is an accepted producer/runtime confound, while
 byte-identical D0, prompt, scope, checks, and budgets remain controlled.
+
+The terminal-evidence and remediation additions are published as native v5 and
+Composer v2 contracts rather than silently reusing those historical producer IDs.
 
 **Fix:** Re-run the live rehearsal after any change to native launch argv, packet
 delivery, sandbox controls, transcript parsing, route model, or paired comparator.

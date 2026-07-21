@@ -17,6 +17,7 @@ const CONTROL_FIELDS = [
   "check_timeout_ms",
   "intervention_budget",
   "remediation_generation_budget",
+  "remediation_generation",
   "environment_names",
   "environment_sha256",
   "execution_manifest_sha256",
@@ -24,20 +25,31 @@ const CONTROL_FIELDS = [
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const OBJECT_ID = /^[a-f0-9]{40}$/;
 const RUNNERS_BY_MODEL = new Map([
-  ["composer-2.5", "cursor-agent-paired-builder-v1"],
-  ["gpt-5.6-sol", "codex-exec-builder-v4"],
+  ["composer-2.5", "cursor-agent-paired-builder-v2"],
+  ["gpt-5.6-sol", "codex-exec-builder-v5"],
 ]);
 
 function fail(message) {
   throw new Error(message);
 }
 
-function checkCommands(result, field, label) {
-  if (!Array.isArray(result[field]) || result[field].length === 0) fail(`${label}.${field} is missing or empty`);
+function checkCommands(result, field, label, { allowEmpty = false } = {}) {
+  if (!Array.isArray(result[field]) || (!allowEmpty && result[field].length === 0)) fail(`${label}.${field} is missing or empty`);
   return result[field].map((row, index) => {
     if (!row || typeof row !== "object" || Array.isArray(row)) fail(`${label}.${field}[${index}] is invalid`);
     requireStringArray(row.command, `${label}.${field}[${index}].command`, { nonEmpty: true });
-    if (row.status !== 0) fail(`${label}.${field}[${index}].status must be 0`);
+    if (typeof row.skipped !== "boolean") fail(`${label}.${field}[${index}].skipped must be boolean`);
+    if (typeof row.timed_out !== "boolean") fail(`${label}.${field}[${index}].timed_out must be boolean`);
+    if (row.signal !== null && (typeof row.signal !== "string" || row.signal === "")) fail(`${label}.${field}[${index}].signal must be a string or null`);
+    if (row.skipped) {
+      if (row.status !== null || row.signal !== null || row.timed_out) fail(`${label}.${field}[${index}] skipped outcome is invalid`);
+    } else if (row.timed_out) {
+      if (row.status !== null) fail(`${label}.${field}[${index}] timed-out outcome must use null status`);
+    } else if (row.signal !== null) {
+      if (row.status !== null) fail(`${label}.${field}[${index}] signaled outcome must use null status`);
+    } else if (!Number.isInteger(row.status)) {
+      fail(`${label}.${field}[${index}].status must be an integer for a normally exited check`);
+    }
     return row.command;
   });
 }
@@ -75,7 +87,12 @@ function validateResult(result, label, resultPath) {
   if (path.resolve(result.result_path) !== path.resolve(resultPath) || fs.realpathSync(result.result_path) !== fs.realpathSync(resultPath)) {
     fail(`${label}.result_path does not match the canonical validator input`);
   }
-  if (result.status !== "completed") fail(`${label}.status must be completed`);
+  const terminalStatuses = new Set([
+    "completed", "checks-failed", "agent-failed", "invalid-head-moved",
+    "invalid-index-mutated", "invalid-ref-moved", "invalid-ignored-state",
+    "invalid-out-of-scope",
+  ]);
+  if (!terminalStatuses.has(result.status)) fail(`${label}.status is not a recognized terminal outcome`);
   const expectedRunner = RUNNERS_BY_MODEL.get(result.model);
   if (!expectedRunner) fail(`${label}.model is not an installed paired route`);
   if (result.runner !== expectedRunner) fail(`${label}.runner must be ${expectedRunner}`);
@@ -96,10 +113,66 @@ function validateResult(result, label, resultPath) {
   }
   checkCommands(result, "visible_checks", label);
   checkCommands(result, "held_out_checks", label);
+  checkCommands(result, "held_out_evaluator_self_tests", label, { allowEmpty: true });
+  if (result.held_out_evaluator_self_tests.some((row) => row.status !== 0)) {
+    fail(`${label}.held-out evaluator semantic self-test did not pass`);
+  }
+  const checkOutcomes = [...result.visible_checks, ...result.held_out_checks];
+  if (result.status === "completed" && checkOutcomes.some((row) => row.skipped || row.timed_out || row.status !== 0)) {
+    fail(`${label}.completed result contains a failed check`);
+  }
+  if (result.status === "checks-failed" && !checkOutcomes.some((row) => !row.skipped && (row.timed_out || row.signal !== null || (Number.isInteger(row.status) && row.status !== 0)))) {
+    fail(`${label}.checks-failed result contains no failed check`);
+  }
+  if (result.status.startsWith("invalid-") && checkOutcomes.some((row) => !row.skipped)) {
+    fail(`${label}.${result.status} result must record every check as skipped`);
+  }
+  if (!Number.isInteger(result.remediation_generation) || result.remediation_generation < 0 || result.remediation_generation > result.remediation_generation_budget) {
+    fail(`${label}.remediation_generation is invalid`);
+  }
+  for (const field of ["start_status_sha256", "start_working_state_sha256"]) {
+    if (!SHA256.test(result[field] ?? "")) fail(`${label}.${field} is invalid`);
+  }
+  if (result.remediation_generation === 0) {
+    if (result.remediation_parent_result_path !== undefined || result.remediation_parent_result_sha256 !== undefined) {
+      fail(`${label}.initial result must not claim remediation parent evidence`);
+    }
+  } else {
+    requireString(result.remediation_parent_result_path, `${label}.remediation_parent_result_path`);
+    if (!SHA256.test(result.remediation_parent_result_sha256 ?? "")) fail(`${label}.remediation_parent_result_sha256 is invalid`);
+    const parentBytes = fs.readFileSync(path.resolve(result.remediation_parent_result_path));
+    if (`sha256:${crypto.createHash("sha256").update(parentBytes).digest("hex")}` !== result.remediation_parent_result_sha256) {
+      fail(`${label}.remediation parent result hash mismatch`);
+    }
+    const parent = JSON.parse(parentBytes.toString("utf8"));
+    validateResult(parent, `${label}.remediation_parent`, result.remediation_parent_result_path);
+    if (parent.status !== "checks-failed" || parent.remediation_generation !== result.remediation_generation - 1) {
+      fail(`${label}.remediation parent is not the direct checks-failed predecessor`);
+    }
+    if (parent.run_nonce === result.run_nonce) fail(`${label}.remediation run_nonce must differ from its parent`);
+    for (const field of ["experiment_id", "arm_id", "model", "runner", "repository", "baseline_commit", "remediation_generation_budget"]) {
+      if (JSON.stringify(parent[field]) !== JSON.stringify(result[field])) fail(`${label}.remediation parent cross-wiring: ${field}`);
+    }
+    for (const field of ["visible_checks", "held_out_checks", "held_out_evaluator_self_tests"]) {
+      if (JSON.stringify(checkCommands(parent, field, `${label}.remediation_parent`, { allowEmpty: field === "held_out_evaluator_self_tests" })) !== JSON.stringify(checkCommands(result, field, label, { allowEmpty: field === "held_out_evaluator_self_tests" }))) {
+        fail(`${label}.remediation parent cross-wiring: ${field}`);
+      }
+    }
+    if (
+      result.start_status_sha256 !== parent.final_status_sha256 ||
+      result.start_working_state_sha256 !== parent.working_state_sha256
+    ) {
+      fail(`${label}.remediation start state is not bound to its terminal parent`);
+    }
+  }
   if (!result.execution_manifest || typeof result.execution_manifest !== "object" || Array.isArray(result.execution_manifest)) fail(`${label}.execution_manifest is required`);
   const manifestSha256 = `sha256:${crypto.createHash("sha256").update(Buffer.from(JSON.stringify(result.execution_manifest))).digest("hex")}`;
   if (manifestSha256 !== result.execution_manifest_sha256) fail(`${label}.execution_manifest hash mismatch`);
-  const expectedCommands = [...result.visible_checks, ...result.held_out_checks].map((row) => row.command);
+  const expectedCommands = [
+    ...result.visible_checks,
+    ...result.held_out_checks,
+    ...result.held_out_evaluator_self_tests,
+  ].map((row) => row.command);
   if (JSON.stringify(result.execution_manifest.checks?.map((row) => row.command)) !== JSON.stringify(expectedCommands)) fail(`${label}.execution_manifest command binding mismatch`);
   for (const [index, row] of (result.execution_manifest.checks ?? []).entries()) {
     requireString(row.executable_path, `${label}.execution_manifest.checks[${index}].executable_path`);
@@ -114,7 +187,7 @@ function validateResult(result, label, resultPath) {
   if (currentEnvironmentSha256 !== result.environment_sha256) fail(`${label}.execution environment identity drift`);
 
   if (result.model === "composer-2.5") {
-    if (result.producer_version !== "cursor-agent-producer-v1") fail(`${label}.producer_version must be cursor-agent-producer-v1`);
+    if (result.producer_version !== "cursor-agent-producer-v2") fail(`${label}.producer_version must be cursor-agent-producer-v2`);
     if (result.cursor_filesystem_policy !== "trusted-host-external-reads-allowed") fail(`${label}.cursor_filesystem_policy must explicitly allow trusted-host external reads`);
     if (result.filesystem_read_scope !== "host-readable") fail(`${label}.filesystem_read_scope must be host-readable for the trusted-host Composer route`);
     for (const field of ["result_receipt_path", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_path", "execution_claim_sha256"]) requireString(result[field], `${label}.${field}`);
@@ -131,9 +204,10 @@ function validateResult(result, label, resultPath) {
     };
     if (JSON.stringify(claim) !== JSON.stringify(expectedClaim)) fail(`${label}.Composer execution claim is cross-wired`);
     const receipt = JSON.parse(fs.readFileSync(path.resolve(result.result_receipt_path), "utf8"));
-    for (const field of ["producer_version", "experiment_id", "arm_id", "run_nonce", "runner_config_sha256", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_sha256"]) {
+    for (const field of ["producer_version", "experiment_id", "arm_id", "run_nonce", "runner_config_sha256", "agent_stdout_sha256", "agent_stderr_sha256", "execution_claim_sha256", "remediation_generation"]) {
       if (receipt[field] !== result[field]) fail(`${label}.Composer result receipt is cross-wired: ${field}`);
     }
+    if (receipt.remediation_parent_result_sha256 !== result.remediation_parent_result_sha256) fail(`${label}.Composer result receipt is cross-wired: remediation_parent_result_sha256`);
     const resultSha256 = `sha256:${crypto.createHash("sha256").update(fs.readFileSync(path.resolve(resultPath))).digest("hex")}`;
     if (receipt.result_sha256 !== resultSha256) fail(`${label}.Composer result receipt hash mismatch`);
   }
@@ -143,8 +217,8 @@ function validateResult(result, label, resultPath) {
     for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256", "launch_contract_sha256", "capability_probe_contract_sha256", "capability_probe_evidence_sha256", "transcript_sha256", "execution_claim_sha256", "finalization_claim_sha256"]) {
       if (!SHA256.test(result[field] ?? "")) fail(`${label}.${field} producer packet identity is required`);
     }
-    if (result.producer_version !== "native-codex-exec-producer-v4") fail(`${label}.producer_version must be native-codex-exec-producer-v4`);
-    if (result.finalizer_version !== "native-codex-exec-finalizer-v4") fail(`${label}.finalizer_version must be native-codex-exec-finalizer-v4`);
+    if (result.producer_version !== "native-codex-exec-producer-v5") fail(`${label}.producer_version must be native-codex-exec-producer-v5`);
+    if (result.finalizer_version !== "native-codex-exec-finalizer-v5") fail(`${label}.finalizer_version must be native-codex-exec-finalizer-v5`);
     requireString(result.native_run_id, `${label}.native_run_id`);
     requireString(result.native_session_id, `${label}.native_session_id`);
     if (result.native_run_id !== result.native_session_id) fail(`${label}.native run/session identity is cross-wired`);
@@ -152,7 +226,7 @@ function validateResult(result, label, resultPath) {
       fail(`${label}.native Codex execution controls are invalid`);
     }
     const packet = readBoundJson(result.native_invocation_packet_path, result.native_invocation_packet_sha256, `${label}.native invocation packet`);
-    if (packet.packet_type !== "native-codex-exec-invocation-v4") fail(`${label}.native invocation packet type is invalid`);
+    if (packet.packet_type !== "native-codex-exec-invocation-v5") fail(`${label}.native invocation packet type is invalid`);
     requireString(packet.repository, `${label}.native invocation packet repository`);
     const repository = fs.realpathSync(path.resolve(packet.repository));
     if (path.resolve(packet.result_path ?? "") !== path.resolve(resultPath)) fail(`${label}.native result path is not the prepared canonical result path`);
@@ -198,8 +272,11 @@ function validateResult(result, label, resultPath) {
         fail(`${label}.native invocation packet cross-wiring: ${field}`);
       }
     }
+    if (JSON.stringify(packet.held_out_evaluator_self_tests) !== JSON.stringify(result.held_out_evaluator_self_tests)) {
+      fail(`${label}.native invocation packet cross-wiring: held_out_evaluator_self_tests`);
+    }
     const attestation = readBoundJson(result.native_attestation_path, result.native_attestation_sha256, `${label}.native attestation`);
-    if (attestation.attestation_type !== "codex-exec-builder-attestation-v4") fail(`${label}.native attestation type is invalid`);
+    if (attestation.attestation_type !== "codex-exec-builder-attestation-v5") fail(`${label}.native attestation type is invalid`);
     if (attestation.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || attestation.run_id !== result.native_run_id || attestation.native_session_id !== result.native_session_id) {
       fail(`${label}.native attestation is cross-wired`);
     }
@@ -223,7 +300,7 @@ function validateResult(result, label, resultPath) {
     if (`sha256:${crypto.createHash("sha256").update(transcriptBytes).digest("hex")}` !== result.transcript_sha256) fail(`${label}.native transcript hash mismatch`);
     if (parseNativeCodexTranscript(transcriptBytes).sessionId !== result.native_session_id) fail(`${label}.native transcript session identity is cross-wired`);
     const completion = readBoundJson(result.completion_evidence_path, result.completion_evidence_sha256, `${label}.completion evidence`);
-    if (completion.evidence_type !== "codex-exec-completion-v4" || completion.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || completion.run_id !== result.native_run_id || completion.native_session_id !== result.native_session_id || completion.status !== "completed") {
+    if (completion.evidence_type !== "codex-exec-completion-v5" || completion.invocation_packet_sha256 !== result.native_invocation_packet_sha256 || completion.run_id !== result.native_run_id || completion.native_session_id !== result.native_session_id || completion.status !== "completed") {
       fail(`${label}.completion evidence is incomplete or cross-wired`);
     }
     for (const field of ["experiment_id", "arm_id", "model", "reasoning_effort"]) {
@@ -232,17 +309,18 @@ function validateResult(result, label, resultPath) {
     if (completion.controls_sha256 !== packet.controls_sha256) fail(`${label}.completion evidence cross-wiring: controls_sha256`);
     if (completion.worker_packet_sha256 !== packet.worker_packet_sha256 || completion.observed_prompt_sha256 !== packet.prompt_sha256) fail(`${label}.completion worker/prompt binding is invalid`);
     const workerPacket = readBoundJson(packet.worker_packet_path, packet.worker_packet_sha256, `${label}.native worker packet`);
-    if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v4" || "held_out_checks" in workerPacket || "evidence_directory" in workerPacket || "result_path" in workerPacket) {
+    if (workerPacket.packet_type !== "native-codex-exec-worker-invocation-v5" || "held_out_checks" in workerPacket || "held_out_evaluator_self_tests" in workerPacket || "evidence_directory" in workerPacket || "result_path" in workerPacket) {
       fail(`${label}.native worker packet exposes root-only fields`);
     }
     if (nativeCodexExecContract(fs.readFileSync(path.resolve(packet.worker_packet_path)), packet.worker_packet_sha256).sha256 !== result.launch_contract_sha256) {
       fail(`${label}.native launch contract is not reproducible`);
     }
     const receipt = JSON.parse(fs.readFileSync(path.resolve(result.native_finalize_receipt_path), "utf8"));
-    for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256", "capability_probe_evidence_sha256", "execution_claim_sha256", "finalization_claim_sha256"]) {
+    for (const field of ["native_invocation_packet_sha256", "native_attestation_sha256", "completion_evidence_sha256", "capability_probe_evidence_sha256", "execution_claim_sha256", "finalization_claim_sha256", "remediation_generation"]) {
       const receiptField = field === "native_invocation_packet_sha256" ? "invocation_packet_sha256" : field;
       if (receipt[receiptField] !== result[field]) fail(`${label}.native finalize receipt is cross-wired: ${receiptField}`);
     }
+    if (receipt.remediation_parent_result_sha256 !== result.remediation_parent_result_sha256) fail(`${label}.native finalize receipt is cross-wired: remediation_parent_result_sha256`);
     const resultBytes = fs.readFileSync(path.resolve(resultPath));
     const resultSha256 = `sha256:${crypto.createHash("sha256").update(resultBytes).digest("hex")}`;
     if (receipt.result_sha256 !== resultSha256) fail(`${label}.native finalize receipt result hash mismatch`);
@@ -269,16 +347,25 @@ export function validatePairedControls(leftPath, rightPath) {
   for (const field of CONTROL_FIELDS) {
     if (JSON.stringify(left[field]) !== JSON.stringify(right[field])) fail(`paired control drift: ${field}`);
   }
-  for (const field of ["visible_checks", "held_out_checks"]) {
-    if (JSON.stringify(checkCommands(left, field, "left")) !== JSON.stringify(checkCommands(right, field, "right"))) {
+  for (const field of ["visible_checks", "held_out_checks", "held_out_evaluator_self_tests"]) {
+    const options = field === "held_out_evaluator_self_tests" ? { allowEmpty: true } : undefined;
+    if (JSON.stringify(checkCommands(left, field, "left", options)) !== JSON.stringify(checkCommands(right, field, "right", options))) {
       fail(`paired control drift: ${field}`);
     }
   }
+  const comparable = left.status === "completed" && right.status === "completed";
   return {
-    comparable: true,
+    comparable,
+    disposition: comparable
+      ? left.remediation_generation === 0
+        ? "comparable-initial-candidates"
+        : "comparable-remediated-candidates"
+      : "terminal-arm-outcome-not-eligible-for-blinded-scoring",
+    arm_statuses: { left: left.status, right: right.status },
+    remediation_generation: left.remediation_generation,
     models: [...models].sort(),
     route_bindings: Object.fromEntries(RUNNERS_BY_MODEL),
-    controlled_fields: [...CONTROL_FIELDS, "visible_checks.command", "held_out_checks.command"],
+    controlled_fields: [...CONTROL_FIELDS, "visible_checks.command", "held_out_checks.command", "held_out_evaluator_self_tests.command"],
   };
 }
 

@@ -18,8 +18,8 @@ import {
 } from "./builder-execution-contract.mjs";
 import { nativeCodexCapabilityProbeContract, nativeCodexExecContract, parseNativeCodexTranscript } from "./native-codex-exec-contract.mjs";
 
-const PRODUCER_VERSION = "native-codex-exec-producer-v4";
-const FINALIZER_VERSION = "native-codex-exec-finalizer-v4";
+const PRODUCER_VERSION = "native-codex-exec-producer-v5";
+const FINALIZER_VERSION = "native-codex-exec-finalizer-v5";
 
 function sha256(value) {
   return `sha256:${crypto.createHash("sha256").update(value).digest("hex")}`;
@@ -49,8 +49,10 @@ function controlsSha256(packet) {
     check_timeout_ms: packet.check_timeout_ms,
     intervention_budget: packet.intervention_budget,
     remediation_generation_budget: packet.remediation_generation_budget,
+    remediation_generation: packet.remediation_generation,
     visible_checks: packet.visible_checks,
     held_out_checks: packet.held_out_checks,
+    held_out_evaluator_self_tests: packet.held_out_evaluator_self_tests.map((row) => row.command),
     execution_manifest_sha256: packet.execution_manifest_sha256,
     environment_sha256: packet.environment_sha256,
   })));
@@ -150,7 +152,7 @@ export async function runNativeBuilderExecution(
   const packetBytes = fs.readFileSync(packetPath);
   if (sha256(packetBytes) !== approvedInvocationPacketSha256) fail("invocation packet hash mismatch");
   const packet = JSON.parse(packetBytes.toString("utf8"));
-  if (packet.packet_type !== "native-codex-exec-invocation-v4") fail("invocation packet type is invalid");
+  if (packet.packet_type !== "native-codex-exec-invocation-v5") fail("invocation packet type is invalid");
   if (packet.producer_version !== PRODUCER_VERSION || packet.finalizer_version !== FINALIZER_VERSION) fail("native Codex exec producer/finalizer version mismatch");
   if (packetPath !== path.resolve(packet.invocation_packet_path ?? "")) fail("invocation packet path does not match its prepared identity");
 
@@ -207,7 +209,8 @@ export async function runNativeBuilderExecution(
     startState.index_tree !== packet.start_index_tree ||
     startState.ref !== packet.start_ref ||
     startState.ref_target !== packet.start_ref_target ||
-    startState.status_sha256 !== packet.start_status_sha256
+    startState.status_sha256 !== packet.start_status_sha256 ||
+    startState.working_state_sha256 !== packet.start_working_state_sha256
   ) fail("native Codex repository state changed after prepare");
 
   const visibleExecutablePath = packet.execution_manifest?.checks?.[0]?.executable_path;
@@ -317,7 +320,7 @@ export async function runNativeBuilderExecution(
 
   const completion = {
     schema_version: 1,
-    evidence_type: "codex-exec-completion-v4",
+    evidence_type: "codex-exec-completion-v5",
     invocation_packet_sha256: approvedInvocationPacketSha256,
     invocation_id: packet.invocation_id,
     experiment_id: packet.experiment_id,
@@ -339,7 +342,7 @@ export async function runNativeBuilderExecution(
 
   const attestation = {
     schema_version: 1,
-    attestation_type: "codex-exec-builder-attestation-v4",
+    attestation_type: "codex-exec-builder-attestation-v5",
     producer_version: PRODUCER_VERSION,
     finalizer_version: FINALIZER_VERSION,
     invocation_packet_sha256: approvedInvocationPacketSha256,

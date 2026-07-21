@@ -193,6 +193,8 @@ export function runGuardedChecks({
       command,
       status: result.status,
       signal: result.signal,
+      timed_out: result.error?.code === "ETIMEDOUT",
+      skipped: false,
       stdout_path: stdoutPath,
       stderr_path: stderrPath,
       stdout_sha256: sha256(result.stdout ?? ""),

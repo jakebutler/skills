@@ -170,7 +170,7 @@ assert.equal(successfulExecutions.length, 1, "exactly one concurrent native star
 assert.equal(fs.readFileSync(nativeLaunchCountPath, "utf8"), "launch\n", "a losing concurrent native start must fail before model launch");
 const execution = successfulExecutions[0].value;
 const attestation = JSON.parse(fs.readFileSync(execution.attestation_path, "utf8"));
-assert.equal(attestation.attestation_type, "codex-exec-builder-attestation-v4");
+assert.equal(attestation.attestation_type, "codex-exec-builder-attestation-v5");
 assert.equal(attestation.execution_surface, "codex-exec");
 assert.equal(attestation.native_session_id, "fixture-thread-001");
 assert.equal(attestation.multi_agent_enabled, false);
@@ -202,7 +202,7 @@ const result = await finalizeNativeBuilderArm(
   execution.attestation_sha256,
 );
 assert.equal(result.status, "completed");
-assert.equal(result.runner, "codex-exec-builder-v4");
+assert.equal(result.runner, "codex-exec-builder-v5");
 assert.equal(result.native_session_id, "fixture-thread-001");
 assert.equal(result.multi_agent_enabled, false);
 assert.equal(fs.existsSync(result.execution_claim_path), true);
