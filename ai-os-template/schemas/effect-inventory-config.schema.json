@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/effect-inventory-config.schema.json",
+  "title": "TypeScript and Convex Effect Inventory Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "adapter", "include_paths", "exclude_path_fragments"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "adapter": { "const": "typescript-convex-static" },
+    "include_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "exclude_path_fragments": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

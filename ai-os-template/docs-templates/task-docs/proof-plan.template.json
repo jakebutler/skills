@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "entries": [
+    {
+      "surface_id": "{{SURFACE_ID}}",
+      "reachable_because": "{{REACHABILITY_EVIDENCE}}",
+      "requirement_ids": ["REQ-001"],
+      "invariant_ids": ["{{INVARIANT_ID}}"],
+      "enforcement_point": "{{ONE_ENFORCEMENT_POINT}}",
+      "negative_evidence": "{{NEGATIVE_TEST_OR_CHECK}}",
+      "integration_evidence": "{{INTEGRATION_TEST_OR_CHECK}}",
+      "disposition": "covered"
+    }
+  ],
+  "requirement_trace": [
+    {
+      "requirement_id": "REQ-001",
+      "enforcement_points": ["{{ONE_ENFORCEMENT_POINT}}"],
+      "verification_evidence": ["{{VERIFICATION_EVIDENCE}}"],
+      "status": "covered"
+    }
+  ],
+  "orphan_requirements": [],
+  "orphan_effects": []
+}

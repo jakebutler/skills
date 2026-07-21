@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "finding_id": "FINDING-NOVEL-001",
+  "classification": "novel_reproduced",
+  "statement": "A success audit record must not be created when its authoritative write is denied.",
+  "surface_ids": ["SURF-001"],
+  "surface_kinds": ["database_update"],
+  "tags": ["audit", "denial_without_effects"],
+  "required_evidence": ["denial test", "zero-success-audit assertion"],
+  "finding_snapshot": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "fix_snapshot": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "reproduction": {
+    "command": "pnpm test -- sensitive-write.test.ts",
+    "result": "failed before fix and passed after fix",
+    "counterexample_test": "sensitive-write.test.ts denies without success audit"
+  },
+  "existing_invariant_ids": [],
+  "observed_at": "2026-07-19T12:00:00.000Z"
+}

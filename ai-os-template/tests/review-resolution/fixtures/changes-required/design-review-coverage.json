@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-review-conflict",
+  "design_candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "requirements_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "reviews": [
+    {
+      "review_id": "REVIEW-ARCH-001",
+      "review_run_id": "RUN-ARCH-001",
+      "lens": "architecture",
+      "model_route": "fable",
+      "transcript_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "authority": "blocking",
+      "snapshot_reproduced": true,
+      "start_snapshot_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "end_snapshot_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "verdicts": [
+        {
+          "requirement_id": "REQ-001",
+          "status": "violated",
+          "evidence": "The cache is not operation-bound.",
+          "finding_ids": ["FINDING-ARCH-001"]
+        }
+      ],
+      "findings": [
+        {
+          "id": "FINDING-ARCH-001",
+          "severity": "p1",
+          "root_cause_class": "authorization_cache_scope",
+          "requirement_ids": ["REQ-001"],
+          "surface_ids": ["SURF-001"],
+          "invariant_ids": ["INV-AUTH-001"],
+          "directive": "Bind cached authorization to the exact operation.",
+          "evidence": "The cache key omits the operation identity."
+        }
+      ]
+    },
+    {
+      "review_id": "REVIEW-SEC-001",
+      "review_run_id": "RUN-SEC-001",
+      "lens": "security",
+      "model_route": "opus-4.8",
+      "transcript_sha256": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "authority": "blocking",
+      "snapshot_reproduced": true,
+      "start_snapshot_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "end_snapshot_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "verdicts": [
+        {
+          "requirement_id": "REQ-001",
+          "status": "violated",
+          "evidence": "An allow result can cross operation boundaries.",
+          "finding_ids": ["FINDING-SEC-001"]
+        }
+      ],
+      "findings": [
+        {
+          "id": "FINDING-SEC-001",
+          "severity": "p1",
+          "root_cause_class": "authorization_cache_scope",
+          "requirement_ids": ["REQ-001"],
+          "surface_ids": ["SURF-001"],
+          "invariant_ids": ["INV-AUTH-001"],
+          "directive": "Do not reuse allow-capable authorization across operations.",
+          "evidence": "A coherent foreign operation can reuse the cached allow."
+        }
+      ]
+    }
+  ]
+}

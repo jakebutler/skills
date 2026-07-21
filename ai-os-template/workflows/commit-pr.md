@@ -19,8 +19,12 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 3. Orchestrator: push the branch to `{{REMOTE_NAME}}` with `{{PUSH_COMMAND}}`.
 4. Orchestrator: draft the PR body in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md` with the required sections: Summary, Why, Changes, Verification, Risks & Rollback, Follow-up.
 5. Orchestrator: create the PR using `{{PR_CREATE_COMMAND}}` and capture the PR URL and commit hash or hashes in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr.md`.
-6. `reviewer`: run a PR review agent on the pushed diff; findings must be first, cite file:line, and prioritize bugs, regressions, missing tests, security risks, and broken contracts. Write the findings to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-review.md`.
-7. Orchestrator: disposition reviewer findings as fix-now, accepted-risk, follow-up, or rejected with reason, and write each disposition beside its finding in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-review.md`.
+6. Orchestrator: run `review-pr` against the pushed frozen diff. Applicable lenses run
+   concurrently and `review-resolver` produces the sole actionable feedback packet.
+   Write source coverage and consolidated findings to
+   `{{TASK_DOCS_DIR}}/{{TASK_ID}}/pr-review.md`.
+7. Orchestrator: disposition consolidated findings as fix-now, accepted-risk,
+   follow-up, or rejected with reason, and write each disposition beside its finding.
 8. `implementer`: address fix-now findings with scoped edits, then run focused verification.
 9. Orchestrator: run `commit` again for review fixes if any files changed.
 10. Orchestrator: push updates and update the PR body using `{{PR_UPDATE_COMMAND}}` when Changes, Verification, Risks & Rollback, or Follow-up changed.

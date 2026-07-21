@@ -1,0 +1,509 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/builder-arm-result.schema.json",
+  "title": "Paired Builder Arm Result",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "arm_id",
+    "run_nonce",
+    "model",
+    "runner",
+    "runner_config_sha256",
+    "agent_version",
+    "baseline_commit",
+    "baseline_tree",
+    "prompt_sha256",
+    "allowed_paths",
+    "allowed_ignored_paths",
+    "ignored_baseline_sha256",
+    "timeout_ms",
+    "check_timeout_ms",
+    "intervention_budget",
+    "remediation_generation_budget",
+    "remediation_generation",
+    "status",
+    "visible_checks",
+    "held_out_checks",
+    "held_out_evaluator_self_tests",
+    "environment_names",
+    "environment_sha256",
+    "execution_manifest",
+    "execution_manifest_sha256",
+    "repository",
+    "git_common_dir",
+    "git_dir",
+    "result_path",
+    "start_status_sha256",
+    "start_working_state_sha256",
+    "final_status_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "experiment_id": {
+      "$ref": "#/$defs/string"
+    },
+    "arm_id": {
+      "$ref": "#/$defs/string"
+    },
+    "run_nonce": {
+      "$ref": "#/$defs/string"
+    },
+    "model": {
+      "enum": [
+        "composer-2.5",
+        "gpt-5.6-sol"
+      ]
+    },
+    "reasoning_effort": {
+      "const": "high"
+    },
+    "runner": {
+      "enum": [
+        "cursor-agent-paired-builder-v2",
+        "codex-exec-builder-v5"
+      ]
+    },
+    "runner_config_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "repository": {
+      "$ref": "#/$defs/string"
+    },
+    "git_common_dir": {
+      "$ref": "#/$defs/string"
+    },
+    "git_dir": {
+      "$ref": "#/$defs/string"
+    },
+    "result_path": {
+      "$ref": "#/$defs/string"
+    },
+    "agent_version": {
+      "$ref": "#/$defs/string"
+    },
+    "cursor_filesystem_policy": {
+      "const": "trusted-host-external-reads-allowed"
+    },
+    "baseline_commit": {
+      "$ref": "#/$defs/objectId"
+    },
+    "baseline_tree": {
+      "$ref": "#/$defs/objectId"
+    },
+    "prompt_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "allowed_paths": {
+      "$ref": "#/$defs/strings"
+    },
+    "allowed_ignored_paths": {
+      "$ref": "#/$defs/strings"
+    },
+    "ignored_baseline_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 1000
+    },
+    "check_timeout_ms": {
+      "type": "integer",
+      "minimum": 1000
+    },
+    "intervention_budget": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_generation_budget": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remediation_parent_result_path": {
+      "$ref": "#/$defs/string"
+    },
+    "remediation_parent_result_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "checks-failed",
+        "agent-failed",
+        "invalid-head-moved",
+        "invalid-index-mutated",
+        "invalid-ref-moved",
+        "invalid-ignored-state",
+        "invalid-out-of-scope"
+      ]
+    },
+    "visible_checks": {
+      "$ref": "#/$defs/checks"
+    },
+    "held_out_checks": {
+      "$ref": "#/$defs/checks"
+    },
+    "held_out_evaluator_self_tests": {
+      "$ref": "#/$defs/checks"
+    },
+    "environment_names": {
+      "$ref": "#/$defs/strings"
+    },
+    "environment_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "execution_manifest": {
+      "type": "object"
+    },
+    "execution_manifest_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "start_status_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "start_working_state_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "final_status_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "producer_version": {
+      "enum": [
+        "cursor-agent-producer-v2",
+        "native-codex-exec-producer-v5"
+      ]
+    },
+    "finalizer_version": {
+      "const": "native-codex-exec-finalizer-v5"
+    },
+    "native_invocation_packet_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "native_invocation_packet_path": {
+      "$ref": "#/$defs/string"
+    },
+    "native_attestation_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "native_attestation_path": {
+      "$ref": "#/$defs/string"
+    },
+    "completion_evidence_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "completion_evidence_path": {
+      "$ref": "#/$defs/string"
+    },
+    "native_finalize_receipt_path": {
+      "$ref": "#/$defs/string"
+    },
+    "native_run_id": {
+      "$ref": "#/$defs/string"
+    },
+    "native_session_id": {
+      "$ref": "#/$defs/string"
+    },
+    "launch_contract_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "codex_executable_path": {
+      "$ref": "#/$defs/string"
+    },
+    "codex_executable_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "capability_probe_contract_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "capability_probe_evidence_path": {
+      "$ref": "#/$defs/string"
+    },
+    "capability_probe_evidence_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "worker_packet_delivery": {
+      "const": "stdin-bytes"
+    },
+    "multi_agent_enabled": {
+      "const": false
+    },
+    "network_access": {
+      "const": false
+    },
+    "writable_tmp": {
+      "const": true
+    },
+    "sandbox_mode": {
+      "const": "permission-profile"
+    },
+    "permission_profile": {
+      "const": "native-proof-builder"
+    },
+    "filesystem_read_scope": {
+      "const": "minimal+workspace+approved-toolchain"
+    },
+    "transcript_path": {
+      "$ref": "#/$defs/string"
+    },
+    "transcript_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "worker_packet_path": {
+      "$ref": "#/$defs/string"
+    },
+    "worker_packet_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "result_receipt_path": {
+      "$ref": "#/$defs/string"
+    },
+    "agent_stdout_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "agent_stderr_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "execution_claim_path": {
+      "$ref": "#/$defs/string"
+    },
+    "execution_claim_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "finalization_claim_path": {
+      "$ref": "#/$defs/string"
+    },
+    "finalization_claim_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "model": {
+            "const": "composer-2.5"
+          }
+        },
+        "required": [
+          "model"
+        ]
+      },
+      "then": {
+        "required": [
+          "producer_version",
+          "cursor_filesystem_policy",
+          "filesystem_read_scope",
+          "result_receipt_path",
+          "agent_stdout_sha256",
+          "agent_stderr_sha256",
+          "execution_claim_path",
+          "execution_claim_sha256"
+        ],
+        "properties": {
+          "runner": {
+            "const": "cursor-agent-paired-builder-v2"
+          },
+          "producer_version": {
+            "const": "cursor-agent-producer-v2"
+          },
+          "filesystem_read_scope": {
+            "const": "host-readable"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "model": {
+            "const": "gpt-5.6-sol"
+          }
+        },
+        "required": [
+          "model"
+        ]
+      },
+      "then": {
+        "required": [
+          "reasoning_effort",
+          "producer_version",
+          "finalizer_version",
+          "native_invocation_packet_sha256",
+          "native_invocation_packet_path",
+          "native_attestation_sha256",
+          "native_attestation_path",
+          "completion_evidence_sha256",
+          "completion_evidence_path",
+          "native_finalize_receipt_path",
+          "native_run_id",
+          "native_session_id",
+          "execution_claim_path",
+          "execution_claim_sha256",
+          "finalization_claim_path",
+          "finalization_claim_sha256",
+          "worker_packet_path",
+          "worker_packet_sha256",
+          "launch_contract_sha256",
+          "codex_executable_path",
+          "codex_executable_sha256",
+          "capability_probe_contract_sha256",
+          "capability_probe_evidence_path",
+          "capability_probe_evidence_sha256",
+          "worker_packet_delivery",
+          "multi_agent_enabled",
+          "network_access",
+          "writable_tmp",
+          "sandbox_mode",
+          "permission_profile",
+          "filesystem_read_scope",
+          "transcript_path",
+          "transcript_sha256"
+        ],
+        "properties": {
+          "runner": {
+            "const": "codex-exec-builder-v5"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objectId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "command",
+          "status",
+          "signal",
+          "timed_out",
+          "skipped"
+        ],
+        "properties": {
+          "command": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "status": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "signal": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timed_out": {
+            "type": "boolean"
+          },
+          "skipped": {
+            "type": "boolean"
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "status": {
+                "type": "integer"
+              },
+              "signal": {
+                "type": "null"
+              },
+              "timed_out": {
+                "const": false
+              },
+              "skipped": {
+                "const": false
+              }
+            }
+          },
+          {
+            "properties": {
+              "status": {
+                "type": "null"
+              },
+              "signal": {
+                "type": "string",
+                "minLength": 1
+              },
+              "timed_out": {
+                "const": false
+              },
+              "skipped": {
+                "const": false
+              }
+            }
+          },
+          {
+            "properties": {
+              "status": {
+                "type": "null"
+              },
+              "signal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "timed_out": {
+                "const": true
+              },
+              "skipped": {
+                "const": false
+              }
+            }
+          },
+          {
+            "properties": {
+              "status": {
+                "type": "null"
+              },
+              "signal": {
+                "type": "null"
+              },
+              "timed_out": {
+                "const": false
+              },
+              "skipped": {
+                "const": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

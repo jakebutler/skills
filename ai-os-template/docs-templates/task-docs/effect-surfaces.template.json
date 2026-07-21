@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "generator": {
+    "id": "{{INVENTORY_GENERATOR_ID}}",
+    "version": "{{INVENTORY_GENERATOR_VERSION}}",
+    "source_tree_hash": "{{SOURCE_TREE_HASH}}"
+  },
+  "surfaces": [
+    {
+      "id": "SURF-001",
+      "kind": "{{SURFACE_KIND}}",
+      "risk": "high",
+      "file": "{{REPO_RELATIVE_FILE}}",
+      "symbol": "{{SYMBOL}}",
+      "line": 1,
+      "boundary": "{{TRANSACTION_OR_ACTION_BOUNDARY}}",
+      "entities": ["{{TABLE_ENTITY_SERVICE_OR_API}}"],
+      "tags": ["{{AUTH_TENANT_LIFECYCLE_OR_EFFECT_TAG}}"],
+      "callers": ["{{REACHABLE_ENTRY_POINT}}"],
+      "observed_guards": ["{{GUARD_OR_TOKEN_ARGUMENT}}"],
+      "confidence": "exact"
+    }
+  ],
+  "unresolved": []
+}

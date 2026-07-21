@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/invariant-candidate-event.schema.json",
+  "title": "Invariant Candidate Inbox Event",
+  "type": "object",
+  "required": ["schema_version", "event", "candidate_id", "status", "fingerprint", "origin_fingerprint", "origin"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "event": { "enum": ["candidate_created", "candidate_evidence_added"] },
+    "candidate_id": { "$ref": "common.schema.json#/$defs/stableId" },
+    "status": { "const": "candidate" },
+    "fingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+    "statement": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "surface_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "surface_kinds": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "tags": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "required_evidence": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "existing_invariant_ids": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/stableId" } },
+    "origin_fingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "finding_id", "finding_snapshot", "fix_snapshot", "reproduction", "observed_at"],
+      "properties": {
+        "task_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "finding_id": { "$ref": "common.schema.json#/$defs/stableId" },
+        "finding_snapshot": { "$ref": "common.schema.json#/$defs/sha256" },
+        "fix_snapshot": { "$ref": "common.schema.json#/$defs/sha256" },
+        "reproduction": { "type": "object" },
+        "observed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "event": { "const": "candidate_created" } } },
+      "then": { "required": ["statement", "surface_ids", "surface_kinds", "tags", "required_evidence", "existing_invariant_ids"] }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@corvo/ai-os-template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:proof-harness-index": "node scripts/build-proof-harness-invariant-index.mjs",
+    "extract:proof-harness-invariant": "node scripts/extract-proof-harness-invariant.mjs",
+    "hash:proof-harness": "node scripts/hash-proof-harness-packet.mjs",
+    "hash:proof-harness-builder": "node scripts/hash-proof-harness-builder-packet.mjs",
+    "inventory:typescript-convex": "node scripts/inventory-typescript-convex.mjs",
+    "promote:proof-harness-invariant": "node scripts/promote-proof-harness-invariant.mjs",
+    "render:proof-harness": "node scripts/render-proof-harness.mjs",
+    "select:proof-harness-invariants": "node scripts/select-proof-harness-invariants.mjs",
+    "test:proof-harness": "node tests/proof-harness/run.mjs && node tests/typescript-convex-inventory/run.mjs && node tests/source-binding/run.mjs && node tests/review-resolution/run.mjs && node tests/registry-lifecycle/run.mjs && node tests/rendered-freshness/run.mjs && node tests/baseline-intake/run.mjs && node tests/builder-arm/run.mjs && node tests/native-codex-exec-contract/run.mjs && node tests/native-builder-exec/run.mjs && node tests/native-builder-arm/run.mjs && node tests/paired-controls/run.mjs",
+    "prepare:native-builder-arm": "node scripts/prepare-native-builder-arm.mjs",
+    "run:native-builder-execution": "node scripts/run-native-builder-execution.mjs",
+    "finalize:native-builder-arm": "node scripts/finalize-native-builder-arm.mjs",
+    "validate:paired-builder-controls": "node scripts/validate-paired-builder-controls.mjs",
+    "run:builder-arm": "node scripts/run-builder-arm.mjs",
+    "verify:baseline-intake": "node scripts/verify-git-baseline-intake.mjs",
+    "validate:proof-harness": "node scripts/validate-proof-harness.mjs",
+    "validate:review-resolution": "node scripts/validate-review-resolution.mjs"
+  }
+}

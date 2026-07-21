@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/invariant-selection.schema.json",
+  "title": "Task Invariant Selection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "registry_hash", "selection_algorithm", "query_features", "selected", "excluded", "unresolved_coverage"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "registry_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "selection_algorithm": { "const": "metadata-exact-v1" },
+    "query_features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface_ids", "kinds", "entities", "tags"],
+      "properties": {
+        "surface_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+        "kinds": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+        "entities": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+        "tags": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" }
+      }
+    },
+    "selected": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "statement", "reason", "surface_ids", "required_evidence", "dependencies"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/stableId" },
+          "status": { "enum": ["advisory", "active-blocking"] },
+          "statement": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "reason": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "surface_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+          "required_evidence": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+          "dependencies": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/stableId" } }
+        }
+      }
+    },
+    "excluded": { "type": "array", "items": { "type": "object" } },
+    "unresolved_coverage": { "type": "array", "items": { "type": "object" } }
+  }
+}

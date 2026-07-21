@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/design-review-resolution.schema.json",
+  "title": "Proof Harness Design Review Resolution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "design_candidate_hash", "source_review_ids", "source_finding_dispositions", "resolved_changes", "conflicts", "blocking_findings", "status"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "type": "string", "minLength": 1 },
+    "design_candidate_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "source_review_ids": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "source_finding_dispositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "disposition", "rationale"],
+        "properties": {
+          "finding_id": { "$ref": "common.schema.json#/$defs/stableId" },
+          "disposition": { "enum": ["accepted", "duplicate", "rejected", "deferred"] },
+          "resolution_id": { "$ref": "common.schema.json#/$defs/stableId" },
+          "rationale": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "owner": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "resolved_changes": { "type": "array" },
+    "conflicts": { "type": "array" },
+    "blocking_findings": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/stableId" } },
+    "status": { "enum": ["approved", "changes_required", "blocked"] },
+    "approved_builder_packet_hash": { "$ref": "common.schema.json#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "approved" } } },
+      "then": { "required": ["approved_builder_packet_hash"] },
+      "else": { "not": { "required": ["approved_builder_packet_hash"] } }
+    }
+  ]
+}

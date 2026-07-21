@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "generator": {
+    "id": "fixture-inventory",
+    "version": "1.0.0",
+    "source_tree_hash": "2222222222222222222222222222222222222222"
+  },
+  "surfaces": [
+    {
+      "id": "SURF-001",
+      "kind": "database_update",
+      "risk": "high",
+      "file": "convex/sensitiveWrite.ts",
+      "symbol": "writeSensitiveState",
+      "line": 42,
+      "boundary": "write transaction entry",
+      "entities": ["sensitiveState"],
+      "tags": ["attempt", "authorization", "durable_write"],
+      "callers": ["publicSensitiveMutation"],
+      "observed_guards": ["attemptPublicId"],
+      "confidence": "exact"
+    }
+  ],
+  "unresolved": []
+}

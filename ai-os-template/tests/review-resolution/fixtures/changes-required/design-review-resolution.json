@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-review-conflict",
+  "design_candidate_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_review_ids": ["REVIEW-ARCH-001", "REVIEW-SEC-001"],
+  "source_finding_dispositions": [
+    {
+      "finding_id": "FINDING-ARCH-001",
+      "disposition": "accepted",
+      "resolution_id": "RESOLUTION-001",
+      "rationale": "The architecture finding identifies the shared root cause."
+    },
+    {
+      "finding_id": "FINDING-SEC-001",
+      "disposition": "duplicate",
+      "resolution_id": "RESOLUTION-001",
+      "rationale": "The security finding independently proves the same required boundary."
+    }
+  ],
+  "resolved_changes": [
+    {
+      "id": "RESOLUTION-001",
+      "requirement_ids": ["REQ-001"],
+      "surface_ids": ["SURF-001"],
+      "invariant_ids": ["INV-AUTH-001"],
+      "directive": "Bind any authorization cache entry to the exact operation identity.",
+      "required_evidence": ["foreign-operation cache denial test"]
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CONFLICT-001",
+      "finding_ids": ["FINDING-ARCH-001", "FINDING-SEC-001"],
+      "status": "resolved",
+      "resolution_id": "RESOLUTION-001",
+      "rationale": "Both valid directives are satisfied by exact operation binding."
+    }
+  ],
+  "blocking_findings": [],
+  "status": "changes_required"
+}

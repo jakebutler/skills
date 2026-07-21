@@ -62,7 +62,7 @@ The core operating loop and where each element lives:
 | Solutions knowledge base | `{{DOCS_DIR}}/solutions/` — searchable solved-problem docs with YAML frontmatter | Tier B (autoskill-improver solutions route) |
 | Checkpoint | `PROJECT-STATUS.md` — overwritten handoff state, never a ledger | Tier A: fully automatic |
 | Ledger | `CHANGELOG.md` — checkpoint/user-facing entries; git history is the commit ledger | Tier A (draft section) |
-| Task memory | `dev/active/[task]/` — plan, context, tasks; archived on completion | Task-scoped, disposable |
+| Task memory | `{{TASK_DOCS_DIR}}/[task]/` — project-bound plan, context, tasks; archived on completion | Task-scoped, disposable |
 | Tool cache | `.ai/tools.md` — MCP/command/skill inventory with refresh timestamp | Tier A |
 | Optional module | `FEATURE-LIST.json` — greenfield/acceptance-driven builds only; off by default | opt-in |
 
@@ -84,8 +84,8 @@ options considered and rationale for the selection → batched user review → d
 
 Research and prototype are subroutines of `/spec` **and** standalone commands.
 
-Standard workflows (specs in `workflows/`): spec, implement-tdd, debug, commit,
-commit-pr, review-pr, wrap-session, init, **experiment**. Research and prototype
+Standard workflows (specs in `workflows/`): spec, **design-proof**, implement-tdd,
+debug, commit, commit-pr, review-pr, wrap-session, init, **experiment**. Research and prototype
 additionally have standalone specs (`research.md`, `prototype.md`) since they are
 callable outside spec. Each spec defines trigger, steps, output contract, verification
 requirements, and failure handling.
@@ -180,7 +180,7 @@ ai-os-template/
   root/                   — AGENTS.md and CLAUDE.md templates
   docs-templates/         — SPEC, PROJECT-STATUS, CHANGELOG, feature doc, task docs,
                             optional FEATURE-LIST.json
-  workflows/              — the workflow specs (9 core + standalone research and prototype = 11 files)
+  workflows/              — workflow specs (10 core + research, prototype, and invariant extraction = 13 files)
   commands/               — slash command specs with output contracts
   hooks/                  — hook specs + example settings snippets
   agents/                 — subagent role definitions
@@ -212,7 +212,7 @@ ai-os-template/
 | # | Decision |
 |---|---|
 | 1 | `AGENTS.md` canonical + `CLAUDE.md` thin adapter; layered, not mirrored, no generation step |
-| 2 | Global docs + `dev/active/` task docs; promote decisions upward, archive task docs on completion |
+| 2 | Global docs + project-bound `{{TASK_DOCS_DIR}}/` task docs; promote decisions upward, archive task docs on completion |
 | 3 | `FEATURE-LIST.json` optional module, off by default; not used in FreshProof/Lower dB v1 |
 | 4 | Tiered doc write authority (A/B/C) with anti-churn guardrails |
 | 5 | Blocking hooks only for hard safety/correctness failures; advisory/delegating otherwise |

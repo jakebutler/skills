@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "experiment_id": "freshproof-tracer7-paired-builder",
+  "arm_id": "{{PRIVATE_ARM_ID}}",
+  "run_nonce": "{{SEPARATELY_APPROVED_UNIQUE_RUN_NONCE}}",
+  "model": "composer-2.5",
+  "cursor_filesystem_policy": "trusted-host-external-reads-allowed",
+  "repository": "{{ISOLATED_ARM_WORKTREE}}",
+  "baseline_commit": "{{D0_COMMIT}}",
+  "prompt_path": "{{BYTE_IDENTICAL_BUILDER_PROMPT_PATH}}",
+  "allowed_paths": [
+    "{{ALLOWED_PRODUCT_PATH}}"
+  ],
+  "allowed_ignored_paths": [],
+  "output_directory": "{{EXPERIMENT_EVIDENCE_DIRECTORY_OUTSIDE_ARM_WORKTREES}}",
+  "timeout_ms": 3600000,
+  "check_timeout_ms": 600000,
+  "intervention_budget": 0,
+  "remediation_generation_budget": 1,
+  "visible_checks": [
+    [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "{{VISIBLE_TEST_PATH}}"
+    ]
+  ],
+  "held_out_checks": [
+    [
+      "{{EXTERNAL_HELD_OUT_RUNNER}}"
+    ]
+  ],
+  "held_out_evaluator_self_tests": [
+    [
+      "{{EXTERNAL_HELD_OUT_RUNNER}}",
+      "--proof-harness-self-test"
+    ]
+  ]
+}

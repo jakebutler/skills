@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/novel-finding.schema.json",
+  "title": "Reproduced Novel Finding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "finding_id", "classification", "statement", "surface_ids", "surface_kinds", "tags", "required_evidence", "finding_snapshot", "fix_snapshot", "reproduction", "existing_invariant_ids", "observed_at"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "finding_id": { "$ref": "common.schema.json#/$defs/stableId" },
+    "classification": { "const": "novel_reproduced" },
+    "statement": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "surface_ids": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "surface_kinds": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "tags": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "required_evidence": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+    "finding_snapshot": { "$ref": "common.schema.json#/$defs/sha256" },
+    "fix_snapshot": { "$ref": "common.schema.json#/$defs/sha256" },
+    "reproduction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "result", "counterexample_test"],
+      "properties": {
+        "command": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "result": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "counterexample_test": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    },
+    "existing_invariant_ids": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/stableId" } },
+    "observed_at": { "type": "string", "format": "date-time" }
+  }
+}

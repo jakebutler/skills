@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "adapter": "typescript-convex-static",
+  "include_paths": [
+    "convex",
+    "src"
+  ],
+  "exclude_path_fragments": [
+    "/node_modules/",
+    "/.next/",
+    "/dist/",
+    "/generated/"
+  ]
+}

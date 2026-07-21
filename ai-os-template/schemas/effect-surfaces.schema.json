@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/effect-surfaces.schema.json",
+  "title": "Task Effect Surface Inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "generator", "surfaces", "unresolved"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "source_tree_hash"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "source_tree_hash": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    },
+    "surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "risk", "file", "symbol", "line", "boundary", "entities", "tags", "callers", "observed_guards", "confidence"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/stableId" },
+          "kind": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "risk": { "enum": ["low", "medium", "high"] },
+          "file": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "symbol": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "line": { "type": "integer", "minimum": 1 },
+          "boundary": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+          "entities": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+          "tags": { "$ref": "common.schema.json#/$defs/nonEmptyStringArray" },
+          "callers": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" } },
+          "observed_guards": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" } },
+          "confidence": { "enum": ["exact", "heuristic", "unresolved"] }
+        }
+      }
+    },
+    "unresolved": { "type": "array", "items": { "type": "object" } }
+  }
+}

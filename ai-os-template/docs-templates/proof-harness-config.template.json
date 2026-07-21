@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_artifact_root": "{{TASK_DOCS_DIR}}",
+  "proof_harness_workflow": "{{PROOF_HARNESS_WORKFLOW}}",
+  "schema_root": "{{PROOF_HARNESS_SCHEMA_ROOT}}",
+  "invariant_registry": "{{INVARIANT_REGISTRY}}",
+  "generated_inventory": "{{GENERATED_EFFECT_INVENTORY}}",
+  "inventory_config": "{{EFFECT_INVENTORY_CONFIG}}",
+  "package_manager_source": "{{PACKAGE_MANAGER_SOURCE}}",
+  "commands": {
+    "generate_inventory": "{{GENERATE_EFFECT_INVENTORY_COMMAND}}",
+    "build_invariant_index": "{{BUILD_INVARIANT_INDEX_COMMAND}}",
+    "select_invariants": "{{SELECT_INVARIANTS_COMMAND}}",
+    "hash_design": "{{HASH_DESIGN_COMMAND}}",
+    "hash_builder_packet": "{{HASH_BUILDER_PACKET_COMMAND}}",
+    "extract_invariant": "{{EXTRACT_INVARIANT_COMMAND}}",
+    "promote_advisory": "{{PROMOTE_ADVISORY_INVARIANT_COMMAND}}",
+    "validate_design": "{{VALIDATE_DESIGN_COMMAND}}",
+    "validate_resolution": "{{VALIDATE_REVIEW_RESOLUTION_COMMAND}}",
+    "render_views": "{{RENDER_PROOF_HARNESS_VIEWS_COMMAND}}",
+    "check_views": "{{CHECK_PROOF_HARNESS_VIEWS_COMMAND}}"
+  },
+  "review_roles": {
+    "architecture": "{{ARCHITECTURE_REVIEW_ROLE}}",
+    "security": "{{SECURITY_REVIEW_ROLE}}",
+    "resolver": "{{REVIEW_RESOLVER_ROLE}}"
+  }
+}

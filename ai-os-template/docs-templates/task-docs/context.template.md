@@ -1,8 +1,8 @@
 <!--
-  TEMPLATE: dev/active/[task]/context.md — task-scoped working memory.
+  TEMPLATE: {{TASK_DOCS_DIR}}/[task]/context.md — task-scoped working memory.
 
   WRITE TIER: task-scoped and disposable (see DESIGN-MEMO.md §4, §11 decision #2).
-  - Lives only for the duration of the task. Archive the whole dev/active/[task]/
+  - Lives only for the duration of the task. Archive the whole {{TASK_DOCS_DIR}}/[task]/
     directory when the task completes.
   - This file accumulates facts and decisions AS the task proceeds — append to it
     rather than rewriting, so it stays an honest record of what was learned and why.
@@ -10,7 +10,7 @@
     the task lands; the raw exploration notes and files-inspected list do not travel
     upward — they exist to keep this task's agent (or its successor) oriented.
 
-  Instantiation: create at dev/active/{{TASK_SLUG}}/context.md, replace
+  Instantiation: create at {{TASK_DOCS_DIR}}/{{TASK_SLUG}}/context.md, replace
   {{PLACEHOLDERS}}. Keep entries dated so staleness is visible.
 -->
 

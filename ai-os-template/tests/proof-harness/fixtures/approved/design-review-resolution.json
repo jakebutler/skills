@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "task_id": "fixture-sensitive-write",
+  "design_candidate_hash": "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+  "source_review_ids": ["REVIEW-ARCH-001", "REVIEW-SEC-001"],
+  "source_finding_dispositions": [],
+  "resolved_changes": [],
+  "conflicts": [],
+  "blocking_findings": [],
+  "status": "approved",
+  "approved_builder_packet_hash": "sha256:6fbfe7a4a5d886595f7037c4afb161b17f0da0f5addfca64ce4b6217885f4d87"
+}

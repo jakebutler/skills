@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "baseline_id": "B0",
+  "repository": "jakebutler/freshproof",
+  "source_task_id": "019f7bed-b4ab-7e03-ade3-f89645f28370",
+  "acceptance_event": "The user explicitly approved d72b02c as B0 in task 019f71e5-a689-74d0-850f-c21ed8389aeb.",
+  "commit": "d72b02cfc9f869be78fd62c1ad0cc81eeaab4162",
+  "tree": "3227572dc4bb6566b934663381583df816d37a79",
+  "parents": [
+    "cb45a532d1c052dc6ffd0ae8ae51ca9ff5d82e40",
+    "8a121a208a099d44e32d820ef3dfbe82562ab73f"
+  ],
+  "reviewed_candidate": {
+    "base": "cb45a532d1c052dc6ffd0ae8ae51ca9ff5d82e40",
+    "tree": "3227572dc4bb6566b934663381583df816d37a79",
+    "binary_diff_sha256": "f77833c327446b161fc765d7a6b8e549cf446d898e2f6c130c619db392d6fc6c",
+    "nul_status_sha256": "9f886d35f5c303d2369c0f18086c26019141919150610d52deb583bf28a55bb4",
+    "path_count": 158,
+    "manifest_sha256": "e943cd741042b5905c253ff19d70417f728b8563d8c1d91aa03a2cdb00a082c7",
+    "lockfile_path": "pnpm-lock.yaml",
+    "lockfile_sha256": "10909cd2627c5149fb1dd0e0c24cdc4eef49b32e03c2544b9d88736cd93ce3a3"
+  },
+  "final_reviews": [
+    {
+      "lens": "correctness",
+      "task_id": "019f7c12-7ca0-7900-af3d-3f6ada47ba7a",
+      "verdict": "approved",
+      "unresolved_p0_p1": 0,
+      "snapshot_reproduced_at_start_and_end": true
+    },
+    {
+      "lens": "security",
+      "task_id": "019f7c12-c787-7123-9225-1f70de6f8c98",
+      "verdict": "approved",
+      "unresolved_p0_p1": 0,
+      "snapshot_reproduced_at_start_and_end": true
+    }
+  ],
+  "source_artifacts": [
+    "plans/tracer6-main-integration-handoff.md",
+    "plans/tracer6-main-integration-ledger.md",
+    "PROJECT-STATUS.md",
+    "plans/foundational-architecture-implementation.md"
+  ],
+  "source_artifact_status_note": "The reviewed B0 tree froze these source artifacts before final review, so their committed prose still says the last review is pending. The source task final response and the two reviewer task IDs above are the post-freeze approval attestation. B0 must not be amended to rewrite that historical packet."
+}

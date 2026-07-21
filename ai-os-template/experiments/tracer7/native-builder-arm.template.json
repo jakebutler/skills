@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "experiment_id": "freshproof-tracer7-paired-builder",
+  "arm_id": "{{PRIVATE_NATIVE_ARM_ID}}",
+  "run_nonce": "{{SEPARATELY_APPROVED_UNIQUE_RUN_NONCE}}",
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "codex_executable_path": "{{APPROVED_NATIVE_CODEX_EXECUTABLE_REALPATH}}",
+  "codex_executable_sha256": "{{APPROVED_NATIVE_CODEX_EXECUTABLE_SHA256}}",
+  "codex_version": "{{APPROVED_NATIVE_CODEX_VERSION}}",
+  "repository": "{{ISOLATED_NATIVE_ARM_WORKTREE}}",
+  "baseline_commit": "{{D0_COMMIT}}",
+  "prompt_path": "{{BYTE_IDENTICAL_BUILDER_PROMPT_PATH}}",
+  "allowed_paths": [
+    "{{ALLOWED_PRODUCT_PATH}}"
+  ],
+  "allowed_ignored_paths": [],
+  "output_directory": "{{EXPERIMENT_EVIDENCE_DIRECTORY_OUTSIDE_ARM_WORKTREES}}",
+  "timeout_ms": 3600000,
+  "check_timeout_ms": 600000,
+  "intervention_budget": 0,
+  "remediation_generation_budget": 1,
+  "visible_checks": [
+    [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "{{VISIBLE_TEST_PATH}}"
+    ]
+  ],
+  "held_out_checks": [
+    [
+      "{{EXTERNAL_HELD_OUT_RUNNER}}"
+    ]
+  ],
+  "held_out_evaluator_self_tests": [
+    [
+      "{{EXTERNAL_HELD_OUT_RUNNER}}",
+      "--proof-harness-self-test"
+    ]
+  ]
+}
