@@ -28,7 +28,7 @@
 | Plan write/execute | OS workflow specs + `dev/active/` task docs | `writing-plans`, `executing-plans` **deprecate** from the OS path |
 | Brainstorm/elicit | `brainstorming` (installed) | `bmad-brainstorming`, `bmad-advanced-elicitation` **hold** with BMAD |
 | Review | harness `code-review` / `verify` / `simplify` + the OS reviewer/verifier agents (Codex routes) | `code-reviewer`, `architect-review` skills **merge** — their stances are absorbed into `agents/reviewer.md` focuses |
-| Web research | Terra or Sol through Codex (routing v0.5) | `research` (GLM-5) **keep** as the cross-family alternate route |
+| Web research | Terra or Sol through Codex (routing v0.6) | `research` (GLM-5) **keep** as the cross-family alternate route |
 | Session rituals | template workflows commit / commit-pr / wrap-session | `prove`, `publish-slice`, `wrap-session` **keep as repo-specific bindings** — they ARE the Lower dB instance of those workflows; the instance manifest maps to them rather than replacing them |
 | Codex delegation | **adopt + generalize**: `codex-implementation`, `codex-review`, `codex-computer-use` (from the lower-db repo-overlay) | These become template-level skills with lower-db specifics parameterized to {{PLACEHOLDER}}s — action item below |
 | Prose | `humanizer` **keep** for user-facing writing | — |
@@ -42,11 +42,11 @@
 3. Remove openspec, writing-plans/executing-plans, and bmad (D2) from any
    auto-activation hook keyword lists so deprecated/dropped paths don't resurrect.
 4. Re-run this inventory after both instances ship; promote/demote based on actual use.
-5. **Build the GLM frontend-patch shell skill** (D1 choice a): a bounded-patch loop in
-   the style of the `research` skill (own venv, Z.ai key, external agentic loop).
-   Spec: `ai-os-template/skills/glm-frontend-patch/SKILL.template.md`. First validation
-   run should go through the experiment workflow (GLM vs Composer vs Sol on the same
-   frontend slice).
+5. ~~Build and validate the GLM frontend-patch shell skill~~ — runner implemented and
+   globally installed 2026-07-14 at `skills/glm-frontend-patch/`. The first identical
+   slice experiment rejected GLM as the default: it exceeded ten minutes, while Terra
+   and Composer passed. GLM remains experimental with Composer then Terra fallback.
+   Evidence: `ai-os-template/experiments/2026-07-14-frontend-route/`.
 6. ~~Specify the local Fable consultation route~~ — done 2026-07-13 at
    `skills/fable-consultation/SKILL.template.md`. It uses authenticated Claude Code
    print mode, a strict ROI gate, one critique plus at most one follow-up, and

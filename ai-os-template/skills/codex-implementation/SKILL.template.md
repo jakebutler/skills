@@ -5,11 +5,11 @@ description: Delegate a bounded implementation slice to Codex CLI, then inspect 
 
 # Codex Implementation - {{REPO_NAME}}
 
-<!-- Bind {{REPO_NAME}} and {{REPO_PATH}} from the instance manifest. -->
+<!-- Bind {{REPO_NAME}} from the instance manifest. Resolve the active worktree at runtime. -->
 
-Use Codex as a separate implementation agent for bounded code changes in
-`{{REPO_PATH}}`. Codex Sol High remains responsible for scope, invariants, diff review,
-validation, and user-facing explanation.
+Use Codex as a separate implementation agent for bounded code changes in the active
+repository/worktree. Codex Sol High remains responsible for scope, invariants, diff
+review, validation, and user-facing explanation.
 
 Treat Codex's output as evidence, not authority.
 
@@ -31,6 +31,10 @@ Treat Codex's output as evidence, not authority.
 ## Command Shape
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
 REPORT="$ARTIFACT_DIR/report.md"
 PROMPT="$ARTIFACT_DIR/prompt.md"
@@ -39,14 +43,13 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Write a self-contained prompt to `$PROMPT`, then run:
 
 ```bash
-codex exec -C "$PWD" --add-dir "$ARTIFACT_DIR" -s workspace-write -o "$REPORT" "$(cat "$PROMPT")"
+codex -a on-request -s workspace-write exec -C "$REPO_ROOT" --add-dir "$ARTIFACT_DIR" \
+  -o "$REPORT" "$(cat "$PROMPT")"
 ```
 
-Use `-s workspace-write` by default.
-
-Use `-s danger-full-access` only when the implementation truly needs access outside
-the repo, app launch automation, simulator work, package-manager global state, or
-other machine-level operations. Never use it for convenience.
+Keep `workspace-write` and `on-request` approval enabled. If the task needs access
+outside the repository, approve only the specific action Codex requests. Stop if the
+headless run cannot request that approval; do not pre-authorize blanket machine access.
 
 ## Prompt Requirements
 
@@ -91,7 +94,7 @@ Codex must follow:
 ```text
 You are implementing one scoped {{REPO_NAME}} slice for a Codex Sol High orchestrator.
 
-Repository: {{REPO_PATH}}
+Repository/worktree: <value of $REPO_ROOT>
 Artifact directory: /tmp/codex-implementation.xxxxxx
 Branch context: {{BRANCH_NAMING}}
 

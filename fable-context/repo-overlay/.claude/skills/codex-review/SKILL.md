@@ -14,13 +14,17 @@ Prefer Claude/Fable's normal review process for small local checks. Do not deleg
 1. Identify the review target: uncommitted changes, base branch, commit SHA, PR checkout, or specific files.
 2. Identify the lower-db invariants and ADRs touched by the target.
 3. Create a temporary artifact directory for the Codex report.
-4. Run `codex review` with a focused review prompt.
+4. Run `codex review` with either a native review target or a focused custom prompt.
 5. Read Codex's report and verify important claims against the code before presenting them.
 6. Separate confirmed issues from unverified Codex suggestions.
 
 ## Command shapes
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
 ```
 
@@ -35,19 +39,28 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Review staged, unstaged, and untracked changes:
 
 ```bash
-codex -C "$PWD" review --uncommitted - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" review --uncommitted > "$REPORT"
 ```
 
 Review current branch against main:
 
 ```bash
-codex -C "$PWD" review --base main - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" review --base main > "$REPORT"
 ```
 
 Review a single commit:
 
 ```bash
-codex -C "$PWD" review --commit <sha> - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" review --commit <sha> > "$REPORT"
+```
+
+Codex CLI cannot combine a custom prompt with `--uncommitted`, `--base`, or
+`--commit`. Native-target reviews still load persistent repository instructions such as
+`AGENTS.md`. For one-off criteria, make `$PROMPT` identify the exact diff or files and
+use a prompt-only review:
+
+```bash
+codex -C "$REPO_ROOT" review - < "$PROMPT" > "$REPORT"
 ```
 
 ## Review prompt

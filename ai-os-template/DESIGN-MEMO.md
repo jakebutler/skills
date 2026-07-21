@@ -152,14 +152,14 @@ research, prose) bound to currently-verified models, with a "pending verificatio
 section for routes not yet confirmed working. Date-stamped, because model quality and
 availability change.
 
-Defaults as of v0.3: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and hard-work
+Defaults as of routing v0.6: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and hard-work
 route; **Codex Terra** (`gpt-5.6-terra`) owns scoped implementation, first-pass review,
 and research sweeps; **Codex Luna** (`gpt-5.6-luna`) owns high-volume light work but
-never long-context codebase synthesis; **GLM-5.2** is preferred for streamed, bounded
-frontend implementation; **Claude Sonnet** writes copy; **Fable** critiques advanced
-architecture and system design from a compact decision packet; **Composer 2.5** remains
-the optional speed lane for crisp implementation packets. Every role has a cross-family
-fallback and the same acceptance checks survive rerouting.
+never long-context codebase synthesis; **Composer 2.5** owns crisp bounded frontend
+implementation; **Claude Sonnet** writes copy; **Fable** critiques advanced architecture
+and system design from a compact decision packet; **GLM-5.2** remains an installed
+experimental implementation route. Every role has a cross-family fallback and the same
+acceptance checks survive rerouting.
 
 Provider failures are modeled as state, not improvisation. Quota, auth, or invalid-model
 errors mark an entire family unavailable; transient failures get one checkpointed retry;
@@ -198,9 +198,14 @@ ai-os-template/
    stay; template roles bind to them). Only roles with no counterpart get new files.
 3. Merge root instructions: preserve existing content, layer in OS sections, flag
    conflicts rather than resolving silently.
-4. Wire hooks/commands appropriate to the repo's stack and verification commands.
-5. Land on a feature branch (`ai-os/instance`), commit with clear messages, never main.
-6. Promote repo learnings back into the template only when they generalize.
+4. Vendor shared specs or bind them through `AI_OS_HOME` plus a portable source URL.
+   Never install an author's absolute checkout path; root docs must remain usable when
+   the optional shared checkout is absent.
+5. Wire hooks/commands appropriate to the repo's stack and verification commands.
+6. Verify no placeholders or host-specific absolute paths survive, with `AI_OS_HOME`
+   unset for the fallback check.
+7. Land on a feature branch (`ai-os/instance`), commit with clear messages, never main.
+8. Promote repo learnings back into the template only when they generalize.
 
 ## 11. Decisions record
 
@@ -225,9 +230,9 @@ ai-os-template/
 
 | # | Decision |
 |---|---|
-| D1 | GLM frontend coding via a shell skill (research-skill style); spec staged, implementation queued; first use validated by experiment |
+| D1 | GLM frontend coding uses a user-global streamed shell skill with thin repo bindings; implemented 2026-07-14 |
 | D2 | BMAD explicitly dropped — never routed to; files may remain as reference |
-| D3 | Routing matrix distribution: canonical copy in the template repo; instances *reference* it in their manifest with a version pin (symlinks rejected — they break on clone/CI/other machines; see MANIFEST-SCHEMA) |
+| D3 | Routing matrix distribution: canonical copy in the template repo; instances reference it with a version pin, portable source URL, optional `AI_OS_HOME`, and a repo-local summary fallback (absolute symlinks and checkout paths rejected; see MANIFEST-SCHEMA) |
 | D4 | FreshProof `FEEDBACK_IMPLEMENTATION_COMPLETE.md` → archive (apply in next instance pass) |
 | D5/D6 | Both repos: consolidate to one `plans/` (FreshProof) / `docs/plans/` (Lower dB) with an `archive/` subdirectory (apply in next instance pass) |
 | D7 | corvo-labs-dot-com: skip the FEATURE-LIST module |
@@ -238,10 +243,11 @@ ai-os-template/
 | D12 | Template commits on branch `ai-os-template/v0.1`, merged via PR |
 | D13 | Codex Sol High replaces Fable as the primary orchestrator; Fable becomes a scarce architecture/system-design consultation lane |
 | D14 | Every role has ordered cross-family fallbacks; quota/auth failures disable the whole family for the task |
-| D15 | GLM-5.2 is the preferred streamed frontend implementation route; Terra and Composer are fallbacks |
+| D15 | Historical 2026-07-13 hypothesis: GLM-5.2 preferred for streamed frontend implementation; superseded by D19 after validation |
 | D16 | Claude Sonnet owns copy; Fable quota is not spent on routine prose |
 | D17 | Medium review prefers a different family; High review requires two lenses plus verification, with Fable only when durable design judgment warrants it |
 | D18 | Status visibility is a contract: start route, phase checkpoints, immediate retry/fallback notice, evidence path, and final route ledger |
+| D19 | The first identical-slice experiment rejected GLM as the frontend default; Composer becomes the bounded implementation route, Terra first fallback, and GLM remains experimental behind a ten-minute deadline and automatic takeover |
 
 ### v0.2 context additions (same session)
 
@@ -266,8 +272,11 @@ ai-os-template/
   authenticated Claude Pro login. This is a local external-worker route, not a native
   Codex model binding and not an API-key route. Remote environments must preflight their
   own authentication.
-- Frontend work uses a visible, checkpointed GLM-5.2 streaming route with immediate
-  Terra and Composer fallbacks.
+- The first frontend-route experiment is now recorded at
+  `experiments/2026-07-14-frontend-route/`. Composer completed fastest and passed the
+  full check set; Terra also passed; GLM stayed connected but exceeded ten minutes.
+  Composer now owns crisp bounded frontend implementation, Terra is first fallback,
+  and GLM remains an experimental route with visible checkpoints and takeover.
 - The routing matrix now distinguishes capability escalation from provider failover and
   makes reduced review diversity explicit when a family is unavailable.
 

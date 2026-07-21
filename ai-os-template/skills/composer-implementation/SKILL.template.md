@@ -5,11 +5,11 @@ description: Delegate fast, bounded implementation with clear requirements to Cu
 
 # Composer Implementation - {{REPO_NAME}}
 
-<!-- Bind {{REPO_NAME}} and {{REPO_PATH}} from the instance manifest. -->
+<!-- Bind {{REPO_NAME}} from the instance manifest. Resolve the active worktree at runtime. -->
 
-Use Cursor Composer 2.5 as a separate implementation agent for a bounded change in
-`{{REPO_PATH}}`. Codex Sol High remains responsible for scope, invariants, diff review,
-validation, and user-facing explanation.
+Use Cursor Composer 2.5 as a separate implementation agent for a bounded change in the
+active repository/worktree. Codex Sol High remains responsible for scope, invariants,
+diff review, validation, and user-facing explanation.
 
 Treat Composer output as evidence, not authority.
 
@@ -35,6 +35,10 @@ and escalate to the orchestrator for a tighter packet or a different route.
 ## Invocation
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/composer-implementation.XXXXXX")"
 PROMPT="$ARTIFACT_DIR/prompt.md"
 ```
@@ -42,11 +46,12 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Write the complete packet to `$PROMPT` first. Then:
 
 ```bash
-cd "{{REPO_PATH}}"
-cursor-agent -p --trust --model composer-2.5 "$(cat "$PROMPT")"
+cursor-agent -p --trust --sandbox enabled --workspace "$REPO_ROOT" \
+  --model composer-2.5 "$(cat "$PROMPT")"
 ```
 
-<!-- Bind {{REPO_PATH}} to the target repo or isolated worktree. -->
+Invoke this only from the active task worktree. Put the resolved `$REPO_ROOT` in the
+packet; never bind the skill to the worktree used to install the instance.
 
 `composer-2.5-fast` exists, costs more per token, and is only for genuine latency
 needs. Do not select it as a routine default.

@@ -25,6 +25,10 @@ This skill should offload the bulk of implementation work to Codex while keeping
 ## Command shape
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-implementation.XXXXXX")"
 ```
 
@@ -39,12 +43,13 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Write a self-contained prompt to `$PROMPT`, then run:
 
 ```bash
-codex exec -C "$PWD" --add-dir "$ARTIFACT_DIR" -s workspace-write -o "$REPORT" - < "$PROMPT"
+codex -a on-request -s workspace-write exec -C "$REPO_ROOT" \
+  --add-dir "$ARTIFACT_DIR" -o "$REPORT" - < "$PROMPT"
 ```
 
-Use `-s workspace-write` by default.
-
-Use `-s danger-full-access` only when the implementation truly needs access outside the repo, app launch automation, simulator work, package-manager global state, or other machine-level operations. Never use it for convenience.
+Keep `workspace-write` and `on-request` approval enabled. If the task needs access
+outside the repository, approve only the specific action Codex requests. Stop if the
+headless run cannot request that approval; do not pre-authorize blanket machine access.
 
 ## Prompt requirements
 

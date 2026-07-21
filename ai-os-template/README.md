@@ -9,7 +9,8 @@ Start with [WALKTHROUGH.html](WALKTHROUGH.html) for a guided review, then use
 [DESIGN-MEMO.md](DESIGN-MEMO.md) for the architecture, contracts, and decisions
 record. The directory layout and instantiation procedure are in memo §9–10.
 
-**Status:** v0.3 routing rebalance in progress on `ai-os-template/v0.1`. Codex Sol High
-is the primary orchestrator; Fable is reserved for advanced architecture and
-system-design feedback. FreshProof and Lower dB are first, followed by
-corvo-labs-dot-com.
+**Status:** routing v0.6. Codex Sol High is the primary orchestrator; Fable is reserved
+for advanced architecture and system-design feedback. Composer is the validated
+bounded frontend implementation default, Terra is the first fallback, and the
+installed GLM route remains experimental after its first timed validation failed.
+FreshProof and Lower dB are first, followed by corvo-labs-dot-com.

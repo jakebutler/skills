@@ -1,0 +1,4 @@
+interface:
+  display_name: "GLM Frontend Patch"
+  short_description: "Run bounded streamed GLM frontend patches"
+  default_prompt: "Use $glm-frontend-patch to implement this bounded frontend change with a streamed, checkpointed GLM run."

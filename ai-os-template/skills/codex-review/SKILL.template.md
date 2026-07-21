@@ -5,7 +5,7 @@ description: Ask Codex CLI for an independent code review of uncommitted changes
 
 # Codex Review - {{REPO_NAME}}
 
-<!-- Bind {{REPO_NAME}} and {{REPO_PATH}} from the instance manifest. -->
+<!-- Bind {{REPO_NAME}} from the instance manifest. Resolve the active worktree at runtime. -->
 
 Use Codex as an independent reviewer when the user wants a second-pass review or the
 change is broad enough that another agent's perspective is useful.
@@ -20,7 +20,7 @@ authority.
    checkout, or specific files.
 2. Identify the repo invariants, requirements, and ADRs touched by the target.
 3. Create a temporary artifact directory for the Codex report.
-4. Run `codex review` with a focused review prompt.
+4. Run `codex review` with either a native review target or a focused custom prompt.
 5. Read Codex's report and verify important claims against the code before presenting
    them.
 6. Separate confirmed issues from unverified Codex suggestions.
@@ -28,29 +28,40 @@ authority.
 ## Command Shapes
 
 ```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "Run this skill from the active target repository/worktree" >&2
+  exit 1
+}
 ARTIFACT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
 REPORT="$ARTIFACT_DIR/report.md"
 PROMPT="$ARTIFACT_DIR/prompt.md"
 ```
 
-Write a self-contained prompt to `$PROMPT`, then run:
-
 Review staged, unstaged, and untracked changes:
 
 ```bash
-codex -C "$PWD" review --uncommitted - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" review --uncommitted > "$REPORT"
 ```
 
 Review current branch against the default integration branch:
 
 ```bash
-codex -C "$PWD" review --base {{MAIN_BRANCH}} - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" review --base {{MAIN_BRANCH}} > "$REPORT"
 ```
 
 Review a single commit:
 
 ```bash
-codex -C "$PWD" review --commit <sha> - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" review --commit <sha> > "$REPORT"
+```
+
+Codex CLI does not accept a custom prompt together with `--uncommitted`, `--base`, or
+`--commit`. Native-target reviews still load persistent repository instructions such as
+`AGENTS.md`. For task-specific instructions, write `$PROMPT` and run a prompt-only
+review that names the exact diff or files to inspect:
+
+```bash
+codex -C "$REPO_ROOT" review - < "$PROMPT" > "$REPORT"
 ```
 
 ## Review Prompt
@@ -66,7 +77,7 @@ Ask Codex to use a code-review stance:
 Review these changes for bugs, regressions, missing tests, security issues,
 boundary leaks, repo invariant violations, and requirement mismatches.
 
-Repository: {{REPO_PATH}}
+Repository/worktree: <value of $REPO_ROOT>
 Review target: <uncommitted changes | base diff | commit | files>
 
 Pay special attention to:

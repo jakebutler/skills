@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frontend route console</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: oklch(0.976 0.007 82);
+      --surface: oklch(0.992 0.004 82);
+      --ink: oklch(0.245 0.012 65);
+      --muted: oklch(0.48 0.015 65);
+      --rule: oklch(0.875 0.014 75);
+      --accent: oklch(0.47 0.09 50);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+
+    main {
+      width: min(62rem, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 4rem 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 1.15rem;
+      color: var(--muted);
+      font-size: 0.77rem;
+      font-weight: 700;
+      letter-spacing: 0.095em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 14ch;
+      margin: 0;
+      font-size: clamp(2.15rem, 7vw, 4.25rem);
+      font-weight: 650;
+      letter-spacing: -0.055em;
+      line-height: 0.98;
+    }
+
+    .intro {
+      max-width: 39rem;
+      margin: 1.3rem 0 3.15rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .console {
+      border: 1px solid var(--rule);
+      background: var(--surface);
+    }
+
+    .console-header,
+    .availability,
+    .decision,
+    .event-ledger {
+      padding: 1.45rem;
+    }
+
+    .console-header,
+    .availability,
+    .decision {
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .console-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .section-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .console-header p:last-child {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .availability {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      padding: 1px;
+      background: var(--rule);
+    }
+
+    .provider-field {
+      display: grid;
+      gap: 0.55rem;
+      min-width: 0;
+      padding: 1.2rem 1.35rem 1.35rem;
+      background: var(--surface);
+    }
+
+    .provider-field label {
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    select {
+      width: 100%;
+      min-height: 2.55rem;
+      border: 1px solid oklch(0.67 0.02 65);
+      border-radius: 0;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      padding: 0.4rem 0.55rem;
+    }
+
+    select:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .decision {
+      display: grid;
+      gap: 1.6rem;
+    }
+
+    .route-summary {
+      padding-bottom: 1.6rem;
+      border-bottom: 1px solid var(--rule);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .route-summary.is-updating {
+      opacity: 0.72;
+      transform: translateY(2px);
+    }
+
+    .route-summary h2 {
+      margin: 0.45rem 0 0;
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 650;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+    }
+
+    .route-summary p:last-child {
+      max-width: 50rem;
+      margin: 0.75rem 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .route-details {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.8fr);
+      gap: 1.5rem 3rem;
+    }
+
+    .route-details h3 {
+      margin: 0 0 0.75rem;
+      font-size: 0.92rem;
+    }
+
+    .route-details ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .route-details li + li {
+      margin-top: 0.5rem;
+    }
+
+    .route-details code,
+    .state-key {
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    .state-key {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .event-ledger {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .event-ledger p:last-child {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 38rem) {
+      main {
+        width: min(100% - 1rem, 62rem);
+        padding: 1.5rem 0;
+      }
+
+      .intro {
+        margin-bottom: 1.75rem;
+      }
+
+      .console-header,
+      .availability,
+      .route-details {
+        grid-template-columns: 1fr;
+      }
+
+      .console-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .console-header,
+      .decision,
+      .event-ledger {
+        padding: 1.15rem;
+      }
+
+      .provider-field {
+        padding: 1rem 1.15rem 1.15rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">AI Engineering OS / route control</p>
+    <h1>Frontend implementation</h1>
+    <p class="intro">Set provider availability to inspect the active implementer, its selection reason, and the ordered takeover path.</p>
+
+    <section class="console" aria-label="Frontend route console">
+      <header class="console-header">
+        <p class="section-label">Provider availability</p>
+        <p>Changes recalculate the route immediately.</p>
+      </header>
+
+      <div class="availability">
+        <div class="provider-field">
+          <label for="codex-status">Codex</label>
+          <select id="codex-status" name="codex-status">
+            <option value="available" selected>Available</option>
+            <option value="limited">Limited</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+        <div class="provider-field">
+          <label for="zai-status">Z.ai</label>
+          <select id="zai-status" name="zai-status">
+            <option value="available" selected>Available</option>
+            <option value="limited">Limited</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+        <div class="provider-field">
+          <label for="cursor-status">Cursor</label>
+          <select id="cursor-status" name="cursor-status">
+            <option value="available" selected>Available</option>
+            <option value="limited">Limited</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+      </div>
+
+      <section class="decision" aria-labelledby="decision-title">
+        <div class="route-summary" id="route-summary" aria-live="polite" aria-atomic="true">
+          <p class="section-label">Active route</p>
+          <h2 id="decision-title"></h2>
+          <p id="route-reason"></p>
+        </div>
+
+        <div class="route-details">
+          <div>
+            <h3>Fallback routes</h3>
+            <ol id="fallback-list"></ol>
+          </div>
+          <div>
+            <h3>State key</h3>
+            <p class="state-key"><code>Available</code> can be selected. <code>Limited</code> can be selected after preferred capacity. <code>Unavailable</code> is excluded.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="event-ledger">
+        <p class="section-label">Latest event</p>
+        <p id="latest-event" aria-live="polite" aria-atomic="true"></p>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const controls = {
+        codex: document.getElementById("codex-status"),
+        zai: document.getElementById("zai-status"),
+        cursor: document.getElementById("cursor-status")
+      };
+      const summary = document.getElementById("route-summary");
+      const routeName = document.getElementById("decision-title");
+      const routeReason = document.getElementById("route-reason");
+      const fallbackList = document.getElementById("fallback-list");
+      const latestEvent = document.getElementById("latest-event");
+
+      const routes = {
+        glm: { name: "GLM-5.2", provider: "Z.ai" },
+        terra: { name: "Terra", provider: "Codex" },
+        composer: { name: "Composer", provider: "Cursor" },
+        sol: { name: "Sol High", provider: "Codex" }
+      };
+
+      function addFallback(route) {
+        const item = document.createElement("li");
+        const routeLabel = document.createElement("strong");
+        routeLabel.textContent = route.name;
+        const provider = document.createTextNode(" via " + route.provider);
+        item.append(routeLabel, provider);
+        fallbackList.append(item);
+      }
+
+      function updateRoute(eventType) {
+        const status = {
+          codex: controls.codex.value,
+          zai: controls.zai.value,
+          cursor: controls.cursor.value
+        };
+        const codexSelectable = status.codex !== "unavailable";
+        const cursorSelectable = status.cursor !== "unavailable";
+        const codexAvailable = status.codex === "available";
+        let activeRoute = null;
+        let reason = "";
+
+        if (status.zai === "available") {
+          activeRoute = routes.glm;
+          reason = "Z.ai is Available, so GLM-5.2 is the preferred frontend implementation route.";
+        } else if (codexSelectable) {
+          activeRoute = routes.terra;
+          reason = "Z.ai is not Available and Codex remains selectable, so Terra takes the route.";
+        } else if (cursorSelectable) {
+          activeRoute = routes.composer;
+          reason = "Z.ai is not Available and Codex is Unavailable, so Composer takes the next selectable route.";
+        } else {
+          reason = "Z.ai is not Available, Codex is Unavailable, and Cursor is Unavailable. No implementation route can be selected.";
+        }
+
+        while (fallbackList.firstChild) {
+          fallbackList.removeChild(fallbackList.firstChild);
+        }
+
+        if (activeRoute !== routes.terra && codexSelectable) {
+          addFallback(routes.terra);
+        }
+        if (activeRoute !== routes.composer && cursorSelectable) {
+          addFallback(routes.composer);
+        }
+        if (activeRoute !== routes.sol && codexAvailable) {
+          addFallback(routes.sol);
+        }
+
+        if (activeRoute) {
+          routeName.textContent = activeRoute.name + " via " + activeRoute.provider;
+        } else {
+          routeName.textContent = "No implementation route available";
+        }
+        routeReason.textContent = reason;
+
+        if (!fallbackList.firstChild) {
+          const item = document.createElement("li");
+          item.textContent = "No fallback route is currently selectable.";
+          fallbackList.append(item);
+        }
+
+        const eventPrefix = eventType === "initial" ? "Initial route calculation" : "Provider availability changed";
+        latestEvent.textContent = eventPrefix + ". " + routeName.textContent + ".";
+        summary.classList.add("is-updating");
+        window.requestAnimationFrame(() => summary.classList.remove("is-updating"));
+      }
+
+      Object.values(controls).forEach((control) => {
+        control.addEventListener("change", () => updateRoute("change"));
+      });
+
+      updateRoute("initial");
+    })();
+  </script>
+</body>
+</html>
