@@ -18,6 +18,7 @@ class Inspector(HTMLParser):
         self.selects: dict[str, set[str]] = {}
         self.label_fors: set[str] = set()
         self.live_regions: list[dict[str, str]] = []
+        self.polite_live_region_ids: set[str] = set()
         self.external_assets: list[str] = []
         self._select_id: str | None = None
         self.ordered_lists = 0
@@ -26,6 +27,8 @@ class Inspector(HTMLParser):
         values = dict(attrs)
         if values.get("aria-live"):
             self.live_regions.append(values)
+            if values.get("aria-live") == "polite" and values.get("id"):
+                self.polite_live_region_ids.add(values["id"])
         if tag == "select":
             select_id = values.get("id")
             self._select_id = select_id
@@ -65,6 +68,8 @@ def check(path: Path) -> list[str]:
         failures.append("fallback routes must use an ordered list")
     if not any(region.get("aria-live") == "polite" for region in inspector.live_regions):
         failures.append("missing aria-live=polite region")
+    if not inspector.polite_live_region_ids.intersection({"latest-event", "event-line"}):
+        failures.append("latest event updates must use aria-live=polite")
     if inspector.external_assets:
         failures.append("external assets are forbidden")
 
@@ -79,7 +84,7 @@ def check(path: Path) -> list[str]:
         if required not in text:
             failures.append(f"missing safe interaction primitive: {required}")
     initial_call = re.search(
-        r"\b(?:update|render|recalculate)\w*\((?:[^;]*\b(?:initial|null)\b[^;]*)?\);",
+        r"\b(?:update|render|recalculate)\w*\((?:[^;{}]*\b(?:initial|null)\b[^;{}]*)?\);",
         text,
         re.IGNORECASE,
     )
@@ -99,7 +104,6 @@ def check(path: Path) -> list[str]:
         "gradient(": "gradients",
         "background-clip: text": "gradient text",
         "backdrop-filter": "glassmorphism",
-        "innerhtml": "innerHTML",
         "document.write": "document.write",
         "eval(": "eval",
         "—": "em dash",
@@ -107,6 +111,8 @@ def check(path: Path) -> list[str]:
     for needle, label in forbidden.items():
         if needle in lowered:
             failures.append(f"forbidden pattern: {label}")
+    if re.search(r"\binnerhtml\b", lowered):
+        failures.append("forbidden pattern: innerHTML")
     if re.search(r"border-(left|right)\s*:\s*([2-9]|\d{2,})px", lowered):
         failures.append("forbidden side-stripe border")
     return failures
