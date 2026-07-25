@@ -145,7 +145,11 @@ assert.equal(
   "deny",
 );
 
-for (const clientPath of ["src/pages/dashboard.tsx", "web/model-picker.ts"]) {
+for (const clientPath of [
+  "src/pages/dashboard.tsx",
+  "web/model-picker.ts",
+  "src/components/server/model-picker.tsx",
+]) {
   const exposedReference = evaluateHook(
     "safety",
     {

@@ -17,7 +17,7 @@ const PUBLIC_MODEL_KEY_PATTERN =
 const CLIENT_FILE_PATTERN =
   /(?:^|\/)(?:client|components|pages|public|web)(?:\/|$)|(?:^|[./-])client\.[cm]?[jt]sx?$/i;
 const SERVER_ONLY_FILE_PATTERN =
-  /(?:^|\/)(?:(?:src\/)?pages\/api|server)(?:\/|$)|(?:^|[./-])server\.[cm]?[jt]sx?$/i;
+  /(?:^|\/)(?:src\/)?pages\/api(?:\/|$)|(?:^|[./-])server\.[cm]?[jt]sx?$/i;
 const DESTRUCTIVE_COMMAND_PATTERNS = [
   /\bgit\s+reset\s+--hard\b/,
   /\bgit\s+clean\s+-[a-z]*f/i,
