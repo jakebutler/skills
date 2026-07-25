@@ -17,7 +17,7 @@ const PUBLIC_MODEL_KEY_PATTERN =
 const CLIENT_FILE_PATTERN =
   /(?:^|\/)(?:client|components|pages|public|web)(?:\/|$)|(?:^|[./-])client\.[cm]?[jt]sx?$/i;
 const SERVER_ONLY_FILE_PATTERN =
-  /(?:^|\/)(?:src\/)?pages\/api(?:\/|$)|(?:^|[./-])server\.[cm]?[jt]sx?$/i;
+  /^(?:src\/)?pages\/api(?:\/|$)|(?:^|[./-])server\.[cm]?[jt]sx?$/i;
 const DESTRUCTIVE_COMMAND_PATTERNS = [
   /\bgit\s+reset\s+--hard\b/,
   /\bgit\s+clean\s+-[a-z]*f/i,
@@ -527,6 +527,11 @@ export function evaluateHook(hookName, input, config, cwd) {
       toolInput.content ?? toolInput.new_string ?? command,
     );
     const filePath = String(toolInput.file_path ?? toolInput.path ?? "");
+    const normalizedFilePath = (
+      path.isAbsolute(filePath) ? path.relative(cwd, filePath) : filePath
+    )
+      .replaceAll("\\", "/")
+      .replace(/^\.\//, "");
     const destructive =
       toolName === "Bash" &&
       DESTRUCTIVE_COMMAND_PATTERNS.some(
@@ -534,8 +539,8 @@ export function evaluateHook(hookName, input, config, cwd) {
       );
     const secret = SECRET_PATTERNS.some((pattern) => pattern.test(content));
     const clientExposedPath =
-      CLIENT_FILE_PATTERN.test(filePath) &&
-      !SERVER_ONLY_FILE_PATTERN.test(filePath);
+      CLIENT_FILE_PATTERN.test(normalizedFilePath) &&
+      !SERVER_ONLY_FILE_PATTERN.test(normalizedFilePath);
     const clientSecretReference =
       (PUBLIC_MODEL_KEY_PATTERN.test(content) ||
         (MODEL_KEY_REFERENCE_PATTERN.test(content) &&

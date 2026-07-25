@@ -149,6 +149,7 @@ for (const clientPath of [
   "src/pages/dashboard.tsx",
   "web/model-picker.ts",
   "src/components/server/model-picker.tsx",
+  "src/components/pages/api/model-picker.tsx",
 ]) {
   const exposedReference = evaluateHook(
     "safety",
@@ -167,7 +168,7 @@ for (const clientPath of [
 }
 
 for (const serverPath of [
-  "src/pages/api/generate.ts",
+  path.join(root, "src/pages/api/generate.ts"),
   "src/server/model-provider.ts",
   "src/lib/model-provider.server.ts",
 ]) {
