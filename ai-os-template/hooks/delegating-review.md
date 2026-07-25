@@ -34,6 +34,12 @@ Emit one or more bounded subagent delegation packets:
   security, correctness, and other triggered lens packets against that same identity;
   then emit a `review-resolver` packet only after every durable source packet exists.
 
+Any implementation or PR code-review trigger emits both standard reviewer packets
+against one freeze: fresh-context native `gpt-5.6-sol` at xhigh and direct
+`claude-opus-5`. A Fable packet is emitted only when the orchestrator records a
+qualifying principal-engineer/architect trigger; it never replaces either standard
+packet.
+
 Each packet follows the delegation contract: goal, repo/paths, files to inspect,
 excluded areas, expected output artifact, allowed tools, model preference,
 verification requirement, quality bar, and stop condition.
@@ -43,6 +49,8 @@ verification requirement, quality bar, and stop condition.
 - Do not run unbounded repo-wide reviews from the hook.
 - Do not auto-apply reviewer or doc-maintainer edits; the orchestrator decides.
 - Keep review independence: the implementer is not the sole reviewer of its own work.
+- Keep the Sol and Opus packets isolated until both are frozen. Reject an
+  inherited-context Sol pass or a packet without exact model/provenance evidence.
 - Deduplicate routes when the same file set triggers multiple checks.
 - Respect doc write tiers: `doc-maintainer` may handle Tier A/B only; Tier C changes
   become proposals.
@@ -52,6 +60,9 @@ verification requirement, quality bar, and stop condition.
   resolution packet may become actionable feedback.
 - If the candidate identity changes, invalidate all outstanding source and resolution
   packets and begin a new bounded review generation.
+- If either standard route is unavailable, preserve completed packets and emit an
+  incomplete-review notice for user disposition; do not silently substitute another
+  route.
 
 ## Failure behavior
 

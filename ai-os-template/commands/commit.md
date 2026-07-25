@@ -24,7 +24,8 @@ autoskill proposal status, and any uncommitted work intentionally left behind.
 
 ## Model routing note
 
-Codex Sol High owns final commit judgment and message quality. Independent routes
-perform verification, diff inspection, mechanical fixes, and repo checks. Reviewer,
-doc-maintainer, and autoskill-improver roles may run under bounded contracts before
-the orchestrator approves the final commit.
+Codex Sol High owns final commit judgment and message quality. The frozen diff receives
+independent fresh-context Sol 5.6 xhigh and Opus 5 review before the orchestrator
+approves the commit. Other bounded routes perform verification, mechanical fixes, and
+repo checks; Fable is only an exceptional principal/architect escalation after a
+concrete trigger.

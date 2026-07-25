@@ -52,9 +52,14 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 
 ## **Ceremony scaling**
 
-- Simple: status, diff review, focused formatter/lint/test where available, independent review can be orchestrator review if the orchestrator did not implement the change, concise status update.
-- Medium: scoped formatter/lint/typecheck/tests, independent `reviewer`, docs/status/changelog significance check, autoskill scan.
-- High: full relevant suite or release gate, independent reviewer plus specialist review as needed, changelog and durable docs updates, rollback notes in task docs, autoskill scan.
+- Simple: status, diff review, focused formatter/lint/test where available, paired
+  fresh-context Sol 5.6 xhigh + Opus 5 review, concise status update.
+- Medium: scoped formatter/lint/typecheck/tests, paired fresh-context Sol 5.6 xhigh +
+  Opus 5 review, docs/status/changelog significance check, autoskill scan.
+- High: full relevant suite or release gate, paired fresh-context Sol 5.6 xhigh +
+  Opus 5 review plus specialist review as needed, changelog and durable docs updates,
+  rollback notes in task docs, autoskill scan. Fable remains an optional exceptional
+  principal/architect escalation only after a concrete trigger.
 
 ## **Failure handling**
 

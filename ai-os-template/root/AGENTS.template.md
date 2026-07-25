@@ -137,6 +137,11 @@ and the version pin in its instance manifest. Codex Sol High is the default
 orchestrator. Model workers receive bounded contracts; decision authority does not
 transfer merely because a route is stronger or cheaper.
 
+Implementation and PR code review uses two independent standard lanes against one
+frozen candidate: fresh-context native `gpt-5.6-sol` at xhigh reasoning and direct
+`claude-opus-5`. Fable is an optional third principal-engineer/architect consultation
+only after a concrete exceptional trigger; it never replaces either standard lane.
+
 Treat availability at the provider-family level:
 
 - quota, billing, authentication, or invalid-model failure marks the whole family
@@ -146,6 +151,10 @@ Treat availability at the provider-family level:
 - acceptance criteria, review independence, and stop conditions never weaken on reroute
 - preserve partial output, exact failure, last verified checkpoint, and fallback route
   in task context
+
+The standard code-review pair is stricter than ordinary delegation fallback: after one
+transient retry, an unavailable Sol or Opus lane makes the review incomplete. Preserve
+the completed packet and request user approval before any reduced topology.
 
 The orchestrator reports the chosen route and next checkpoint at start, every phase
 boundary with evidence, every retry or fallback immediately, and the final implementer,

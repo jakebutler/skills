@@ -25,7 +25,10 @@ short summary.
 
 ## Model routing note
 
-Codex Sol High owns review synthesis and reports route diversity. Prefer a reviewer
-family different from the implementer; High-tier work gets two lenses plus verification.
-Fable is reserved for advanced architecture or system-design judgment. If Anthropic is
-unavailable, use GLM plus a fresh Codex reviewer and disclose reduced lineage diversity.
+Codex Sol High owns review synthesis. Every code-review generation runs two independent
+lanes against one frozen candidate: fresh-context native `gpt-5.6-sol` at xhigh
+reasoning and direct Claude subscription `claude-opus-5`. Their packets remain separate
+until resolver fan-in. Fable is an optional third principal-engineer/architect
+consultation only when a concrete escalation trigger is recorded; it never replaces
+Sol or Opus. If either standard lane is unavailable, stop and request explicit approval
+before using a reduced topology.

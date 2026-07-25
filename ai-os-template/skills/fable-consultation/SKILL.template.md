@@ -1,6 +1,6 @@
 ---
 name: fable-consultation
-description: Ask Fable for one high-value critique of an advanced architecture, system-design, migration, rollback, harness-policy, conflicting-review, or flagship-positioning decision. Uses the local Claude Code subscription route when available. Do not use for routine orchestration, implementation, summaries, status, ordinary copy drafting, or repeated review.
+description: Ask Fable for one high-value principal-engineer/architect critique of an advanced architecture, system-design, migration, rollback, harness-policy, conflicting-review, or flagship-positioning decision. Uses the local Claude Code subscription route when available. Do not use for routine orchestration, implementation, code review, summaries, status, ordinary copy drafting, or repeated review.
 allowed-tools:
   - Bash(claude:*)
   - Read
@@ -21,7 +21,14 @@ Run this skill only when every answer is yes:
 3. Could an outside critique materially change the decision or expose a missed risk?
 4. Will the result be recorded in a plan, ADR, review disposition, or routing experiment?
 
-If any answer is no, use Terra, GLM-5.2, or the orchestrator's normal review path.
+For code-review escalation, also require at least one concrete trigger: a load-bearing
+architecture/system boundary, an irreversible design choice, a cross-cutting invariant
+conflict, disagreement between the frozen Sol and Opus packets on an architectural
+premise, or a standard-lane finding that exposes a design gap outside the approved
+implementation contract. Medium or High tier alone is not a trigger.
+
+If any required answer is no, stay with the standard fresh-context Sol 5.6 xhigh +
+Opus 5 code-review path.
 
 ## Packet contract
 
@@ -81,6 +88,9 @@ or the full auth response into durable logs.
 
 Fallback order: GLM-5.2 critique, then a fresh-context Terra critique. Sol synthesizes
 and tells the user when fallback reduces model-family diversity.
+
+These are consultation fallbacks only. They do not replace either standard
+implementation/PR code-review lane and must not be relabeled as Fable.
 
 ## Return packet
 

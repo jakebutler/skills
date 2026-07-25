@@ -11,6 +11,9 @@ code, change the design, or treat reviewer authority as evidence.
 ## Process
 
 1. Reject mismatched candidate, requirements, tree, or diff identities.
+   For implementation or PR code review, also reject a source set that lacks either
+   the fresh-context native `gpt-5.6-sol` xhigh packet or the direct
+   `claude-opus-5` packet. A Fable consultation cannot satisfy either slot.
 2. Verify every source finding appears exactly once, except declared duplicate groups.
 3. Cluster duplicates and root causes; preserve every source ID and provenance.
 4. Map findings to requirement, surface, invariant, and acceptance-criterion IDs.
