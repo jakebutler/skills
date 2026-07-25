@@ -209,6 +209,7 @@ const declaredRequiredReport = buildDoctorReport(
         command: "still-not-a-real-command",
         package: "missing-required-package",
         required: true,
+        requiredInCi: true,
       },
     ],
   },
