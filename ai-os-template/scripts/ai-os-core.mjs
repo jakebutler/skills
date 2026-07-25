@@ -15,7 +15,9 @@ const MODEL_KEY_REFERENCE_PATTERN =
 const PUBLIC_MODEL_KEY_PATTERN =
   /\b(?:NEXT_PUBLIC_|PUBLIC_|VITE_)(?:ANTHROPIC|CURSOR|OPENAI|PIONEER|TAVILY)_API_KEY\b/i;
 const CLIENT_FILE_PATTERN =
-  /(?:^|\/)(?:client|components|public)(?:\/|$)|(?:^|[./-])client\.[cm]?[jt]sx?$/i;
+  /(?:^|\/)(?:client|components|pages|public|web)(?:\/|$)|(?:^|[./-])client\.[cm]?[jt]sx?$/i;
+const SERVER_ONLY_FILE_PATTERN =
+  /(?:^|\/)(?:(?:src\/)?pages\/api|server)(?:\/|$)|(?:^|[./-])server\.[cm]?[jt]sx?$/i;
 const DESTRUCTIVE_COMMAND_PATTERNS = [
   /\bgit\s+reset\s+--hard\b/,
   /\bgit\s+clean\s+-[a-z]*f/i,
@@ -531,11 +533,13 @@ export function evaluateHook(hookName, input, config, cwd) {
         (pattern) => pattern.test(command) || pattern.test(normalizedCommand),
       );
     const secret = SECRET_PATTERNS.some((pattern) => pattern.test(content));
+    const clientExposedPath =
+      CLIENT_FILE_PATTERN.test(filePath) &&
+      !SERVER_ONLY_FILE_PATTERN.test(filePath);
     const clientSecretReference =
       (PUBLIC_MODEL_KEY_PATTERN.test(content) ||
         (MODEL_KEY_REFERENCE_PATTERN.test(content) &&
-          (CLIENT_FILE_PATTERN.test(filePath) ||
-            /^\s*["']use client["'];?/m.test(content)))) &&
+          (clientExposedPath || /^\s*["']use client["'];?/m.test(content)))) &&
       !/\.env\.(?:example|sample|template)$/.test(filePath);
     const sensitivePath =
       /(^|\/)\.env(?:\.[^/]+)?$/.test(filePath) &&

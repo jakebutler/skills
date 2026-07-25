@@ -145,6 +145,44 @@ assert.equal(
   "deny",
 );
 
+for (const clientPath of ["src/pages/dashboard.tsx", "web/model-picker.ts"]) {
+  const exposedReference = evaluateHook(
+    "safety",
+    {
+      hook_event_name: "PreToolUse",
+      tool_name: "Write",
+      tool_input: {
+        file_path: clientPath,
+        content: "const key = process.env.OPENAI_API_KEY;\n",
+      },
+    },
+    config,
+    root,
+  );
+  assert.equal(exposedReference.hookSpecificOutput.permissionDecision, "deny");
+}
+
+for (const serverPath of [
+  "src/pages/api/generate.ts",
+  "src/server/model-provider.ts",
+  "src/lib/model-provider.server.ts",
+]) {
+  const serverReference = evaluateHook(
+    "safety",
+    {
+      hook_event_name: "PreToolUse",
+      tool_name: "Write",
+      tool_input: {
+        file_path: serverPath,
+        content: "const key = process.env.OPENAI_API_KEY;\n",
+      },
+    },
+    config,
+    root,
+  );
+  assert.deepEqual(serverReference, {});
+}
+
 const skillHint = evaluateHook(
   "skill-activation",
   {
