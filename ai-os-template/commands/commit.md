@@ -27,4 +27,5 @@ autoskill proposal status, and any uncommitted work intentionally left behind.
 Codex Sol High owns final commit judgment and message quality. The frozen diff receives
 independent fresh-context Sol 5.6 xhigh and Opus 5 review before the orchestrator
 approves the commit. Other bounded routes perform verification, mechanical fixes, and
-repo checks; Fable is only an exceptional principal/architect escalation.
+repo checks; Fable is only an exceptional principal/architect escalation after a
+concrete trigger.

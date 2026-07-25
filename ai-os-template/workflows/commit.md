@@ -59,7 +59,7 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 - High: full relevant suite or release gate, paired fresh-context Sol 5.6 xhigh +
   Opus 5 review plus specialist review as needed, changelog and durable docs updates,
   rollback notes in task docs, autoskill scan. Fable remains an optional exceptional
-  principal/architect escalation.
+  principal/architect escalation only after a concrete trigger.
 
 ## **Failure handling**
 
