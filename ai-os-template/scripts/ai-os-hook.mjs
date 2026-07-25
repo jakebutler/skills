@@ -8,6 +8,7 @@ import {
   parseCliArgs,
   readJson,
   renderToolCache,
+  resolveToolCachePath,
 } from "./ai-os-core.mjs";
 
 const args = parseCliArgs(process.argv.slice(2));
@@ -26,9 +27,11 @@ const input = rawInput.trim() ? JSON.parse(rawInput) : {};
 if (args.hook === "tool-cache-refresh") {
   if (config.hooks?.toolsCacheRefresh) {
     const report = buildDoctorReport(config, cwd);
-    const cachePath = path.resolve(cwd, config.toolCache);
+    const cachePath = resolveToolCachePath(config, cwd);
     const rendered = renderToolCache(report);
-    const existing = fs.existsSync(cachePath) ? fs.readFileSync(cachePath, "utf8") : "";
+    const existing = fs.existsSync(cachePath)
+      ? fs.readFileSync(cachePath, "utf8")
+      : "";
     if (existing !== rendered) {
       fs.mkdirSync(path.dirname(cachePath), { recursive: true });
       fs.writeFileSync(cachePath, rendered);

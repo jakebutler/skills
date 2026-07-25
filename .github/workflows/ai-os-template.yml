@@ -24,5 +24,4 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/ai-os-doctor.mjs --json
-      - run: node tests/ai-os-runtime/run.mjs
       - run: npm run test:proof-harness

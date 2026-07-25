@@ -2,6 +2,9 @@
   "name": "@corvo/ai-os-template",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "ai-os:doctor": "node scripts/ai-os-doctor.mjs",
     "ai-os:doctor:write": "node scripts/ai-os-doctor.mjs --write",

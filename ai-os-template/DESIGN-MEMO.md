@@ -205,7 +205,7 @@ ai-os-template/
    Never install an author's absolute checkout path; root docs must remain usable when
    the optional shared checkout is absent.
 5. Vendor the runtime scripts, bind `.ai/ai-os.json`, activate project hooks, run
-   `ai-os-doctor --write`, and wire commands appropriate to the repo's stack.
+   `node scripts/ai-os-doctor.mjs --write`, and wire commands appropriate to the repo's stack.
 6. Verify no placeholders or host-specific absolute paths survive, with `AI_OS_HOME`
    unset for the fallback check.
 7. Land on a feature branch (`ai-os/instance`), commit with clear messages, never main.

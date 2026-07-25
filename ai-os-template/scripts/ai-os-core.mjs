@@ -6,15 +6,25 @@ import { spawnSync } from "node:child_process";
 const RISK_LEVELS = new Set(["simple", "medium", "high"]);
 const SECRET_PATTERNS = [
   /\bsk-[A-Za-z0-9_-]{20,}\b/,
-  /\b(?:ANTHROPIC|OPENAI|PIONEER|TAVILY)_API_KEY\s*=\s*[^\s"'$<{][^\s"']{7,}/i,
+  /\b(?:ANTHROPIC|CURSOR|OPENAI|PIONEER|TAVILY)_API_KEY\s*=\s*[^\s"'$<{][^\s"']{7,}/i,
   /\bSUPABASE_SERVICE_ROLE_KEY\s*=\s*[^\s"'$<{][^\s"']{7,}/i,
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
 ];
+const MODEL_KEY_REFERENCE_PATTERN =
+  /\b(?:(?:process|import\.meta)\.env\.|env\.)(?:ANTHROPIC|CURSOR|OPENAI|PIONEER|TAVILY)_API_KEY\b/i;
+const PUBLIC_MODEL_KEY_PATTERN =
+  /\b(?:NEXT_PUBLIC_|PUBLIC_|VITE_)(?:ANTHROPIC|CURSOR|OPENAI|PIONEER|TAVILY)_API_KEY\b/i;
+const CLIENT_FILE_PATTERN =
+  /(?:^|\/)(?:client|components|public)(?:\/|$)|(?:^|[./-])client\.[cm]?[jt]sx?$/i;
 const DESTRUCTIVE_COMMAND_PATTERNS = [
   /\bgit\s+reset\s+--hard\b/,
   /\bgit\s+clean\s+-[a-z]*f/i,
   /\bgit\s+(?:checkout|restore)\s+--\s+/,
-  /\bgit\s+branch\s+-D\b/,
+  /\bgit\b[^;&|\n]*\bbranch\s+(?:-[dD]\b|--delete\b)/i,
+  /\bgit\b[^;&|\n]*\bpush\b[^;&|\n]*(?:--force(?:-with-lease|-if-includes)?\b|(?:^|\s)-[a-z]*f[a-z]*\b)/i,
+  /\bgit\b[^;&|\n]*\bpush\b[^;&|\n]*\s--delete\b/i,
+  /\bgit\b[^;&|\n]*\btag\s+(?:-d\b|--delete\b)/i,
+  /\bgit\b[^;&|\n]*\bupdate-ref\s+-d\b/i,
   /\brm\s+-[a-z]*r[a-z]*f\b/i,
 ];
 
@@ -23,46 +33,173 @@ export function readJson(filePath) {
 }
 
 export function normalizeTask(value) {
-  return value.trim().toLowerCase().replace(/[\s_]+/g, "-");
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-");
+}
+
+function nonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function validateStringArray(value, label, errors, { required = true } = {}) {
+  if (value === undefined && !required) return [];
+  if (!Array.isArray(value) || value.some((item) => !nonEmptyString(item))) {
+    errors.push(`${label} must be an array of non-empty strings`);
+    return [];
+  }
+  if (new Set(value).size !== value.length)
+    errors.push(`${label} must contain unique values`);
+  return value;
 }
 
 export function validateRegistry(registry, evidence) {
   const errors = [];
-  if (!String(registry.version ?? "").startsWith("0.8")) {
-    errors.push("registry.version must start with 0.8");
+  if (!registry || typeof registry !== "object" || Array.isArray(registry)) {
+    return ["registry must be an object"];
+  }
+  if (!/^0\.8(?:\.\d+)?$/.test(registry.version ?? "")) {
+    errors.push("registry.version must be 0.8 or 0.8.x");
   }
   if (registry.policies?.noSilentSubstitution !== true) {
     errors.push("registry must enable noSilentSubstitution");
   }
+  if (!nonEmptyString(registry.backboneRouteId)) {
+    errors.push("backboneRouteId must be a non-empty string");
+  }
 
   const routeIds = new Set();
-  for (const route of registry.routes ?? []) {
-    if (!route.id || routeIds.has(route.id)) errors.push(`duplicate or missing route id: ${route.id ?? "<missing>"}`);
-    routeIds.add(route.id);
+  if (!Array.isArray(registry.routes) || registry.routes.length === 0) {
+    errors.push("registry.routes must be a non-empty array");
   }
-  if (!routeIds.has(registry.backboneRouteId)) errors.push("backboneRouteId must reference a route");
+  for (const [index, route] of (Array.isArray(registry.routes)
+    ? registry.routes
+    : []
+  ).entries()) {
+    if (!route || typeof route !== "object" || Array.isArray(route)) {
+      errors.push(`route ${index} must be an object`);
+      continue;
+    }
+    if (!nonEmptyString(route.id) || routeIds.has(route.id)) {
+      errors.push(`duplicate or missing route id: ${route.id ?? "<missing>"}`);
+    }
+    routeIds.add(route.id);
+    for (const field of [
+      "runtime",
+      "providerFamily",
+      "model",
+      "effort",
+      "availability",
+    ]) {
+      if (!nonEmptyString(route[field]))
+        errors.push(
+          `route ${route.id ?? index}.${field} must be a non-empty string`,
+        );
+    }
+    validateStringArray(
+      route.capabilities,
+      `route ${route.id ?? index}.capabilities`,
+      errors,
+    );
+    validateStringArray(
+      route.evidenceIds,
+      `route ${route.id ?? index}.evidenceIds`,
+      errors,
+      {
+        required: false,
+      },
+    );
+  }
+  if (!routeIds.has(registry.backboneRouteId))
+    errors.push("backboneRouteId must reference a route");
 
   const taskIds = new Set();
-  for (const task of registry.tasks ?? []) {
-    if (!task.id || taskIds.has(task.id)) errors.push(`duplicate or missing task id: ${task.id ?? "<missing>"}`);
+  if (!Array.isArray(registry.tasks) || registry.tasks.length === 0) {
+    errors.push("registry.tasks must be a non-empty array");
+  }
+  for (const [index, task] of (Array.isArray(registry.tasks)
+    ? registry.tasks
+    : []
+  ).entries()) {
+    if (!task || typeof task !== "object" || Array.isArray(task)) {
+      errors.push(`task ${index} must be an object`);
+      continue;
+    }
+    if (!nonEmptyString(task.id) || taskIds.has(task.id)) {
+      errors.push(`duplicate or missing task id: ${task.id ?? "<missing>"}`);
+    }
     taskIds.add(task.id);
+    validateStringArray(
+      task.aliases,
+      `task ${task.id ?? index}.aliases`,
+      errors,
+    );
+    const fallbackRouteIds = validateStringArray(
+      task.fallbackRouteIds,
+      `task ${task.id ?? index}.fallbackRouteIds`,
+      errors,
+    );
+    const companionRouteIds = validateStringArray(
+      task.requiredCompanionRouteIds,
+      `task ${task.id ?? index}.requiredCompanionRouteIds`,
+      errors,
+      { required: false },
+    );
+    if (!nonEmptyString(task.primaryRouteId)) {
+      errors.push(
+        `task ${task.id ?? index}.primaryRouteId must be a non-empty string`,
+      );
+    }
+    if (!nonEmptyString(task.confidence)) {
+      errors.push(
+        `task ${task.id ?? index}.confidence must be a non-empty string`,
+      );
+    }
+    if (!nonEmptyString(task.stopRule)) {
+      errors.push(
+        `task ${task.id ?? index}.stopRule must be a non-empty string`,
+      );
+    }
     for (const routeId of [
       task.primaryRouteId,
-      ...(task.fallbackRouteIds ?? []),
-      ...(task.requiredCompanionRouteIds ?? []),
+      ...fallbackRouteIds,
+      ...companionRouteIds,
     ]) {
-      if (!routeIds.has(routeId)) errors.push(`task ${task.id} references missing route ${routeId}`);
+      if (nonEmptyString(routeId) && !routeIds.has(routeId)) {
+        errors.push(`task ${task.id} references missing route ${routeId}`);
+      }
     }
   }
 
   if (evidence) {
-    const evidenceIds = new Set((evidence.sources ?? []).map((source) => source.id));
-    for (const route of registry.routes ?? []) {
-      for (const evidenceId of route.evidenceIds ?? []) {
-        if (!evidenceIds.has(evidenceId)) errors.push(`route ${route.id} references missing evidence ${evidenceId}`);
+    if (
+      !evidence ||
+      typeof evidence !== "object" ||
+      !Array.isArray(evidence.sources)
+    ) {
+      errors.push("evidence.sources must be an array");
+      return errors;
+    }
+    const evidenceIds = new Set(
+      evidence.sources
+        .filter((source) => nonEmptyString(source?.id))
+        .map((source) => source.id),
+    );
+    for (const route of Array.isArray(registry.routes) ? registry.routes : []) {
+      for (const evidenceId of Array.isArray(route?.evidenceIds)
+        ? route.evidenceIds
+        : []) {
+        if (!evidenceIds.has(evidenceId))
+          errors.push(
+            `route ${route.id} references missing evidence ${evidenceId}`,
+          );
       }
     }
-    if (evidence.policy?.communityWeightCap > registry.policies?.communityEvidenceWeightCap) {
+    if (
+      evidence.policy?.communityWeightCap >
+      registry.policies?.communityEvidenceWeightCap
+    ) {
       errors.push("evidence community weight exceeds registry policy");
     }
   }
@@ -72,7 +209,9 @@ export function validateRegistry(registry, evidence) {
 function findTask(registry, taskName) {
   const wanted = normalizeTask(taskName);
   return (registry.tasks ?? []).find(
-    (task) => task.id === wanted || (task.aliases ?? []).some((alias) => normalizeTask(alias) === wanted),
+    (task) =>
+      task.id === wanted ||
+      (task.aliases ?? []).some((alias) => normalizeTask(alias) === wanted),
   );
 }
 
@@ -87,7 +226,11 @@ export function resolveRoute(registry, options) {
   }
   const risk = options.risk ?? "medium";
   if (!RISK_LEVELS.has(risk)) {
-    return { status: "invalid-risk", requestedRisk: risk, validRisks: [...RISK_LEVELS] };
+    return {
+      status: "invalid-risk",
+      requestedRisk: risk,
+      validRisks: [...RISK_LEVELS],
+    };
   }
 
   const routeMap = new Map(registry.routes.map((route) => [route.id, route]));
@@ -98,9 +241,11 @@ export function resolveRoute(registry, options) {
     const route = routeMap.get(routeId);
     return Boolean(
       route &&
-        !excludedRoutes.has(route.id) &&
-        !unavailableProviders.has(route.providerFamily) &&
-        (!capability || route.capabilities.includes(capability)),
+      !excludedRoutes.has(route.id) &&
+      !unavailableProviders.has(route.providerFamily) &&
+      (!capability ||
+        (Array.isArray(route.capabilities) &&
+          route.capabilities.includes(capability))),
     );
   };
 
@@ -108,15 +253,22 @@ export function resolveRoute(registry, options) {
   let promotedForRisk = false;
   if (
     risk === "high" &&
-    ["codex-luna-max", "codex-terra-medium", "cursor-composer25"].includes(primaryRouteId)
+    ["codex-luna-max", "codex-terra-medium", "cursor-composer25"].includes(
+      primaryRouteId,
+    )
   ) {
     primaryRouteId = registry.backboneRouteId;
     promotedForRisk = true;
   }
 
-  const companionRoutes = (task.requiredCompanionRouteIds ?? []).map((routeId) => routeMap.get(routeId));
+  const companionRoutes = (task.requiredCompanionRouteIds ?? []).map(
+    (routeId) => routeMap.get(routeId),
+  );
   const missingCompanion = companionRoutes.find(
-    (route) => !route || excludedRoutes.has(route.id) || unavailableProviders.has(route.providerFamily),
+    (route) =>
+      !route ||
+      excludedRoutes.has(route.id) ||
+      unavailableProviders.has(route.providerFamily),
   );
   if (missingCompanion) {
     return {
@@ -138,6 +290,16 @@ export function resolveRoute(registry, options) {
       confidence: task.confidence,
       requiresRepoEval: task.requiresRepoEval ?? false,
       requiresIndependentReview: task.requiresIndependentReview ?? false,
+      stopRule: task.stopRule,
+    };
+  }
+
+  if (promotedForRisk) {
+    return {
+      status: "blocked",
+      task: task.id,
+      reason:
+        "high-risk work requires the promoted backbone route; lower-tier fallback is not permitted",
       stopRule: task.stopRule,
     };
   }
@@ -193,8 +355,8 @@ function declaredPackage(cwd, packageName) {
   const manifest = readJson(packagePath);
   return Boolean(
     manifest.dependencies?.[packageName] ||
-      manifest.devDependencies?.[packageName] ||
-      manifest.optionalDependencies?.[packageName],
+    manifest.devDependencies?.[packageName] ||
+    manifest.optionalDependencies?.[packageName],
   );
 }
 
@@ -233,11 +395,20 @@ export function buildDoctorReport(config, cwd) {
     : [`route registry not found: ${config.routeRegistry}`];
   const failures = [
     ...(nodeMajor < config.minimumNodeMajor
-      ? [`Node ${config.minimumNodeMajor}+ required; found ${process.versions.node}`]
+      ? [
+          `Node ${config.minimumNodeMajor}+ required; found ${process.versions.node}`,
+        ]
       : []),
-    ...requiredPaths.filter((item) => !item.present).map((item) => `missing required path: ${item.path}`),
+    ...requiredPaths
+      .filter((item) => !item.present)
+      .map((item) => `missing required path: ${item.path}`),
     ...tools
-      .filter((tool) => tool.required && (!process.env.CI || tool.requiredInCi) && tool.status === "missing")
+      .filter(
+        (tool) =>
+          tool.required &&
+          (!process.env.CI || tool.requiredInCi) &&
+          tool.status !== "available",
+      )
       .map((tool) => `missing required tool: ${tool.id}`),
     ...registryErrors,
   ];
@@ -245,7 +416,11 @@ export function buildDoctorReport(config, cwd) {
     version: config.version,
     project: config.project,
     cwd,
-    node: { version: process.versions.node, minimumMajor: config.minimumNodeMajor, ok: nodeMajor >= config.minimumNodeMajor },
+    node: {
+      version: process.versions.node,
+      minimumMajor: config.minimumNodeMajor,
+      ok: nodeMajor >= config.minimumNodeMajor,
+    },
     stacks: config.stacks ?? [],
     requiredPaths,
     tools,
@@ -273,16 +448,36 @@ export function renderToolCache(report) {
     "",
     "## Required paths",
     "",
-    ...report.requiredPaths.map((item) => `- ${item.present ? "[x]" : "[ ]"} \`${item.path}\``),
+    ...report.requiredPaths.map(
+      (item) => `- ${item.present ? "[x]" : "[ ]"} \`${item.path}\``,
+    ),
     "",
     "## Result",
     "",
-    report.ok ? "PASS" : `FAIL\n\n${report.failures.map((failure) => `- ${failure}`).join("\n")}`,
+    report.ok
+      ? "PASS"
+      : `FAIL\n\n${report.failures.map((failure) => `- ${failure}`).join("\n")}`,
     "",
     "This cache records local discovery, not remaining provider quota or production authorization.",
     "",
   ];
   return lines.join("\n");
+}
+
+export function resolveToolCachePath(config, cwd) {
+  if (!nonEmptyString(config?.toolCache)) {
+    throw new Error("AI OS config toolCache must be a non-empty relative path");
+  }
+  return path.resolve(cwd, config.toolCache);
+}
+
+function normalizeShellCommand(command) {
+  return command
+    .replace(/\\\r?\n/g, "")
+    .replace(/\\([;&|])/g, "$1")
+    .replace(/["']/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function hookOutput(eventName, additionalContext) {
@@ -319,28 +514,49 @@ export function evaluateHook(hookName, input, config, cwd) {
   const toolName = input.tool_name ?? "";
   const toolInput = input.tool_input ?? {};
   const overrideName = config.hooks?.blockingOverrideEnv;
-  const overrideActive = Boolean(overrideName && process.env[overrideName] === "1" && !process.env.CI);
+  const overrideActive = Boolean(
+    overrideName && process.env[overrideName] === "1" && !process.env.CI,
+  );
 
   if (hookName === "safety") {
     const command = String(toolInput.command ?? "");
-    const content = String(toolInput.content ?? toolInput.new_string ?? command);
+    const normalizedCommand = normalizeShellCommand(command);
+    const content = String(
+      toolInput.content ?? toolInput.new_string ?? command,
+    );
     const filePath = String(toolInput.file_path ?? toolInput.path ?? "");
-    const destructive = toolName === "Bash" && DESTRUCTIVE_COMMAND_PATTERNS.some((pattern) => pattern.test(command));
+    const destructive =
+      toolName === "Bash" &&
+      DESTRUCTIVE_COMMAND_PATTERNS.some(
+        (pattern) => pattern.test(command) || pattern.test(normalizedCommand),
+      );
     const secret = SECRET_PATTERNS.some((pattern) => pattern.test(content));
+    const clientSecretReference =
+      (PUBLIC_MODEL_KEY_PATTERN.test(content) ||
+        (MODEL_KEY_REFERENCE_PATTERN.test(content) &&
+          (CLIENT_FILE_PATTERN.test(filePath) ||
+            /^\s*["']use client["'];?/m.test(content)))) &&
+      !/\.env\.(?:example|sample|template)$/.test(filePath);
     const sensitivePath =
       /(^|\/)\.env(?:\.[^/]+)?$/.test(filePath) &&
       !/(^|\/)\.env\.(?:example|sample|template)$/.test(filePath);
-    if ((destructive || secret) && !overrideActive) {
+    if ((destructive || secret || clientSecretReference) && !overrideActive) {
       const reason = destructive
         ? `AI OS blocked a destructive command. Obtain explicit approval or set ${overrideName}=1 for a local non-CI exception.`
-        : `AI OS blocked content that resembles a committed secret. Use an environment variable or secret store instead.`;
+        : clientSecretReference
+          ? "AI OS blocked a model-provider credential reference from a client-exposed surface."
+          : `AI OS blocked content that resembles a committed secret. Use an environment variable or secret store instead.`;
       return denyPreToolUse(reason);
     }
     if (sensitivePath && !overrideActive) {
-      return askPreToolUse(`Sensitive environment file detected. Confirm the file remains uncommitted and contains no exposed credentials.`);
+      return askPreToolUse(
+        `Sensitive environment file detected. Confirm the file remains uncommitted and contains no exposed credentials.`,
+      );
     }
-    if (overrideActive && (destructive || secret)) {
-      return askPreToolUse(`Local override ${overrideName}=1 is active; confirm this exceptional operation.`);
+    if (overrideActive && (destructive || secret || clientSecretReference)) {
+      return askPreToolUse(
+        `Local override ${overrideName}=1 is active; confirm this exceptional operation.`,
+      );
     }
     return {};
   }
@@ -349,7 +565,10 @@ export function evaluateHook(hookName, input, config, cwd) {
     const prompt = String(input.prompt ?? "");
     const mappings = [
       [/\b(?:review|audit)\b/i, "independent-code-review"],
-      [/\b(?:architecture|system design|migration|auth|payments?)\b/i, "architecture-critique"],
+      [
+        /\b(?:architecture|system design|migration|auth|payments?)\b/i,
+        "architecture-critique",
+      ],
       [/\b(?:frontend|ui|css|component)\b/i, "frontend-implementation"],
       [/\b(?:copy|editorial|marketing)\b/i, "copy"],
       [/\b(?:research|investigate|feasibility)\b/i, "research"],
@@ -373,7 +592,11 @@ export function evaluateHook(hookName, input, config, cwd) {
 
   if (hookName === "delegating-review") {
     if (!config.hooks?.delegatingReview || input.stop_hook_active) return {};
-    const status = spawnSync("git", ["status", "--porcelain"], { cwd, encoding: "utf8", timeout: 5_000 });
+    const status = spawnSync("git", ["status", "--porcelain"], {
+      cwd,
+      encoding: "utf8",
+      timeout: 5_000,
+    });
     if (status.status !== 0 || !status.stdout.trim()) return {};
     return hookOutput(
       eventName || "Stop",
@@ -382,9 +605,15 @@ export function evaluateHook(hookName, input, config, cwd) {
   }
 
   if (hookName === "status-checkpoint") {
-    const status = spawnSync("git", ["status", "--short", "--branch"], { cwd, encoding: "utf8", timeout: 5_000 });
+    const status = spawnSync("git", ["status", "--short", "--branch"], {
+      cwd,
+      encoding: "utf8",
+      timeout: 5_000,
+    });
     return status.status === 0
-      ? { systemMessage: `AI OS checkpoint: ${status.stdout.trim().split(/\r?\n/).slice(0, 8).join(" | ")}` }
+      ? {
+          systemMessage: `AI OS checkpoint: ${status.stdout.trim().split(/\r?\n/).slice(0, 8).join(" | ")}`,
+        }
       : {};
   }
 
@@ -397,7 +626,9 @@ export function findConfigPath(cwd, explicitPath) {
     const candidate = path.join(cwd, relativePath);
     if (fs.existsSync(candidate)) return candidate;
   }
-  throw new Error("No AI OS config found; expected .ai/ai-os.json or runtime/ai-os.config.json");
+  throw new Error(
+    "No AI OS config found; expected .ai/ai-os.json or runtime/ai-os.config.json",
+  );
 }
 
 export function parseCliArgs(argv) {

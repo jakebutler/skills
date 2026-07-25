@@ -7,7 +7,7 @@
   "required": ["version", "backboneRouteId", "policies", "routes", "tasks"],
   "properties": {
     "$schema": { "type": "string" },
-    "version": { "type": "string", "pattern": "^0\\.8(\\.|$)" },
+    "version": { "type": "string", "pattern": "^0\\.8(?:\\.\\d+)?$" },
     "updatedAt": { "type": "string", "format": "date" },
     "backboneRouteId": { "type": "string", "minLength": 1 },
     "policies": {
@@ -21,7 +21,11 @@
       ],
       "properties": {
         "noSilentSubstitution": { "const": true },
-        "communityEvidenceWeightCap": { "type": "number", "minimum": 0, "maximum": 0.2 },
+        "communityEvidenceWeightCap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.15
+        },
         "evidenceMaxAgeDays": { "type": "integer", "minimum": 1 },
         "maximumFallbacks": { "type": "integer", "minimum": 0, "maximum": 3 }
       }
@@ -43,11 +47,23 @@
         ],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-          "runtime": { "type": "string", "enum": ["codex", "claude-code", "cursor-agent"] },
-          "providerFamily": { "type": "string", "enum": ["openai", "anthropic", "cursor"] },
+          "runtime": {
+            "type": "string",
+            "enum": ["codex", "claude-code", "cursor-agent"]
+          },
+          "providerFamily": {
+            "type": "string",
+            "enum": ["openai", "anthropic", "cursor"]
+          },
           "model": { "type": "string", "minLength": 1 },
-          "effort": { "type": "string", "enum": ["low", "medium", "high", "xhigh", "max", "n/a"] },
-          "availability": { "type": "string", "enum": ["verified", "conditional", "experimental"] },
+          "effort": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "xhigh", "max", "n/a"]
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["verified", "conditional", "experimental"]
+          },
           "capabilities": {
             "type": "array",
             "minItems": 1,
@@ -69,7 +85,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "aliases", "primaryRouteId", "fallbackRouteIds", "confidence", "stopRule"],
+        "required": [
+          "id",
+          "aliases",
+          "primaryRouteId",
+          "fallbackRouteIds",
+          "confidence",
+          "stopRule"
+        ],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
           "aliases": {
@@ -83,7 +106,10 @@
             "uniqueItems": true,
             "items": { "type": "string", "minLength": 1 }
           },
-          "confidence": { "type": "string", "enum": ["high", "medium", "provisional"] },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "provisional"]
+          },
           "requiresIndependentReview": { "type": "boolean" },
           "requiresRepoEval": { "type": "boolean" },
           "requiredCompanionRouteIds": {
