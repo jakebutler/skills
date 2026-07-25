@@ -1,0 +1,195 @@
+{
+  "$schema": "../schemas/task-route-registry.schema.json",
+  "version": "0.8.0",
+  "updatedAt": "2026-07-24",
+  "backboneRouteId": "codex-sol-high",
+  "policies": {
+    "noSilentSubstitution": true,
+    "communityEvidenceWeightCap": 0.15,
+    "evidenceMaxAgeDays": 90,
+    "maximumFallbacks": 2
+  },
+  "routes": [
+    {
+      "id": "codex-sol-high",
+      "runtime": "codex",
+      "providerFamily": "openai",
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "availability": "verified",
+      "capabilities": ["orchestration", "architecture", "hard-implementation", "synthesis", "verification"],
+      "evidenceIds": ["aa-gpt56-sol", "aa-codex-agent-index", "reddit-sol-terra-luna-guide"],
+      "notes": "Backbone. Prefer medium or high before max; scope and checkpoint long runs."
+    },
+    {
+      "id": "codex-sol-xhigh-review",
+      "runtime": "codex",
+      "providerFamily": "openai",
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh",
+      "availability": "verified",
+      "capabilities": ["independent-review", "security-review", "high-risk-verification"],
+      "evidenceIds": ["aa-codex-agent-index"],
+      "notes": "Must run in a fresh context against a frozen candidate."
+    },
+    {
+      "id": "codex-luna-max",
+      "runtime": "codex",
+      "providerFamily": "openai",
+      "model": "gpt-5.6-luna",
+      "effort": "max",
+      "availability": "verified",
+      "capabilities": ["mechanical-change", "classification", "extraction", "inventory", "bounded-implementation"],
+      "evidenceIds": ["aa-sol-terra-luna-cost", "reddit-sol-terra-luna-guide"],
+      "notes": "Use only with narrow paths and deterministic checks; never for long-context synthesis."
+    },
+    {
+      "id": "codex-terra-medium",
+      "runtime": "codex",
+      "providerFamily": "openai",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "availability": "conditional",
+      "capabilities": ["repo-research", "bounded-implementation", "fallback"],
+      "evidenceIds": ["aa-sol-terra-luna-cost", "reddit-terra-risk", "reddit-terra-utility"],
+      "notes": "Provisional fallback. Require bounded paths and verification; recent community evidence is mixed."
+    },
+    {
+      "id": "claude-opus5-high",
+      "runtime": "claude-code",
+      "providerFamily": "anthropic",
+      "model": "claude-opus-5",
+      "effort": "high",
+      "availability": "verified",
+      "capabilities": ["independent-review", "architecture-critique", "security-review", "tool-use"],
+      "evidenceIds": ["aa-opus5", "reddit-opus5-launch"],
+      "notes": "Cross-family reviewer. Record provider-returned identity; do not inherit implementation context."
+    },
+    {
+      "id": "claude-fable5-high",
+      "runtime": "claude-code",
+      "providerFamily": "anthropic",
+      "model": "fable",
+      "effort": "high",
+      "availability": "conditional",
+      "capabilities": ["long-horizon-architecture", "irreversible-decision-critique", "harness-audit"],
+      "evidenceIds": ["aa-opus5", "reddit-fable-availability"],
+      "notes": "Exceptional consultation only; quota and safety fallback can change the effective model."
+    },
+    {
+      "id": "claude-sonnet5-high",
+      "runtime": "claude-code",
+      "providerFamily": "anthropic",
+      "model": "claude-sonnet-5",
+      "effort": "high",
+      "availability": "verified",
+      "capabilities": ["copy", "editorial", "bounded-docs"],
+      "evidenceIds": ["aa-sonnet5"],
+      "notes": "Use from a bounded voice and facts brief with human approval."
+    },
+    {
+      "id": "cursor-composer25",
+      "runtime": "cursor-agent",
+      "providerFamily": "cursor",
+      "model": "composer-2.5",
+      "effort": "n/a",
+      "availability": "verified",
+      "capabilities": ["frontend-implementation", "crisp-bounded-implementation"],
+      "evidenceIds": ["aa-composer25", "repo-composer-frontend-slice", "reddit-composer25"],
+      "notes": "Fast bounded producer. Stop and return to Sol when the packet is ambiguous."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "orchestrate",
+      "aliases": ["orchestration", "plan", "synthesize", "coordinate"],
+      "primaryRouteId": "codex-sol-high",
+      "fallbackRouteIds": [],
+      "confidence": "high",
+      "requiresIndependentReview": false,
+      "requiresRepoEval": false,
+      "stopRule": "Stop for user direction if the Codex backbone is unavailable."
+    },
+    {
+      "id": "hard-implementation",
+      "aliases": ["complex-code", "multi-file", "migration", "auth", "payments"],
+      "primaryRouteId": "codex-sol-high",
+      "fallbackRouteIds": ["cursor-composer25", "codex-terra-medium"],
+      "confidence": "medium",
+      "requiresIndependentReview": true,
+      "requiresRepoEval": true,
+      "stopRule": "Re-plan when judgment remains unresolved or two quality attempts fail."
+    },
+    {
+      "id": "bounded-implementation",
+      "aliases": ["scoped-code", "small-feature", "bug-fix"],
+      "primaryRouteId": "codex-luna-max",
+      "fallbackRouteIds": ["cursor-composer25", "codex-sol-high"],
+      "confidence": "provisional",
+      "requiresIndependentReview": true,
+      "requiresRepoEval": true,
+      "stopRule": "Promote to Sol when scope, ambiguity, or risk grows."
+    },
+    {
+      "id": "frontend-implementation",
+      "aliases": ["frontend", "ui-code", "css", "component"],
+      "primaryRouteId": "cursor-composer25",
+      "fallbackRouteIds": ["codex-luna-max", "codex-sol-high"],
+      "confidence": "medium",
+      "requiresIndependentReview": true,
+      "requiresRepoEval": true,
+      "stopRule": "Preserve the design packet and deterministic browser checks across reroutes."
+    },
+    {
+      "id": "architecture-critique",
+      "aliases": ["architecture", "system-design", "irreversible-decision"],
+      "primaryRouteId": "claude-fable5-high",
+      "fallbackRouteIds": ["claude-opus5-high", "codex-sol-high"],
+      "confidence": "medium",
+      "requiresIndependentReview": false,
+      "requiresRepoEval": true,
+      "stopRule": "The Sol orchestrator and user remain the decision gate; record any effective-model fallback."
+    },
+    {
+      "id": "independent-code-review",
+      "aliases": ["review", "pr-review", "security-review"],
+      "primaryRouteId": "codex-sol-xhigh-review",
+      "fallbackRouteIds": [],
+      "requiredCompanionRouteIds": ["claude-opus5-high"],
+      "confidence": "high",
+      "requiresIndependentReview": true,
+      "requiresRepoEval": false,
+      "stopRule": "Pair with claude-opus5-high; an unavailable lane makes the review incomplete."
+    },
+    {
+      "id": "copy",
+      "aliases": ["editorial", "marketing-copy", "product-copy"],
+      "primaryRouteId": "claude-sonnet5-high",
+      "fallbackRouteIds": ["codex-luna-max", "codex-sol-high"],
+      "confidence": "medium",
+      "requiresIndependentReview": false,
+      "requiresRepoEval": true,
+      "stopRule": "Preserve the voice and facts brief; require human approval for publication."
+    },
+    {
+      "id": "research",
+      "aliases": ["repo-research", "web-research", "feasibility"],
+      "primaryRouteId": "codex-sol-high",
+      "fallbackRouteIds": ["codex-terra-medium"],
+      "confidence": "medium",
+      "requiresIndependentReview": false,
+      "requiresRepoEval": true,
+      "stopRule": "Stop when required primary sources cannot be verified."
+    },
+    {
+      "id": "mechanical",
+      "aliases": ["inventory", "extraction", "classification", "summary", "rename"],
+      "primaryRouteId": "codex-luna-max",
+      "fallbackRouteIds": ["codex-terra-medium", "codex-sol-high"],
+      "confidence": "medium",
+      "requiresIndependentReview": false,
+      "requiresRepoEval": true,
+      "stopRule": "Do not expand scope; use deterministic acceptance checks."
+    }
+  ]
+}

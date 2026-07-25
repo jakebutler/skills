@@ -131,11 +131,11 @@ root file or every model request.
 
 ## Model routing and provider failure
 
-The current matrix at `{{ROUTING_LOCATION}}` is authoritative when that optional
-portable binding is available. Otherwise use the routing summary installed in this repo
-and the version pin in its instance manifest. Codex Sol High is the default
-orchestrator. Model workers receive bounded contracts; decision authority does not
-transfer merely because a route is stronger or cheaper.
+The machine registry at `{{ROUTING_LOCATION}}` is authoritative. Resolve task,
+complexity, availability, and fallback from that registry before invoking a worker;
+the human routing guide explains the policy but does not override JSON. Codex Sol High
+is the default orchestrator. Model workers receive bounded contracts; decision
+authority does not transfer merely because a route is stronger or cheaper.
 
 Implementation and PR code review uses two independent standard lanes against one
 frozen candidate: fresh-context native `gpt-5.6-sol` at xhigh reasoning and direct

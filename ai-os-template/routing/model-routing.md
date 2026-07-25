@@ -1,6 +1,8 @@
 # Model Routing Matrix
 
-**Version 0.7, 2026-07-24.** Model quality, pricing, quota, and availability change.
+**Version 0.8, 2026-07-24.** `task-routes.json` is the machine source of truth and this
+file is its operating guide. Dated source claims live in `model-evidence.json`.
+Model quality, pricing, quota, and availability change.
 Re-verify bindings older than one quarter. The [complexity rubric](complexity-rubric.md)
 can promote a task to a stronger route, but it cannot remove review independence.
 Bindings are hypotheses; the [experiment workflow](../workflows/experiment.md) is the
@@ -18,8 +20,9 @@ evidence loop for changing them.
    quota on critique of advanced architecture, system design, and other irreversible
    decisions. Sol prepares a compact decision packet; Fable returns feedback; Sol and
    the user decide.
-4. **Codex does most engineering work.** Sol handles hard or long-horizon work, Terra
-   handles scoped work, and Luna handles high-volume light work.
+4. **Codex does most engineering work.** Sol handles hard or long-horizon work. Luna
+   is the provisional bounded/mechanical route. Terra is a guarded fallback until
+   repo-local evaluations establish a clear advantage over Luna or Sol.
 5. **Composer is the bounded frontend implementation default.** The 2026-07-14
    identical-slice experiment completed in 51.05 seconds and passed deterministic and
    browser checks. Terra is the first fallback. GLM-5.2 remains an installed
@@ -61,12 +64,12 @@ does not permit.
 | Implementation and PR code review | paired fresh-context native Sol 5.6 xhigh + direct Claude Opus 5 | none automatically | user-approved reduced topology only | preserve any completed packet and stop if either standard lane is unavailable; never silently substitute or count Fable as a replacement |
 | Advanced architecture or system-design feedback | Fable on a compact Sol packet | GLM-5.2 critique, then fresh-context Terra critique | Sol self-critique with an explicit independence caveat | user remains the final gate on irreversible decisions |
 | Hard, multi-file, or long-horizon implementation | Sol High | Composer when the packet is crisp | Terra for a bounded compatible slice | stop and re-plan if judgment is required and Codex is unavailable |
-| Scoped implementation | Terra | Composer | GLM-5.2 experimental | promote to Sol if scope or ambiguity grows |
+| Scoped implementation | Luna Max with narrow paths and deterministic checks | Composer | Sol High | promote to Sol if scope, ambiguity, or risk grows; Terra is a guarded experimental fallback |
 | Trivial mechanical work | Luna | Terra | Composer | never give Luna long-context synthesis |
 | Frontend implementation | Composer 2.5 for a crisp bounded slice | Terra | Sol High for high complexity; GLM-5.2 only as an explicit experiment | preserve the design packet and acceptance checks across reroutes |
 | Frontend design and UX judgment | Impeccable skill on Sol High | Impeccable skill on Fable when a high-value critique gate warrants quota | Impeccable skill on Terra | implementation workers execute the approved direction; they do not self-approve design quality |
 | Product, editorial, or marketing copy | Claude Sonnet | Terra for routine copy; Sol Standard for high-stakes copy | GLM-5.2 | preserve voice brief and human approval gate |
-| Repo research and feasibility | Terra | Sol Standard | GLM-5.2 | use cited evidence; distinguish inference from fact |
+| Repo research and feasibility | Sol High | Terra Medium as a bounded fallback | none | use cited evidence; distinguish inference from fact |
 | Web research sweeps | GLM research route | Terra with web search | Sol Standard | stop if required sources cannot be verified |
 | Runtime and browser verification | Sol Standard | Terra | Composer only for deterministic scripted checks | verifier must be independent of implementer |
 | Docs, summaries, inventory | Luna | GLM-5.2 | Terra | significance check still gates doc writes |
@@ -292,6 +295,11 @@ they request full files only when needed.
 
 ## Version history
 
+- **0.8 (2026-07-24):** adds a schema-backed task and route registry, dated evidence
+  ledger with capped community weight and recency decay, deterministic resolver with
+  risk promotion and no silent fallback, doctor/tool-cache generation, and executable
+  Claude hook dispatch. Luna becomes the provisional bounded/mechanical route; Terra
+  moves to guarded fallback pending repo-local evaluation.
 - **0.7 (2026-07-24):** implementation and PR code review now pairs a fresh-context
   native `gpt-5.6-sol` reviewer at xhigh reasoning with direct `claude-opus-5`.
   Fable becomes an optional third principal-engineer/architect consultation with

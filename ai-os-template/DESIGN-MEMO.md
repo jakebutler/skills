@@ -146,16 +146,16 @@ patch summary · verification run · risks · open questions · recommended next
 
 ## 8. Model routing
 
-Versioned matrix in `routing/model-routing.md`: firm defaults + complexity-rubric
-override. Role-based rows (orchestrator, heavy coder, cheap coder, frontend, browser/
-research, prose) bound to currently-verified models, with a "pending verification"
-section for routes not yet confirmed working. Date-stamped, because model quality and
-availability change.
+`routing/task-routes.json` is the machine source of truth, validated by
+`schemas/task-route-registry.schema.json`; `routing/model-routing.md` is the operating
+guide, and `routing/model-evidence.json` records dated claims, authority, recency, and
+limitations. The resolver applies the complexity override and refuses silent
+substitution.
 
-Defaults as of routing v0.7: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and
-hard-work route; **Codex Terra** (`gpt-5.6-terra`) owns scoped implementation and
-research sweeps; **Codex Luna** (`gpt-5.6-luna`) owns high-volume light work but never
-long-context codebase synthesis; **Composer 2.5** owns crisp bounded frontend
+Defaults as of routing v0.8: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and
+hard-work route; **Codex Luna Max** (`gpt-5.6-luna`) is the provisional bounded and
+mechanical route with narrow paths and deterministic checks; **Codex Terra**
+(`gpt-5.6-terra`) is a guarded fallback pending repo-local evaluation; **Composer 2.5** owns crisp bounded frontend
 implementation; **Claude Sonnet** writes copy. Routine code review pairs a
 fresh-context native **GPT-5.6 Sol xhigh** pass with direct **Claude Opus 5** against
 one frozen candidate. **Fable** is only an optional principal-engineer/architect
@@ -184,9 +184,10 @@ ai-os-template/
                             optional FEATURE-LIST.json
   workflows/              — workflow specs (10 core + research, prototype, and invariant extraction = 13 files)
   commands/               — slash command specs with output contracts
-  hooks/                  — hook specs + example settings snippets
+  hooks/                  — hook specs; scripts/ai-os-hook.mjs is the executable dispatcher
   agents/                 — subagent role definitions
-  routing/                — model-routing.md, complexity-rubric.md
+  routing/                — machine task registry, evidence ledger, operating guide, complexity rubric
+  runtime/                — doctor config, generated tool cache, Claude settings template
   skills/                 — Codex, Fable, GLM, and Composer worker contracts
   instances/
     MANIFEST-SCHEMA.md    — role→file mapping convention for instantiation
@@ -203,7 +204,8 @@ ai-os-template/
 4. Vendor shared specs or bind them through `AI_OS_HOME` plus a portable source URL.
    Never install an author's absolute checkout path; root docs must remain usable when
    the optional shared checkout is absent.
-5. Wire hooks/commands appropriate to the repo's stack and verification commands.
+5. Vendor the runtime scripts, bind `.ai/ai-os.json`, activate project hooks, run
+   `ai-os-doctor --write`, and wire commands appropriate to the repo's stack.
 6. Verify no placeholders or host-specific absolute paths survive, with `AI_OS_HOME`
    unset for the fallback check.
 7. Land on a feature branch (`ai-os/instance`), commit with clear messages, never main.

@@ -3,6 +3,17 @@
 These specs define the v1 Claude Code hook set for the AI Engineering OS template.
 Hooks are repo safety rails and workflow accelerators, not a second orchestrator.
 
+The executable v0.8 dispatcher is `../scripts/ai-os-hook.mjs`; the project-settings
+shape is `../runtime/claude-settings.template.json`. Instances vendor the dispatcher,
+bind `.ai/ai-os.json`, and commit `.claude/settings.json`. The dispatcher uses the
+current `hookSpecificOutput` contract: `PreToolUse` returns `permissionDecision`,
+context hooks return `additionalContext`, and the Stop review reminder respects
+`stop_hook_active` to avoid continuation loops.
+
+`ai-os-doctor --write` refreshes the generated tool cache. A successful tool probe
+means the executable exists locally; it does not prove authentication, quota,
+project linkage, production permission, or another machine's availability.
+
 ## Classification Model
 
 | Classification | Authority | v1 use |
@@ -59,4 +70,3 @@ Every blocking hook supports the same local override convention:
 | `status-checkpoint.md` | Automatic maintenance | `Stop`, `SessionEnd` |
 | `delegating-review.md` | Delegating | `Stop` |
 | `tool-cache-refresh.md` | Automatic maintenance | `SessionStart` (config changes detected via fingerprint compare) |
-

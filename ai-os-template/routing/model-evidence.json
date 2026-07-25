@@ -1,0 +1,120 @@
+{
+  "$schema": "../schemas/model-evidence.schema.json",
+  "version": "0.8.0",
+  "asOf": "2026-07-24",
+  "policy": {
+    "authorityOrder": ["repo-eval", "benchmark", "provider", "community"],
+    "communityWeightCap": 0.15,
+    "recencyHalfLifeDays": {
+      "benchmark": 60,
+      "provider": 45,
+      "community": 21
+    }
+  },
+  "sources": [
+    {
+      "id": "aa-gpt56-sol",
+      "kind": "benchmark",
+      "publishedAt": "2026-07-09",
+      "url": "https://artificialanalysis.ai/models/gpt-5-6-sol",
+      "supports": ["Sol is a frontier intelligence route but comparatively expensive and slow."],
+      "limitations": "Aggregate benchmarks do not predict repository-specific correctness."
+    },
+    {
+      "id": "aa-codex-agent-index",
+      "kind": "benchmark",
+      "publishedAt": "2026-07-24",
+      "url": "https://artificialanalysis.ai/agents/coding-agents/comparisons/claude-code-vs-codex",
+      "supports": ["Codex Sol is a leading coding-agent route across multiple effort levels."],
+      "limitations": "Agent-runtime results confound model, harness, tools, and effort."
+    },
+    {
+      "id": "aa-sol-terra-luna-cost",
+      "kind": "benchmark",
+      "publishedAt": "2026-07-13",
+      "url": "https://artificialanalysis.ai/articles/gpt-5-6-intelligence-vs-cost-across-sol-terra-luna",
+      "supports": ["Luna is the cost-efficient bounded-work candidate; Terra lacks a clear cost-intelligence edge."],
+      "limitations": "Cost-intelligence curves do not measure destructive-action or scope-control risk."
+    },
+    {
+      "id": "aa-opus5",
+      "kind": "benchmark",
+      "publishedAt": "2026-07-24",
+      "url": "https://artificialanalysis.ai/articles/opus-5",
+      "supports": ["Opus 5 is a leading coding and knowledge-work reviewer with stronger cost efficiency than Fable 5."],
+      "limitations": "Launch-day evidence needs repo-local confirmation and availability monitoring."
+    },
+    {
+      "id": "aa-sonnet5",
+      "kind": "benchmark",
+      "publishedAt": "2026-06-30",
+      "url": "https://artificialanalysis.ai/models/claude-sonnet-5",
+      "supports": ["Sonnet 5 is a fast long-context candidate for bounded copy and documentation."],
+      "limitations": "The benchmark page does not directly score editorial voice."
+    },
+    {
+      "id": "aa-composer25",
+      "kind": "benchmark",
+      "publishedAt": "2026-05-20",
+      "url": "https://artificialanalysis.ai/articles/cursor-composer-2-5-coding-agent-index/",
+      "supports": ["Composer 2.5 is fast and low-cost for bounded coding-agent tasks."],
+      "limitations": "The result measures Cursor's complete agent route, not the model in isolation."
+    },
+    {
+      "id": "repo-composer-frontend-slice",
+      "kind": "repo-eval",
+      "publishedAt": "2026-07-14",
+      "url": "https://github.com/jakebutler/skills/tree/main/ai-os-template/experiments/2026-07-14-frontend-route",
+      "supports": ["Composer completed the frozen frontend slice and passed deterministic and browser checks."],
+      "limitations": "One bounded slice establishes provisional route viability, not general superiority."
+    },
+    {
+      "id": "reddit-sol-terra-luna-guide",
+      "kind": "community",
+      "publishedAt": "2026-07-11",
+      "url": "https://www.reddit.com/r/codex/comments/1utzi5w/gpt56_sol_vs_terra_vs_luna_my_early_guide_to/",
+      "supports": ["Practitioners report Sol for complex work and Luna for bounded work."],
+      "limitations": "Self-reported early experience without controlled tasks; capped at community evidence weight."
+    },
+    {
+      "id": "reddit-terra-risk",
+      "kind": "community",
+      "publishedAt": "2026-07-10",
+      "url": "https://www.reddit.com/r/codex/comments/1ut3u5l/very_bad_first_experience_with_gpt_56_terra/",
+      "supports": ["A recent destructive-action report argues for strict path and verification controls around Terra."],
+      "limitations": "Single anecdote with no reproducible packet; risk signal only."
+    },
+    {
+      "id": "reddit-terra-utility",
+      "kind": "community",
+      "publishedAt": "2026-07-20",
+      "url": "https://www.reddit.com/r/codex/comments/1v21pa4/does_anyone_even_use_gpt_56_terra/",
+      "supports": ["Recent users question Terra's niche relative to Luna and Sol."],
+      "limitations": "Discussion sentiment is not a benchmark and may be affected by account limits."
+    },
+    {
+      "id": "reddit-composer25",
+      "kind": "community",
+      "publishedAt": "2026-06-24",
+      "url": "https://www.reddit.com/r/cursor/comments/1ue432o/composer_25_is_fun_to_use/",
+      "supports": ["Composer performs well when plans and slices are small and explicit."],
+      "limitations": "Self-selected user report; capped at community evidence weight."
+    },
+    {
+      "id": "reddit-opus5-launch",
+      "kind": "community",
+      "publishedAt": "2026-07-24",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1v5h6o9/introducing_claude_opus_5/",
+      "supports": ["Opus 5 is broadly available to paid Claude users at launch."],
+      "limitations": "Launch thread contains little controlled practitioner evidence yet."
+    },
+    {
+      "id": "reddit-fable-availability",
+      "kind": "community",
+      "publishedAt": "2026-07-17",
+      "url": "https://www.reddit.com/r/ClaudeCode/comments/1uzdh79/can_we_have_another_oneweek_extension_for_using/",
+      "supports": ["Subscription availability and quota for Fable can be unstable."],
+      "limitations": "Community availability reports can become stale quickly; doctor preflight is authoritative locally."
+    }
+  ]
+}

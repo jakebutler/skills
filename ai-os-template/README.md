@@ -9,13 +9,36 @@ Start with [WALKTHROUGH.html](WALKTHROUGH.html) for a guided review, then use
 [DESIGN-MEMO.md](DESIGN-MEMO.md) for the architecture, contracts, and decisions
 record. The directory layout and instantiation procedure are in memo §9–10.
 
-**Status:** routing v0.7. Codex Sol High is the primary orchestrator. Routine code
+**Status:** runtime and routing v0.8. Codex Sol High is the primary orchestrator. Routine code
 review pairs a fresh-context native GPT-5.6 Sol reviewer at xhigh reasoning with direct
 Claude Opus 5 against one frozen candidate. Fable is reserved for exceptional
 principal-engineer/architect escalation. Composer is the validated bounded frontend
-implementation default, Terra is the first fallback, and the installed GLM route
-remains experimental after its first timed validation failed. FreshProof and Lower dB
-are first, followed by corvo-labs-dot-com.
+implementation default. Luna is the provisional bounded and mechanical route; Terra
+is a guarded fallback until repo-local evaluations establish a clearer niche.
+FreshProof and Lower dB are first, followed by corvo-labs-dot-com.
+
+The human routing guide now has a machine-readable source of truth:
+`routing/task-routes.json`, backed by dated evidence in `routing/model-evidence.json`.
+The resolver promotes high-risk work to the Codex backbone, refuses silent fallback,
+and returns required companion review lanes:
+
+```bash
+node scripts/resolve-model-route.mjs --task bounded-implementation --risk high
+node scripts/resolve-model-route.mjs --task frontend --exclude cursor-composer25
+```
+
+Executable activation is portable Node code with no runtime dependency on this
+checkout. `ai-os-doctor` validates the instance and refreshes its tool cache, while
+`ai-os-hook` implements the shared Claude hook contract:
+
+```bash
+node scripts/ai-os-doctor.mjs --write
+node tests/ai-os-runtime/run.mjs
+```
+
+Copy `runtime/claude-settings.template.json` into an instance's project settings only
+after binding command paths to that repository. Codex consumes the same route registry
+and canonical `AGENTS.md`; Claude Code additionally executes the committed hooks.
 
 The shift-left proof harness template now provides task-scoped effect/invariant
 selection, immutable design and approved-builder packet identities, exact
@@ -39,3 +62,18 @@ formatting or constant indirection cannot masquerade as a product failure.
 The included TypeScript/Convex adapter is intentionally fail-visible and heuristic;
 project installation still requires planner and reviewer reconciliation rather than
 claiming that regex discovery is a complete static analysis.
+
+## Stack tools
+
+Convex is the first-class proof-harness adapter and is discovered through either a
+repo dependency or CLI. Cloudflare is a deployment/observability adapter, and
+Supabase remains optional until an instance declares that stack. Doctoring records
+whether `convex`, `wrangler`, and `supabase` are available or merely declared; it does
+not claim that a project is linked, authenticated, or authorized for production.
+
+`runtime/mcp.template.json` starts Convex from the repo-pinned package with data,
+logs, arbitrary queries, environment operations, and function execution disabled. It
+also includes Cloudflare's documentation-only remote server. Account, observability,
+deploy, and production-capable servers are never enabled by the generic template.
+Supabase should be added only for a repo that actually uses it, project-scoped and
+read-only by default.
