@@ -150,6 +150,7 @@ for (const clientPath of [
   "web/model-picker.ts",
   "src/components/server/model-picker.tsx",
   "src/components/pages/api/model-picker.tsx",
+  "src/pages/api/../../components/model-picker.tsx",
 ]) {
   const exposedReference = evaluateHook(
     "safety",

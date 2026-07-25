@@ -527,9 +527,8 @@ export function evaluateHook(hookName, input, config, cwd) {
       toolInput.content ?? toolInput.new_string ?? command,
     );
     const filePath = String(toolInput.file_path ?? toolInput.path ?? "");
-    const normalizedFilePath = (
-      path.isAbsolute(filePath) ? path.relative(cwd, filePath) : filePath
-    )
+    const normalizedFilePath = path
+      .relative(cwd, path.resolve(cwd, filePath))
       .replaceAll("\\", "/")
       .replace(/^\.\//, "");
     const destructive =
