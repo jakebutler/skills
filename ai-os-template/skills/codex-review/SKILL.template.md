@@ -7,12 +7,14 @@ description: Ask Codex CLI for an independent code review of uncommitted changes
 
 <!-- Bind {{REPO_NAME}} from the instance manifest. Resolve the active worktree at runtime. -->
 
-Use Codex as an independent reviewer when the user wants a second-pass review or the
-change is broad enough that another agent's perspective is useful.
+Use a new native Codex process as the fresh-context Sol half of the standard paired
+review topology. Pin `gpt-5.6-sol` at xhigh reasoning and review the same frozen
+candidate independently from the Claude Opus 5 lane.
 
-Prefer the Sol orchestrator's normal review process for small local checks. Do not delegate
-review just to avoid reading the code yourself. Treat Codex's output as evidence, not
-authority.
+The reviewer must not be the implementer and must not continue or inherit the
+implementation conversation. Do not delegate review just to avoid reading the code
+yourself. Treat Codex's output as evidence, not authority, and do not expose the Opus
+packet before this source packet is frozen.
 
 ## Workflow
 
@@ -40,19 +42,28 @@ PROMPT="$ARTIFACT_DIR/prompt.md"
 Review staged, unstaged, and untracked changes:
 
 ```bash
-codex -C "$REPO_ROOT" review --uncommitted > "$REPORT"
+codex -C "$REPO_ROOT" \
+  -c 'model="gpt-5.6-sol"' \
+  -c 'model_reasoning_effort="xhigh"' \
+  review --uncommitted > "$REPORT"
 ```
 
 Review current branch against the default integration branch:
 
 ```bash
-codex -C "$REPO_ROOT" review --base {{MAIN_BRANCH}} > "$REPORT"
+codex -C "$REPO_ROOT" \
+  -c 'model="gpt-5.6-sol"' \
+  -c 'model_reasoning_effort="xhigh"' \
+  review --base {{MAIN_BRANCH}} > "$REPORT"
 ```
 
 Review a single commit:
 
 ```bash
-codex -C "$REPO_ROOT" review --commit <sha> > "$REPORT"
+codex -C "$REPO_ROOT" \
+  -c 'model="gpt-5.6-sol"' \
+  -c 'model_reasoning_effort="xhigh"' \
+  review --commit <sha> > "$REPORT"
 ```
 
 Codex CLI does not accept a custom prompt together with `--uncommitted`, `--base`, or
@@ -61,7 +72,10 @@ Codex CLI does not accept a custom prompt together with `--uncommitted`, `--base
 review that names the exact diff or files to inspect:
 
 ```bash
-codex -C "$REPO_ROOT" review - < "$PROMPT" > "$REPORT"
+codex -C "$REPO_ROOT" \
+  -c 'model="gpt-5.6-sol"' \
+  -c 'model_reasoning_effort="xhigh"' \
+  review - < "$PROMPT" > "$REPORT"
 ```
 
 ## Review Prompt
@@ -104,6 +118,11 @@ Bind {{MAIN_BRANCH}} from the instance manifest / repo convention.
 
 Add task-specific context when useful: requirements, risky areas, expected behavior,
 relevant tests, ADRs, or files the Sol orchestrator is unsure about.
+
+The return packet must record `gpt-5.6-sol`, `xhigh`, native Codex provenance, the
+candidate identity observed at start and finish, and confirmation that no
+implementation session was resumed. If any of those are missing, the pass is
+advisory and does not satisfy the standard Sol lane.
 
 ## Reporting Back
 

@@ -59,6 +59,6 @@ first production RED/GREEN edit.
 |---|---|---|---|
 | Plan | inline intent | written plan in task docs | full plan + rollback in task docs |
 | Audit | one combined audit (adversarial + steelman + neutral baked in) | three lens passes by one auditor subagent | three independent lens subagents, orchestrator synthesizes |
-| Review | self-review acceptable | reviewer independent of implementer | independent reviewer + specialist lenses as diff dictates |
+| Review | paired fresh-context Sol 5.6 xhigh + Opus 5 | paired fresh-context Sol 5.6 xhigh + Opus 5 | paired fresh-context Sol 5.6 xhigh + Opus 5, specialist lenses as diff dictates, optional Fable principal/architect escalation only after a concrete trigger |
 | Verification | focused checks on the change | scoped checks + affected-area tests | full relevant suite + release/rollback plan |
 | Docs | status checkpoint | status + changelog + touched docs | status + changelog + spec/ADR update |

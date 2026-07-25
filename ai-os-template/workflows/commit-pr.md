@@ -64,9 +64,17 @@ This workflow starts when the user requests `{{COMMIT_PR_COMMAND}}`, a completed
 
 ## **Ceremony scaling**
 
-- Simple: commit workflow, push, PR body with required sections, one general PR review pass.
-- Medium: full commit workflow, PR review agent, review-fix loop, status update, changelog/docs verification reflected in PR.
-- High: full commit workflow, specialist PR sub-reviews based on diff content, explicit rollback plan, release notes or deployment gate, final orchestrator synthesis, and quiz-before-merge: before merging, the orchestrator asks the user 3–5 pointed questions about the change (what breaks if X, why approach Y, where is Z verified). Merge proceeds only when the recorded quiz state is `resolved`.
+- Simple: commit workflow, push, PR body with required sections, paired fresh-context
+  Sol 5.6 xhigh + Opus 5 PR review.
+- Medium: full commit workflow, paired Sol + Opus PR review, review-fix loop, status
+  update, changelog/docs verification reflected in PR.
+- High: full commit workflow, paired Sol + Opus PR review, specialist sub-reviews
+  based on diff content, explicit rollback plan, release notes or deployment gate,
+  final orchestrator synthesis, optional Fable principal/architect escalation only
+  after a concrete trigger, and quiz-before-merge: before merging, the orchestrator
+  asks the user 3–5 pointed questions about the change (what breaks if X, why approach
+  Y, where is Z verified). Merge proceeds only when the recorded quiz state is
+  `resolved`.
 
 ## **Failure handling**
 

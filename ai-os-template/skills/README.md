@@ -1,14 +1,16 @@
 # AI OS Codex Skills
 
 These are the canonical external-worker surfaces for the AI Engineering OS routing
-matrix v0.6:
+matrix v0.7:
 
 - `codex-implementation/` delegates bounded code changes to Codex CLI.
-- `codex-review/` delegates independent review to Codex CLI.
+- `codex-review/` supplies the fresh-context native `gpt-5.6-sol` xhigh half of the
+  standard paired code-review topology; Claude Opus 5 supplies the other half.
 - `codex-computer-use/` delegates browser, screenshot, app-launch, and runtime
   verification to Codex CLI.
-- `fable-consultation/` invokes one quota-aware architecture or system-design critique
-  through local Claude Code subscription auth, with GLM/Terra fallback.
+- `fable-consultation/` invokes one quota-aware principal-engineer/architect critique
+  only after an exceptional escalation trigger; it is not a routine code-review lane
+  or a replacement for Sol or Opus.
 - `glm-frontend-patch/` is the thin target binding for the installed experimental GLM
   route. Its canonical runner source is `../../skills/glm-frontend-patch/`.
 - `composer-implementation/` delegates bounded implementation to Cursor Composer.

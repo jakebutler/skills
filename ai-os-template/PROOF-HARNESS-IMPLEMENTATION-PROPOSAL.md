@@ -20,6 +20,13 @@ and deterministic prepare/run/finalize evidence. Composer remains Cursor-only. T
 end-to-end routing-stack experiment with runtime/producer surface as a fixed confound,
 not a pure model-isolation A/B test.
 
+**Code-review routing note (2026-07-24):** implementation and PR code review is now
+governed by routing matrix v0.7: fresh-context native `gpt-5.6-sol` at xhigh plus direct
+`claude-opus-5`, with Fable only as an exceptional principal-engineer/architect
+escalation. Older Fable/Opus 4.8 references below document this proposal's historical
+pre-implementation proof-review protocol; they are not the current routine code-review
+default.
+
 ## 1. Executive decision
 
 The Agent OS should move from reviewer-led bug discovery toward a code-grounded proof

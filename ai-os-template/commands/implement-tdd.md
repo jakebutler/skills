@@ -27,5 +27,6 @@ next review or commit action.
 
 Codex Sol High keeps scope and acceptance criteria stable. Codex is the primary
 implementation workhorse, including test writing, code edits, repo exploration, and
-verification. Review independence is preserved through `reviewer`, `verifier`, or
-orchestrator review depending on complexity.
+verification. At the review gate, independence is preserved through paired
+fresh-context Sol 5.6 xhigh and Opus 5 review of one frozen candidate; verification
+remains a separate evidence lane.

@@ -1,6 +1,6 @@
 # Model Routing Matrix
 
-**Version 0.6, 2026-07-14.** Model quality, pricing, quota, and availability change.
+**Version 0.7, 2026-07-24.** Model quality, pricing, quota, and availability change.
 Re-verify bindings older than one quarter. The [complexity rubric](complexity-rubric.md)
 can promote a task to a stronger route, but it cannot remove review independence.
 Bindings are hypotheses; the [experiment workflow](../workflows/experiment.md) is the
@@ -10,19 +10,23 @@ evidence loop for changing them.
 
 1. **Codex Sol at High reasoning is the orchestrator.** It owns framing, task state,
    decomposition, delegation packets, conflict resolution, synthesis, and user updates.
-2. **Fable is an architecture consultant, not the control plane.** Spend Anthropic
+2. **Routine code review uses two independent lanes.** A fresh-context native Codex
+   reviewer runs `gpt-5.6-sol` at xhigh reasoning, and a direct Claude subscription
+   reviewer runs `claude-opus-5`. They review the same frozen candidate independently
+   before Sol consolidates their packets.
+3. **Fable is an architecture consultant, not a routine code reviewer.** Spend Anthropic
    quota on critique of advanced architecture, system design, and other irreversible
    decisions. Sol prepares a compact decision packet; Fable returns feedback; Sol and
    the user decide.
-3. **Codex does most engineering work.** Sol handles hard or long-horizon work, Terra
+4. **Codex does most engineering work.** Sol handles hard or long-horizon work, Terra
    handles scoped work, and Luna handles high-volume light work.
-4. **Composer is the bounded frontend implementation default.** The 2026-07-14
+5. **Composer is the bounded frontend implementation default.** The 2026-07-14
    identical-slice experiment completed in 51.05 seconds and passed deterministic and
    browser checks. Terra is the first fallback. GLM-5.2 remains an installed
    experimental route after its streamed arm exceeded the ten-minute cap.
-5. **Claude Sonnet is the preferred copy route.** It writes or rewrites product,
+6. **Claude Sonnet is the preferred copy route.** It writes or rewrites product,
    editorial, and marketing copy from a bounded brief. Copy does not consume Fable.
-6. **Provider failure is ordinary control flow.** Each role has an ordered fallback
+7. **Provider failure is ordinary control flow.** Each role has an ordered fallback
    chain, partial work is checkpointed, and a route change never weakens acceptance
    criteria or review requirements.
 
@@ -35,12 +39,14 @@ to be installed in an instance.
 | Route | Family | Best use | Availability note |
 |---|---|---|---|
 | Codex Sol (`gpt-5.6-sol`), High reasoning | OpenAI/Codex | orchestration, hard builds, synthesis, high-risk verification | verified locally 2026-07-12 |
+| Fresh-context Codex Sol (`gpt-5.6-sol`), xhigh reasoning | OpenAI/Codex | required independent code-review lane | launch without implementation-history inheritance; native Codex route only; record exact model, effort, and candidate identity |
 | Codex Sol, Standard reasoning | OpenAI/Codex | focused planning, difficult review, browser/computer-use work | verified locally 2026-07-12 |
-| Codex Terra (`gpt-5.6-terra`) | OpenAI/Codex | scoped implementation, code review, research sweeps | verified locally 2026-07-12 |
+| Codex Terra (`gpt-5.6-terra`) | OpenAI/Codex | scoped implementation, research sweeps, user-approved reduced-topology review fallback | verified locally 2026-07-12 |
 | Codex Luna (`gpt-5.6-luna`) | OpenAI/Codex | summaries, extraction, classification, inventory | verified locally 2026-07-12; never use for long-context codebase synthesis |
+| Claude Opus 5 (`claude-opus-5`) | Anthropic | required independent code-review lane | local Claude Code subscription route; pin the exact model and record provider-returned identity |
 | Fable | Anthropic | advanced architecture and system-design critique | local Claude Code CLI is authenticated to Claude Pro; quota-limited and local-only unless another environment has explicit auth |
 | Claude Sonnet | Anthropic | written copy and steelman review | same local Claude Pro route; quota-limited; do not use as an orchestration fallback unless Codex is unavailable |
-| GLM-5.2 (`glm-5.2`) | Z.ai | experimental streamed frontend implementation, independent review, offloaded research | runner installed globally; first bounded frontend arm exceeded ten minutes on 2026-07-14, so production routing remains conditional |
+| GLM-5.2 (`glm-5.2`) | Z.ai | experimental streamed frontend implementation, user-approved reduced-topology review fallback, offloaded research | runner installed globally; first bounded frontend arm exceeded ten minutes on 2026-07-14, so production routing remains conditional |
 | Composer 2.5 (`composer-2.5`) | Cursor | fast bounded implementation with crisp requirements | verified headless 2026-07-12; account-pooled usage |
 
 ## Role routes and fallbacks
@@ -52,6 +58,7 @@ does not permit.
 | Work | Primary | Fallback 1 | Fallback 2 | Stop rule |
 |---|---|---|---|---|
 | Orchestration, framing, synthesis | Sol High | Fable, only if Anthropic is available and the user accepts quota use | none | stop for user direction if both Codex and Anthropic are unavailable |
+| Implementation and PR code review | paired fresh-context native Sol 5.6 xhigh + direct Claude Opus 5 | none automatically | user-approved reduced topology only | preserve any completed packet and stop if either standard lane is unavailable; never silently substitute or count Fable as a replacement |
 | Advanced architecture or system-design feedback | Fable on a compact Sol packet | GLM-5.2 critique, then fresh-context Terra critique | Sol self-critique with an explicit independence caveat | user remains the final gate on irreversible decisions |
 | Hard, multi-file, or long-horizon implementation | Sol High | Composer when the packet is crisp | Terra for a bounded compatible slice | stop and re-plan if judgment is required and Codex is unavailable |
 | Scoped implementation | Terra | Composer | GLM-5.2 experimental | promote to Sol if scope or ambiguity grows |
@@ -90,20 +97,26 @@ and security decisions.
 
 ## Review topology
 
-Review routes depend on both task tier and the implementer's family. Different prompts
-on the same model are useful, but they are not cross-family independence.
+Every implementation or PR code-review gate uses the same frozen two-lane topology.
+Different prompts on the same model are useful, but they are not independent routes.
+This topology does not rewrite project-bound pre-implementation `design-proof`
+architecture and security roles.
 
-| Tier | Required review | Preferred topology | Anthropic unavailable |
+| Tier | Required review | Standard topology | Additional work |
 |---|---|---|---|
-| Simple | focused verification plus one combined self-audit | orchestrator reviews if it did not implement; otherwise Terra or GLM | Terra or GLM |
-| Medium | one independent reviewer plus verifier when behavior is user-facing | prefer a reviewer from a different family than the implementer | GLM reviews Codex work; Terra reviews GLM or Composer work |
-| High | two independent review lenses plus verification; specialist lenses as the diff requires | Fable for architecture/system design, plus GLM or a fresh Codex reviewer; Sol synthesizes | GLM plus fresh-context Terra or Sol reviewer; disclose reduced lineage diversity |
+| Simple | paired findings-first code review plus focused verification | fresh-context native Sol 5.6 xhigh + direct Claude Opus 5 | no specialist lens unless the diff contains a concrete security, data, or architecture trigger |
+| Medium | paired findings-first code review plus verifier when behavior is user-facing | fresh-context native Sol 5.6 xhigh + direct Claude Opus 5 | add only diff-triggered UX, test, docs, security, or data coverage |
+| High | paired findings-first code review plus independent verification and applicable specialist coverage | fresh-context native Sol 5.6 xhigh + direct Claude Opus 5 | Fable may be added only as the exceptional principal-engineer/architect consultation defined below |
 
-The coding agent is never the sole reviewer. A Fable gate is not scheduled for every
-High task. It is preferred, subject to availability and the ROI gate, when advanced
-architecture, system design, or another durable judgment is the reason the task is
-High. Security, data, and release risk can use the appropriate specialist routes
-without spending Fable quota unless architectural judgment is also needed.
+The coding agent is never the sole reviewer. The Sol reviewer must start from fresh
+context and must not be the implementer or inherit the implementation conversation.
+Sol and Opus receive the same frozen diff, plan, requirements, and applicable invariant
+packet; their source packets remain separate until both are complete.
+
+Fable is never one of the routine code-review lanes and never replaces Sol or Opus.
+Medium or High complexity alone is not an escalation trigger. Security, data, and
+release risk stay with Opus, Sol, and the appropriate specialist checks unless a
+load-bearing architectural judgment is also present.
 
 ## Fable ROI gate
 
@@ -116,6 +129,15 @@ Fable is eligible only when all of these are true:
    risk that the working model family may miss.
 4. The response will be recorded in a plan, ADR, review disposition, or routing
    experiment so the quota spend creates reusable value.
+
+For code-review escalation, at least one concrete trigger must also be recorded:
+
+- a load-bearing architecture or system-boundary decision;
+- an irreversible or expensive-to-reverse design choice;
+- a cross-cutting invariant conflict;
+- disagreement between the frozen Sol and Opus packets on an architectural premise; or
+- a Sol or Opus finding that exposes a design gap that cannot safely be resolved inside
+  the approved implementation contract.
 
 High-ROI Fable uses:
 
@@ -131,14 +153,25 @@ High-ROI Fable uses:
 
 Low-ROI Fable uses are prohibited by default: routine orchestration, repo recon,
 summaries, status updates, mechanical planning, implementation, ordinary copy drafting,
-repeated review passes, and work that acceptance tests can decide.
+routine code review, repeated review passes, and work that acceptance tests can decide.
 
 Budget rule: one critique and, only if necessary, one focused follow-up per decision.
-No Fable fan-out. If the first response is sufficient, stop. If the Anthropic family is
-Limited or Unavailable, use the documented GLM plus fresh-Codex topology instead of
-waiting unless the user explicitly asks to wait.
+No Fable fan-out. If the first response is sufficient, stop. Fable is not an Opus
+fallback: both use the Anthropic family, and they have different jobs.
 
 ### Local subscription-backed invocation
+
+The standard Claude code-review lane pins Opus 5:
+
+```bash
+claude -p --model claude-opus-5 --effort high --permission-mode plan \
+  --tools "Read,Grep,Glob,Bash" --no-session-persistence \
+  --output-format stream-json --verbose --include-partial-messages \
+  < code-review-packet.md
+```
+
+Record the provider-returned exact model. The stable `opus` alias is acceptable only
+when the result proves it resolved to `claude-opus-5`.
 
 On the verified local machine, Codex may invoke Fable through the installed Claude Code
 CLI and the user's existing Claude Pro login. This does not require an Anthropic API key:
@@ -159,6 +192,12 @@ subscription route: that mode deliberately skips OAuth and keychain reads and re
 API-key-style credentials. Do not assume the local login exists in Codex cloud, CI, or a
 different machine. In those environments, mark Anthropic Unavailable unless a separate
 credential path has been configured intentionally.
+
+The standard Codex code-review lane must use a new native Codex context with
+`gpt-5.6-sol` at xhigh reasoning. In a collaboration-capable harness, spawn it with no
+forked implementation turns. In a CLI-only harness, start a new review process/session
+and bind the model explicitly. A same-thread self-review or a Sol worker that inherited
+the implementation transcript does not satisfy the lane.
 
 ## Availability and failover protocol
 
@@ -197,6 +236,9 @@ credential path has been configured intentionally.
 
 There is no infinite retry loop. One transient retry and two cross-route fallbacks are
 the default maximum for a delegation. After that, Sol stops and presents the evidence.
+The paired code-review role is stricter: after one transient retry, an unavailable Sol
+or Opus lane makes the review incomplete. Preserve the completed packet and request
+explicit user approval before any reduced-diversity fallback.
 
 ## Visibility contract
 
@@ -223,9 +265,9 @@ continuation rounds, and one transient retry before Composer then Terra takeover
 
 | Tier | Plan and orchestrate | Implement | Review and verify |
 |---|---|---|---|
-| Simple | Sol High inline, with a compact packet | Luna for trivial work; Composer for crisp frontend; Terra otherwise | focused verification; one combined audit |
-| Medium | Sol High; Sol Standard may draft options | Terra or Composer; Sol for multi-file work | one independent reviewer, cross-family when practical; verifier for user-facing behavior |
-| High | Sol High owns plan and synthesis; Fable consults only at architecture/system-design gates | Sol High; Composer for a separately bounded frontend slice | two review lenses plus independent verification; Fable only when the durable judgment warrants it |
+| Simple | Sol High inline, with a compact packet | Luna for trivial work; Composer for crisp frontend; Terra otherwise | fresh-context Sol 5.6 xhigh + Opus 5; focused verification |
+| Medium | Sol High; Sol Standard may draft options | Terra or Composer; Sol for multi-file work | fresh-context Sol 5.6 xhigh + Opus 5; verifier for user-facing behavior |
+| High | Sol High owns plan and synthesis; Fable consults only at exceptional architecture/system-design gates | Sol High; Composer for a separately bounded frontend slice | fresh-context Sol 5.6 xhigh + Opus 5, specialist verification, optional Fable principal/architect escalation only when a trigger is recorded |
 
 High-tier ceremony includes a quiz-before-merge: the orchestrator asks the user three
 to five pointed questions about the implementation before merge.
@@ -241,7 +283,8 @@ they request full files only when needed.
 
 - conflicting requirements, docs, or reviewers: Sol High synthesizes and asks the user
   when the choice changes intent
-- advanced architecture or system design needs an outside critic: compact Fable gate
+- a recorded principal/architect trigger survives the standard Sol + Opus review:
+  compact Fable gate
 - two failed quality attempts on a bounded slice: Luna or Composer to Terra, Terra to
   Sol, then stop and re-plan
 - Composer discovers ambiguity: stop it and return to Sol for a tighter packet
@@ -249,6 +292,10 @@ they request full files only when needed.
 
 ## Version history
 
+- **0.7 (2026-07-24):** implementation and PR code review now pairs a fresh-context
+  native `gpt-5.6-sol` reviewer at xhigh reasoning with direct `claude-opus-5`.
+  Fable becomes an optional third principal-engineer/architect consultation with
+  explicit triggers and may not replace either standard lane.
 - **0.6 (2026-07-14):** first frontend-route experiment rejects GLM as the default;
   Composer becomes the bounded frontend implementation route, Terra the first
   fallback, and GLM an installed experiment guarded by deadline, heartbeat, partial

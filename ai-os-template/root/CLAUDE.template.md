@@ -57,7 +57,8 @@ named skill as a strong default, not a suggestion.
 ## Claude lane
 
 The primary control plane is Codex Sol High. A Claude Code session normally serves one
-of two bounded roles: Fable reviews an advanced architecture or system-design packet;
+of three bounded roles: Opus 5 supplies the standard independent Anthropic code-review
+lane; Fable reviews an exceptional advanced architecture or system-design packet;
 Sonnet writes copy from a voice and acceptance brief. Claude becomes the fallback
 orchestrator only when the Codex family is unavailable and the user accepts Anthropic
 quota use.
@@ -67,10 +68,12 @@ Return decisions, evidence, risks, and the next action to the Sol orchestrator. 
 expand a consultation packet into repo-wide implementation work.
 
 When Codex launches this lane locally, use Claude Code print mode with the authenticated
-Claude subscription. Preflight `claude auth status`; invoke `claude -p --model fable`
-for architecture consultation or `--model sonnet` for copy. Do not use `--bare`, which
+Claude subscription. Preflight `claude auth status`; invoke
+`claude -p --model claude-opus-5` for code review, `--model fable` for exceptional
+architecture consultation, or `--model sonnet` for copy. Do not use `--bare`, which
 does not read the subscription OAuth/keychain session. Remote and CI environments must
-not assume this local authentication exists.
+not assume this local authentication exists. Record the provider-returned exact model;
+an `opus` alias is valid only when it resolves to `claude-opus-5`.
 
 | Work | Route to |
 |---|---|
@@ -82,7 +85,8 @@ not assume this local authentication exists.
 | Offloaded web research | {{RESEARCH_ROUTE}} |
 | Written content | Sonnet; Terra fallback |
 | Advanced architecture and system-design feedback | Fable on a compact Sol decision packet |
-| Review | different family from implementer when practical; two lenses at High tier |
+| Code review | fresh-context native `gpt-5.6-sol` at xhigh + direct `claude-opus-5` against one frozen candidate |
+| Principal engineer / architect escalation | Fable only after a concrete exceptional trigger; never a replacement for Sol or Opus |
 
 Optional full matrix and complexity rubric: {{ROUTING_LOCATION}}. The binding must be
 repo-relative or use the documented `AI_OS_HOME` variable. When it is unavailable, use

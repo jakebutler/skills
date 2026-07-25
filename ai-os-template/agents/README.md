@@ -35,7 +35,7 @@ passing tests for understanding.
 
 ## Roster
 
-| Role | File | Default route (matrix v0.6) | Independence rule |
+| Role | File | Default route (matrix v0.7) | Independence rule |
 |---|---|---|---|
 | Initializer | `initializer.md` | Codex Sol (codex-implementation pattern) | — |
 | Researcher | `researcher.md` | Codex Terra read-only packet; GLM research skill for offloaded web sweeps | — |
@@ -43,13 +43,14 @@ passing tests for understanding.
 | Implementer | `implementer.md` | Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical) | never sole reviewer of own work |
 | Frontend designer | `frontend-designer.md` | Impeccable on Sol High for judgment; Composer for crisp build-out; Terra fallback; GLM-5.2 experimental | does not self-approve visual quality |
 | Verifier | `verifier.md` | Sol (codex-computer-use for runtime/browser) | did not write the code under test |
-| Reviewer | `reviewer.md` | cross-family when practical; Fable only for architecture/system-design judgment | independent of implementer |
+| Reviewer | `reviewer.md` | paired fresh-context native Sol 5.6 xhigh + direct Claude Opus 5; Fable only as exceptional principal/architect escalation | both standard lanes independent of implementer and of each other before fan-in |
 | Review resolver | `review-resolver.md` | route-neutral read-only synthesis; Sol owns final disposition | did not design or implement the candidate |
 | Invariant extractor | `invariant-extractor.md` | bounded read-only normalization; deterministic writer appends candidates | never promotes active policy or edits product code |
 | Auditor | `auditor.md` | Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis | independent lenses at High tier |
 | Doc maintainer | `doc-maintainer.md` | Luna; GLM/Terra fallback | Tier A/B files only |
 | Autoskill improver | `autoskill-improver.md` | Terra; Sonnet for language-sensitive proposals | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |
 
-The frontmatter `model:` in each definition file is only the Claude adapter fallback.
-It is not the primary route. The v0.6 routing matrix is authoritative and family-level
+The frontmatter `model:` in each definition file is only the Claude adapter binding.
+It is not the complete route. The v0.7 routing matrix is authoritative: the reviewer
+also requires a separate fresh-context native Sol 5.6 xhigh pass, and family-level
 quota failure skips all Claude frontmatter routes.

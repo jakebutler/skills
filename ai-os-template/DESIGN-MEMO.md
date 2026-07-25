@@ -152,14 +152,16 @@ research, prose) bound to currently-verified models, with a "pending verificatio
 section for routes not yet confirmed working. Date-stamped, because model quality and
 availability change.
 
-Defaults as of routing v0.6: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and hard-work
-route; **Codex Terra** (`gpt-5.6-terra`) owns scoped implementation, first-pass review,
-and research sweeps; **Codex Luna** (`gpt-5.6-luna`) owns high-volume light work but
-never long-context codebase synthesis; **Composer 2.5** owns crisp bounded frontend
-implementation; **Claude Sonnet** writes copy; **Fable** critiques advanced architecture
-and system design from a compact decision packet; **GLM-5.2** remains an installed
-experimental implementation route. Every role has a cross-family fallback and the same
-acceptance checks survive rerouting.
+Defaults as of routing v0.7: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and
+hard-work route; **Codex Terra** (`gpt-5.6-terra`) owns scoped implementation and
+research sweeps; **Codex Luna** (`gpt-5.6-luna`) owns high-volume light work but never
+long-context codebase synthesis; **Composer 2.5** owns crisp bounded frontend
+implementation; **Claude Sonnet** writes copy. Routine code review pairs a
+fresh-context native **GPT-5.6 Sol xhigh** pass with direct **Claude Opus 5** against
+one frozen candidate. **Fable** is only an optional principal-engineer/architect
+escalation after a concrete trigger. **GLM-5.2** remains an installed experimental
+implementation route. Acceptance checks survive rerouting, but neither standard
+code-review lane is silently replaceable.
 
 Provider failures are modeled as state, not improvisation. Quota, auth, or invalid-model
 errors mark an entire family unavailable; transient failures get one checkpointed retry;
@@ -245,9 +247,10 @@ ai-os-template/
 | D14 | Every role has ordered cross-family fallbacks; quota/auth failures disable the whole family for the task |
 | D15 | Historical 2026-07-13 hypothesis: GLM-5.2 preferred for streamed frontend implementation; superseded by D19 after validation |
 | D16 | Claude Sonnet owns copy; Fable quota is not spent on routine prose |
-| D17 | Medium review prefers a different family; High review requires two lenses plus verification, with Fable only when durable design judgment warrants it |
+| D17 | Historical review-diversity rule, superseded by D20 for implementation and PR code review; its Fable scarcity principle remains active |
 | D18 | Status visibility is a contract: start route, phase checkpoints, immediate retry/fallback notice, evidence path, and final route ledger |
 | D19 | The first identical-slice experiment rejected GLM as the frontend default; Composer becomes the bounded implementation route, Terra first fallback, and GLM remains experimental behind a ten-minute deadline and automatic takeover |
+| D20 | Code review uses two independent standard lanes against one frozen candidate: fresh-context native GPT-5.6 Sol at xhigh and Claude Opus 5. Fable is an optional third principal-engineer/architect escalation only after a concrete trigger and never replaces either lane. |
 
 ### v0.2 context additions (same session)
 

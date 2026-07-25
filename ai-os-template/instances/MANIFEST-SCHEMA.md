@@ -26,7 +26,7 @@ the manifest records the winner, it never renames existing files.
    - hooks
    - subagent roles
    - Codex delegation skills
-   - model routing
+   - model routing, including exact standard code-review routes
    - FEATURE-LIST module (default: not installed)
 3. **Follow-ups** — numbered list of deferred decisions and unwired pieces, each with
    enough context that a future session can act without re-deriving it.
@@ -58,8 +58,18 @@ never `dev/active`. Absolute paths and `..` escapes are invalid.
 The canonical routing matrix lives in the template repo
 (`ai-os-template/routing/model-routing.md`). Instances **reference** it in the
 manifest's role-bindings row with a **version pin** (e.g. "routing → template repo,
-matrix v0.6"). When the canonical matrix bumps, the next session in an instance repo
+matrix v0.7"). When the canonical matrix bumps, the next session in an instance repo
 updates the pin deliberately.
+
+For matrix v0.7, the model-routing row must record:
+
+- standard code review: fresh-context native `gpt-5.6-sol` at xhigh plus direct
+  `claude-opus-5`, both against one frozen candidate;
+- provider/model provenance and start/end candidate identity requirements;
+- Fable as optional principal-engineer/architect escalation only, with the qualifying
+  trigger recorded and no authority to replace either standard lane; and
+- any project-bound `design-proof` architecture/security roles separately, so the
+  implementation/PR review update does not silently rewrite an accepted proof protocol.
 
 Symlinks were considered and rejected: a committed symlink to an absolute local path
 dangles on GitHub, CI, other machines, and fresh clones — the repo would carry a
@@ -95,7 +105,10 @@ must also record a portable source URL, such as
 6. When proof-required work is enabled, validate `.ai/proof-harness.json`, inventory
    adapter config, active registry, and one positive/negative design-packet fixture;
    run rendered-view freshness before advertising the gate as installed.
-7. Promote repo learnings to the template only when they generalize (decision #12).
+7. Verify that the installed code-review adapter pins native Sol 5.6 xhigh in a fresh
+   context, that the Claude adapter pins Opus 5 and records the resolved model, and
+   that an unavailable lane fails visibly rather than silently selecting Fable.
+8. Promote repo learnings to the template only when they generalize (decision #12).
 
 Reference instances: `docs/ai-os-manifest.md` in lower-db (overlay-based, house
 conventions dominant) and freshproof (template-based, mostly fresh roles).

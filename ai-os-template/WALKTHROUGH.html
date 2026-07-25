@@ -638,7 +638,7 @@
 
     <section id="routing">
       <h2>8 · Model routing and failover</h2>
-      <p><strong>v0.6 operating decision:</strong> Codex Sol High is the control plane. Fable is a scarce consultation route for durable architecture and system-design judgment. Codex handles most engineering work, Composer owns crisp bounded frontend implementation, Terra is its first fallback, GLM-5.2 remains experimental, and Sonnet writes copy.</p>
+      <p><strong>v0.7 operating decision:</strong> Codex Sol High is the control plane. Routine code review pairs fresh-context native GPT-5.6 Sol xhigh with Claude Opus 5 against one frozen candidate. Fable is a scarce, optional principal-engineer/architect escalation rather than a routine reviewer. Codex handles most engineering work, Composer owns crisp bounded frontend implementation, Terra is its first fallback, GLM-5.2 remains experimental, and Sonnet writes copy.</p>
 
       <div class="route-lab" id="route-lab">
         <h3 style="margin-top: 0;">Routing lab</h3>
@@ -686,7 +686,7 @@
                     <option value="limited">Limited</option>
                     <option value="unavailable">Unavailable</option>
                   </select>
-                  <span>Fable and Sonnet share the Claude Pro quota.</span>
+                  <span>Opus 5, Fable, and Sonnet share the Claude subscription family state.</span>
                 </div>
                 <div class="provider">
                   <label for="provider-zai">Z.ai</label>
@@ -711,7 +711,7 @@
 
             <fieldset class="control-group">
               <legend>Fable ROI gate</legend>
-              <p class="control-help">All four confirmations are required before the lab schedules Anthropic consultation. Leave any uncertain condition unchecked.</p>
+              <p class="control-help">All five confirmations are required before the lab schedules Fable principal/architect consultation. Leave any uncertain condition unchecked.</p>
               <div class="gate-list">
                 <label class="gate-check">
                   <input type="checkbox" data-fable-gate="durable">
@@ -728,6 +728,10 @@
                 <label class="gate-check">
                   <input type="checkbox" data-fable-gate="recorded-result">
                   <span><strong>Result will be recorded</strong><small>The response will become a plan, ADR, review disposition, or routing experiment.</small></span>
+                </label>
+                <label class="gate-check">
+                  <input type="checkbox" data-fable-gate="principal-trigger">
+                  <span><strong>Principal/architect trigger</strong><small>A load-bearing boundary, irreversible choice, cross-cutting invariant conflict, architectural reviewer disagreement, or out-of-contract design gap is concretely present.</small></span>
                 </label>
               </div>
             </fieldset>
@@ -748,20 +752,22 @@
         <tr><td>Orchestration, framing, synthesis, status</td><td>Codex Sol High</td><td>Fable only when Codex is unavailable and the user accepts quota use</td></tr>
         <tr><td>Advanced architecture and system-design critique</td><td>Fable on a compact Sol packet</td><td>GLM-5.2 critique, then fresh-context Terra</td></tr>
         <tr><td>Hard or long-horizon implementation</td><td>Sol High</td><td>Composer for a separately bounded crisp slice; Terra otherwise</td></tr>
-        <tr><td>Scoped implementation and first-pass review</td><td>Terra</td><td>Composer, then experimental GLM-5.2</td></tr>
+        <tr><td>Scoped implementation</td><td>Terra</td><td>Composer, then experimental GLM-5.2</td></tr>
         <tr><td>High-volume light work</td><td>Luna</td><td>Terra, then Composer</td></tr>
         <tr><td>Frontend implementation</td><td>Composer 2.5 for a crisp bounded slice</td><td>Terra; Sol for High complexity; GLM-5.2 only as an explicit experiment</td></tr>
         <tr><td>Frontend design judgment</td><td>Impeccable on Sol High</td><td>Impeccable on Terra; Fable only for rare high-value critique</td></tr>
         <tr><td>Product, editorial, and marketing copy</td><td>Claude Sonnet</td><td>Terra for routine copy; Sol Standard for high-stakes copy</td></tr>
+        <tr><td>Implementation and PR code review</td><td>Fresh-context native GPT-5.6 Sol xhigh + direct Claude Opus 5</td><td>No automatic replacement; preserve the completed packet and stop for user disposition if either lane is unavailable</td></tr>
+        <tr><td>Principal engineer / architect escalation</td><td>Fable only after a concrete exceptional trigger</td><td>Not a replacement for either standard code-review lane</td></tr>
       </table>
 
       <h3>Fable ROI gate</h3>
       <p>Fable is used when the decision is durable or expensive to reverse, a compact review packet is possible, an outside critique could change the decision, and the result will be recorded for reuse. High-return uses include architecture boundaries, migrations and rollback plans, harness policy, conflicting-review adjudication, and rare flagship positioning critique after Sonnet drafts the copy.</p>
-      <p>The budget rule is one critique and, only when needed, one focused follow-up. No Fable swarms. Routine orchestration, implementation, status, summaries, copy drafting, and repeated review stay off Fable.</p>
+      <p>The budget rule is one critique and, only when needed, one focused follow-up. No Fable swarms. Routine orchestration, implementation, code review, status, summaries, copy drafting, and repeated review stay off Fable. Medium or High complexity alone is not an escalation trigger.</p>
 
       <div class="callout dedup">
         <span class="tag">Local subscription route</span>
-        <p>Codex can invoke <code>claude -p --model fable</code> through the installed Claude Code CLI and the authenticated Claude Pro account on this machine. It does not require an Anthropic API key. The route must preflight auth, must not use <code>--bare</code>, and must be treated as unavailable in cloud or CI unless that environment has separate Claude authentication.</p>
+        <p>Codex can invoke the standard review lane with <code>claude -p --model claude-opus-5</code> and the exceptional architecture lane with <code>claude -p --model fable</code> through the installed Claude Code CLI and authenticated Claude subscription. The route must preflight auth, must not use <code>--bare</code>, and must be treated as unavailable in cloud or CI unless that environment has separate Claude authentication.</p>
       </div>
 
       <h3>What you should see while work runs</h3>
@@ -778,7 +784,7 @@
 
     <section id="agents">
       <h2>9 · Subagent roster (10 roles)</h2>
-      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter so it remains usable from that harness, but frontmatter is only an adapter fallback. The v0.6 routing matrix is authoritative.</p>
+      <p>Ten role definitions in <code>agents/</code>. Every definition has Claude Code frontmatter so it remains usable from that harness, but frontmatter is only an adapter binding. The v0.7 routing matrix is authoritative.</p>
 
       <table>
         <tr><th>Role</th><th>Default route</th><th>What it does</th></tr>
@@ -788,7 +794,7 @@
         <tr><td>Implementer</td><td>Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical)</td><td>Executes the planned change test-first. Also the fix-types/fix-build delegating-hook target.</td></tr>
         <tr><td>Frontend designer</td><td>Impeccable on Sol High for judgment; Composer for bounded build-out; Terra fallback; GLM-5.2 experimental</td><td>Produces the design packet, coordinates implementation, and records visible checkpoints.</td></tr>
         <tr><td>Verifier</td><td>Sol (codex-computer-use for runtime/browser)</td><td>Exercises the flow itself; passing tests are evidence, not proof.</td></tr>
-        <tr><td>Reviewer</td><td>Different family from implementer when practical; two lenses at High</td><td>Findings first, cite file:line. Fable is reserved for advanced architecture or system design.</td></tr>
+        <tr><td>Reviewer</td><td>Fresh-context native Sol 5.6 xhigh + direct Claude Opus 5</td><td>Independent frozen packets, findings first, cite file:line. Fable is an optional third principal/architect escalation only.</td></tr>
         <tr><td>Auditor</td><td>Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis</td><td>Audits <em>plans</em> through adversarial, steelman, and neutral lenses.</td></tr>
         <tr><td>Doc maintainer</td><td>Luna; GLM/Terra fallback</td><td>Tier A/B files only; anti-churn significance check; never touches Tier C.</td></tr>
         <tr><td>Autoskill improver</td><td>Terra; Sonnet for language-sensitive proposals</td><td>Stages proposals in <code>dev/skill-proposals/</code>; never applies changes.</td></tr>
@@ -888,7 +894,7 @@
 │   └── delegating-review.md   tool-cache-refresh.md
 ├── agents/                   10 subagent role definitions with Claude Code frontmatter
 ├── routing/
-│   ├── model-routing.md      v0.6 matrix (evidence-backed primary + fallback routes)
+│   ├── model-routing.md      v0.7 matrix (paired code review + bounded escalation routes)
 │   └── complexity-rubric.md  Task tiering rules
 ├── skills/                   Generalized Codex delegation surfaces
 │   ├── codex-implementation/SKILL.template.md
@@ -910,7 +916,7 @@
         <tr><td>Lower dB</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Your repo-overlay installed verbatim (kernel + operations docs + skills) + <code>docs/ai-os-manifest.md</code> + dated changelog entry. 16 files staged by name per house rules.</td></tr>
         <tr><td>FreshProof</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Expanded <code>AGENTS.md</code> (nextjs-agent-rules marker block preserved byte-identical), thin <code>CLAUDE.md</code> adapter, new <code>PROJECT-STATUS.md</code> + <code>CHANGELOG.md</code> (missing roles), manifest, bound Codex skills. 8 files.</td></tr>
         <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Composer is the bounded frontend default; a smaller slice may revalidate the experimental GLM route.</td></tr>
-        <tr><td>ai-os-template itself</td><td class="status-live">v0.6 runner validation complete</td><td><code>codex/ai-os-routing-v05</code></td><td>Composer won the bounded frontend experiment; GLM is installed but experimental. Results are under <code>experiments/2026-07-14-frontend-route/</code>.</td></tr>
+        <tr><td>ai-os-template itself</td><td class="status-live">v0.7 routing validation complete</td><td><code>codex/opus5-review-routing</code></td><td>Routine code review pairs fresh-context Sol 5.6 xhigh with Opus 5; Fable remains an exceptional principal/architect escalation. Historical Composer and GLM experiment results remain under <code>experiments/</code>.</td></tr>
       </table>
 
       <p>Neither instance branch is pushed. Review the worktree diffs at your leisure. Lower dB has its own <code>/publish-slice</code>; FreshProof can go via <code>gh pr create</code>.</p>
@@ -918,11 +924,11 @@
 
     <section id="decisions">
       <h2>13 · Decisions and routing rebalance</h2>
-      <p class="lede">The original twelve decisions remain below. Six routing decisions were added on 2026-07-13 after the always-on Fable control plane exhausted Claude Pro quota too quickly. D19 records the first model-route experiment on 2026-07-14.</p>
+      <p class="lede">The original twelve decisions remain below. Six routing decisions were added on 2026-07-13 after the always-on Fable control plane exhausted Claude Pro quota too quickly. D19 records the first model-route experiment on 2026-07-14. D20 records the paired Opus 5 and fresh-context Sol xhigh code-review standard adopted on 2026-07-24.</p>
 
       <div class="callout judgment">
-        <span class="tag">Routing decisions · D13–D19</span>
-        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the entire provider family for the task. <strong>D15:</strong> GLM-5.2 was the initial streamed frontend hypothesis. <strong>D16:</strong> Sonnet writes copy. <strong>D17:</strong> review diversity scales with tier and uses multiple families when practical. <strong>D18:</strong> visible route, phase, checkpoint, failure, takeover, and final ledger are part of the output contract. <strong>D19:</strong> the identical-slice experiment demotes GLM to experimental and makes Composer the bounded frontend default with Terra fallback.</p>
+        <span class="tag">Routing decisions · D13–D20</span>
+        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the entire provider family for the task. <strong>D15:</strong> GLM-5.2 was the initial streamed frontend hypothesis. <strong>D16:</strong> Sonnet writes copy. <strong>D17:</strong> review diversity scales with tier and uses multiple families when practical. <strong>D18:</strong> visible route, phase, checkpoint, failure, takeover, and final ledger are part of the output contract. <strong>D19:</strong> the identical-slice experiment demotes GLM to experimental and makes Composer the bounded frontend default with Terra fallback. <strong>D20:</strong> routine code review pairs fresh-context native GPT-5.6 Sol xhigh with Claude Opus 5; Fable is only an exceptional third principal/architect escalation.</p>
       </div>
 
       <ol class="decisions-list">
@@ -1012,7 +1018,7 @@
       <h2>16 · Next steps</h2>
 
       <ol>
-        <li><strong>Use routing v0.6 in FreshProof</strong> for the first real implementation slice, preserving the Composer → Terra takeover packet.</li>
+        <li><strong>Propagate routing v0.7 deliberately</strong> to each app instance, preserving its house conventions and recording the new paired Sol xhigh + Opus 5 review pin.</li>
         <li><strong>Implement the Fable consultation wrapper</strong> around local <code>claude -p</code> with auth preflight, streaming output, quota circuit breaker, and a read-only compact packet.</li>
         <li><strong>Revalidate GLM only after a smaller packet or diff protocol</strong>; require two consecutive sub-ten-minute passes before promotion.</li>
         <li><strong>Hook implementation next</strong> in the D11 priority order after the routing wrappers have observable status.</li>
@@ -1097,44 +1103,26 @@
     }
 
     function review(tier, state, implementer, consultationRoute) {
-      const codexWorker = /Sol|Terra|Luna/.test(implementer);
-      const glmWorker = /GLM/.test(implementer);
-      if (tier === 'simple') {
-        if (codexWorker && eligible(state, 'zai')) return ['GLM combined audit', 'One focused cross-family pass.'];
-        if (eligible(state, 'codex')) return ['Terra combined audit', 'One focused pass, independent when practical.'];
-        return ['Focused human review', 'No eligible independent model reviewer.'];
+      const hasSol = eligible(state, 'codex');
+      const hasOpus = eligible(state, 'anthropic');
+      if (!hasSol || !hasOpus) {
+        const missing = [!hasSol && 'fresh-context Sol 5.6 xhigh', !hasOpus && 'Claude Opus 5']
+          .filter(Boolean)
+          .join(' and ');
+        return ['Human review disposition required', `${missing} unavailable. Preserve any completed packet; do not silently substitute or count Fable as a replacement.`];
       }
-      if (tier === 'medium') {
-        if (codexWorker && eligible(state, 'zai')) return ['GLM independent review', 'Different family from the Codex implementer.'];
-        if ((glmWorker || /Composer/.test(implementer)) && eligible(state, 'codex')) return ['Terra independent review', 'Different route from the implementer.'];
-        if (eligible(state, 'codex')) return ['Fresh-context Terra', 'Independence retained; lineage diversity may be reduced.'];
-        return ['Human review required', 'No eligible independent reviewer.'];
-      }
-      const lenses = [];
-      const consultationLens = {
-        'Fable critique': 'Fable consultation',
-        'GLM-5.2 critique': 'GLM consultation',
-        'Fresh-context Terra': 'fresh-context Terra consultation',
-      }[consultationRoute];
-      const consultationMatchesImplementer = consultationRoute === 'GLM-5.2 critique' && glmWorker;
-      if (consultationLens && !consultationMatchesImplementer) lenses.push(consultationLens);
-      if (eligible(state, 'zai') && !glmWorker && consultationRoute !== 'GLM-5.2 critique') lenses.push('GLM');
-      if (lenses.length < 2 && eligible(state, 'codex')) {
-        if (codexWorker) {
-          if (consultationRoute !== 'Fresh-context Terra') lenses.push('fresh-context Terra');
-        } else {
-          if (consultationRoute !== 'Fresh-context Terra') lenses.push('Terra');
-          if (lenses.length < 2) lenses.push('Sol High');
-        }
-      }
-      const reviewDetail = consultationLens && !consultationMatchesImplementer
-        ? `The ${consultationLens} counts as one lens; do not request it again. Sol synthesizes.`
-        : consultationMatchesImplementer
-          ? 'The GLM consultation does not count as independent from GLM implementation. Two Codex lenses review with a diversity caveat.'
-          : 'Two independent lenses; Sol synthesizes and records any diversity caveat.';
-      return lenses.length >= 2
-        ? [`${lenses.slice(0, 2).join(' + ')}`, reviewDetail]
-        : ['Human gate required', 'High-tier review does not have two eligible independent lenses.'];
+      const specialist = tier === 'high'
+        ? ' Add diff-triggered specialist verification.'
+        : tier === 'medium'
+          ? ' Add a verifier for user-facing behavior and only diff-triggered specialist lenses.'
+          : ' No specialist lens unless the diff contains a concrete trigger.';
+      const escalation = consultationRoute === 'Fable critique'
+        ? ' The separately justified Fable principal/architect consultation is an optional third packet.'
+        : ' Fable remains unscheduled.';
+      return [
+        'Fresh-context Sol 5.6 xhigh + Claude Opus 5',
+        `Both review the same frozen candidate independently before resolver fan-in.${specialist}${escalation}`,
+      ];
     }
 
     function verification(task, state, implementer) {
