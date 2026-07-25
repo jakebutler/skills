@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corvo.dev/schemas/model-evidence.schema.json",
+  "title": "AI OS model-routing evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "asOf", "policy", "sources"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "pattern": "^0\\.8(?:\\.\\d+)?$" },
+    "asOf": { "type": "string", "format": "date" },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorityOrder",
+        "communityWeightCap",
+        "recencyHalfLifeDays"
+      ],
+      "properties": {
+        "authorityOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["repo-eval", "benchmark", "provider", "community"]
+          }
+        },
+        "communityWeightCap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.15
+        },
+        "recencyHalfLifeDays": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["benchmark", "provider", "community"],
+          "properties": {
+            "benchmark": { "type": "integer", "minimum": 1 },
+            "provider": { "type": "integer", "minimum": 1 },
+            "community": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "publishedAt",
+          "url",
+          "supports",
+          "limitations"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "kind": {
+            "type": "string",
+            "enum": ["repo-eval", "benchmark", "provider", "community"]
+          },
+          "publishedAt": { "type": "string", "format": "date" },
+          "url": { "type": "string", "format": "uri" },
+          "supports": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "limitations": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "cloudflare-docs": {
+      "type": "http",
+      "url": "https://docs.mcp.cloudflare.com/mcp"
+    },
+    "convex-readonly": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "convex",
+        "mcp",
+        "start",
+        "--project-dir",
+        ".",
+        "--disable-tools",
+        "data,envGet,envList,envRemove,envSet,logs,run,runOneoffQuery"
+      ]
+    }
+  }
+}

@@ -53,15 +53,14 @@ Required bindings:
 House conventions win. For example, FreshProof binds `task_artifact_root` to `plans`,
 never `dev/active`. Absolute paths and `..` escapes are invalid.
 
-## Routing matrix distribution (D3, 2026-07-12)
+## Routing runtime distribution (D3, revised 2026-07-24)
 
-The canonical routing matrix lives in the template repo
-(`ai-os-template/routing/model-routing.md`). Instances **reference** it in the
-manifest's role-bindings row with a **version pin** (e.g. "routing → template repo,
-matrix v0.7"). When the canonical matrix bumps, the next session in an instance repo
-updates the pin deliberately.
+The canonical registry and evidence ledger live in the template repo under
+`ai-os-template/routing/`. Instances vendor an explicit v0.8 snapshot so routing works
+without `AI_OS_HOME`, and record its source commit in the manifest. The human matrix
+may remain a version-pinned reference; the vendored JSON is the executable contract.
 
-For matrix v0.7, the model-routing row must record:
+For runtime v0.8, the model-routing row must record:
 
 - standard code review: fresh-context native `gpt-5.6-sol` at xhigh plus direct
   `claude-opus-5`, both against one frozen candidate;
@@ -70,6 +69,8 @@ For matrix v0.7, the model-routing row must record:
   trigger recorded and no authority to replace either standard lane; and
 - any project-bound `design-proof` architecture/security roles separately, so the
   implementation/PR review update does not silently rewrite an accepted proof protocol.
+- the local task registry, evidence ledger, resolver, doctor config, generated tool
+  cache, and whether Claude project hooks are active.
 
 Symlinks were considered and rejected: a committed symlink to an absolute local path
 dangles on GitHub, CI, other machines, and fresh clones — the repo would carry a

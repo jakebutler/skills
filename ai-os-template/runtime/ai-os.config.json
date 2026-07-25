@@ -1,0 +1,30 @@
+{
+  "version": "0.8.0",
+  "project": "ai-os-template",
+  "minimumNodeMajor": 22,
+  "requiredPaths": [
+    "README.md",
+    "root/AGENTS.template.md",
+    "routing/task-routes.json",
+    "routing/model-evidence.json",
+    "schemas/task-route-registry.schema.json",
+    "runtime/mcp.template.json"
+  ],
+  "routeRegistry": "routing/task-routes.json",
+  "toolCache": "runtime/tools.md",
+  "stacks": ["convex"],
+  "tools": [
+    { "id": "codex", "command": "codex", "required": true, "versionArgs": ["--version"] },
+    { "id": "claude", "command": "claude", "required": false, "versionArgs": ["--version"] },
+    { "id": "cursor-agent", "command": "cursor-agent", "required": false, "versionArgs": ["--version"] },
+    { "id": "convex", "command": "convex", "package": "convex", "required": false, "versionArgs": ["--version"] },
+    { "id": "wrangler", "command": "wrangler", "package": "wrangler", "required": false, "versionArgs": ["--version"] },
+    { "id": "supabase", "command": "supabase", "package": "supabase", "required": false, "versionArgs": ["--version"] }
+  ],
+  "hooks": {
+    "blockingOverrideEnv": "AI_OS_ALLOW_LOCAL_BLOCKING_OVERRIDE",
+    "verificationReminder": "Run the route-specific verification and independent review before stopping.",
+    "toolsCacheRefresh": true,
+    "delegatingReview": true
+  }
+}
