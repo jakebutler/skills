@@ -224,7 +224,7 @@ ai-os-template/
 | 7 | Research & prototype: embeddable in `/spec` and standalone |
 | 8 | Audit lenses scale with complexity tier; any high-risk dimension promotes the tier |
 | 9 | GTM stays a parallel swarm; interface via handoff packets in `docs/gtm/`; OS keeps copy/conversion skills |
-| 10 | Autoskill edits staged for review; revisit auto-apply for low-risk metadata later |
+| 10 | Historical autoskill staging decision; superseded by D21's permanent proposal/PR-only skill adoption boundary |
 | 11 | Routing matrix: firm defaults + rubric override, versioned and date-stamped |
 | 12 | Generic template first; instances follow; learnings promoted only when general |
 | 13 | Instances adopt existing repo conventions via manifest (merge, don't bulldoze) |
@@ -240,7 +240,7 @@ ai-os-template/
 | D4 | FreshProof `FEEDBACK_IMPLEMENTATION_COMPLETE.md` → archive (apply in next instance pass) |
 | D5/D6 | Both repos: consolidate to one `plans/` (FreshProof) / `docs/plans/` (Lower dB) with an `archive/` subdirectory (apply in next instance pass) |
 | D7 | corvo-labs-dot-com: skip the FEATURE-LIST module |
-| D8 | Autoskill: graduated trust — staged-only now; auto-apply low-risk metadata after ~10 accepted proposals with zero reverts; never auto-applies to root instructions/hooks |
+| D8 | Historical autoskill graduated-trust proposal; superseded by D21 before any auto-apply capability shipped |
 | D9 | Marketingskills engineering-OS subset named for audit (7 skills; see INVENTORY) |
 | D10 | Instance branches held unpushed while the OS is refined; Lower dB gets the updated template next, then drives the weekly-digest-automation feature work |
 | D11 | Hook implementation order: safety pair first, then status/tool-cache, then skill-activation/verify-on-change, delegating-review last |
@@ -253,6 +253,7 @@ ai-os-template/
 | D18 | Status visibility is a contract: start route, phase checkpoints, immediate retry/fallback notice, evidence path, and final route ledger |
 | D19 | The first identical-slice experiment rejected GLM as the frontend default; Composer becomes the bounded implementation route, Terra first fallback, and GLM remains experimental behind a ten-minute deadline and automatic takeover |
 | D20 | Code review uses two independent standard lanes against one frozen candidate: fresh-context native GPT-5.6 Sol at xhigh and Claude Opus 5. Fable is an optional third principal-engineer/architect escalation only after a concrete trigger and never replaces either lane. |
+| D21 | Skill improvement remains proposal/PR-only at every maturity level: validation gates may authorize a reviewable candidate, never direct live-file adoption or merge. Scheduled proposal runs require a separate human activation decision and cannot edit root instructions, hooks, or routes. See `SKILL-IMPROVEMENT.md` v0.2 and epic #2. |
 
 ### v0.2 context additions (same session)
 
@@ -288,4 +289,5 @@ ai-os-template/
 ## 12. Out of scope for v1
 
 Plugin packaging (layout stays plugin-compatible), `FEATURE-LIST.json` by default,
-autoskill auto-apply, and the GTM swarm itself.
+scheduled skill-proposal activation, and the GTM swarm itself. Direct autoskill
+application is rejected by D21.
