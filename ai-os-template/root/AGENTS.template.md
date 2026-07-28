@@ -60,6 +60,7 @@ These are non-negotiable regardless of task size:
 | Current state & handoff | `{{PROJECT_STATUS_FILE}}` | Overwritten checkpoint — never a history ledger |
 | Change ledger | `{{CHANGELOG_FILE}}` | Checkpoint/user-facing entries; git history is the commit ledger |
 | Deep project knowledge | `{{DOCS_DIR}}/` | {{DOCS_DIR_SUMMARY}} |
+| Selective solution knowledge | `{{DOCS_DIR}}/solutions/` | Search by category, module, tags, and semantic slug only when relevant; never bulk-load the corpus |
 | Task working memory | `{{TASK_DOCS_DIR}}/<task>/` | plan / context / tasks files; archived when done |
 | Tool & command cache | `{{TOOL_CACHE_FILE}}` | Refresh on config change or explicit command |
 
@@ -70,6 +71,8 @@ Rules of the road:
   the changelog.
 - When work reveals a durable repo convention or recurring trap, record it in the
   nearest relevant doc (or propose an update to this file).
+- Before re-investigating a recurring problem, selectively search solution frontmatter
+  and filenames for the relevant module/tags. Do not preload unrelated solutions.
 
 ## Workflows
 

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "track": "knowledge",
+  "title": "Annotate deleted historical paths",
+  "slug": "annotate-deleted-historical-paths",
+  "date": "2026-07-30",
+  "category": "documentation",
+  "module": "solution-knowledge",
+  "tags": ["history", "grounding"],
+  "problem_type": "durable-convention",
+  "capture_reason": "Historical evidence needs an explicit degraded annotation instead of silent removal.",
+  "source_candidate": {
+    "candidate_id": "session:historical-path:2026-07-30",
+    "git_commit": "6666666666666666666666666666666666666666",
+    "route": "live-session"
+  },
+  "provenance": {
+    "observed_at": "2026-07-30T12:00:00Z",
+    "source_kind": "verified-session",
+    "author_id": "implementer"
+  },
+  "content": {
+    "context": "A valid historical claim can refer to a path that no longer exists in the current tree.",
+    "guidance": "Keep the claim only when its historical commit and degraded status are explicit.",
+    "why_it_matters": "Silently deleting the reference destroys useful provenance.",
+    "boundaries": "Current-code claims still require a current repo-relative path and matching quote.",
+    "examples": "Good: historical=true with a commit. Counterexample: treating a missing current path as verified."
+  },
+  "grounding": {
+    "validator_id": "independent-verifier",
+    "status": "degraded",
+    "claims": [
+      {
+        "kind": "documentation",
+        "statement": "The historical implementation lived at a now-deleted path.",
+        "source_path": "docs/deleted-historical-file.md",
+        "source_quote": "historical implementation",
+        "source_commit": "55a64bfefac7e5641cb24cd4d1e9a64884127660",
+        "historical": true,
+        "status": "degraded"
+      }
+    ]
+  },
+  "related": {
+    "docs": ["SKILL-IMPROVEMENT.md"],
+    "issues": ["https://github.com/jakebutler/skills/issues/4"]
+  }
+}

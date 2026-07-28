@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "track": "bug",
+  "title": "Normalize provider identifiers before route lookup",
+  "slug": "normalize-provider-identifiers",
+  "date": "2026-07-28",
+  "category": "routing",
+  "module": "model-router",
+  "tags": ["routing", "providers", "normalization"],
+  "problem_type": "incorrect-route-selection",
+  "capture_reason": "A later verified case established the exact normalization boundary.",
+  "source_candidate": {
+    "candidate_id": "session:route-fix-followup:2026-07-29",
+    "git_commit": "3333333333333333333333333333333333333333",
+    "route": "live-session"
+  },
+  "provenance": {
+    "observed_at": "2026-07-29T12:00:00Z",
+    "source_kind": "verified-session",
+    "author_id": "implementer"
+  },
+  "content": {
+    "problem": "Mixed-case and whitespace-padded provider identifiers bypassed the configured route.",
+    "investigation": "The registry was correct, but lookup used the raw identifier.",
+    "root_cause": "Provider identifiers were compared before normalization.",
+    "solution": "Trim and lowercase identifiers before consulting the route registry.",
+    "why_it_works": "Every lookup now uses the registry's canonical key format.",
+    "prevention": "Keep mixed-case and whitespace route fixtures in the runtime suite.",
+    "verification": "Both representative route fixtures select the configured provider."
+  },
+  "grounding": {
+    "validator_id": "independent-verifier",
+    "status": "verified",
+    "claims": [
+      {
+        "kind": "code",
+        "statement": "The fixture contains the provider route.",
+        "source_path": "routing/task-routes.json",
+        "source_quote": "\"providerFamily\": \"openai\"",
+        "status": "verified"
+      }
+    ]
+  },
+  "related": {
+    "docs": ["routing/model-routing.md"],
+    "issues": ["https://github.com/jakebutler/skills/issues/4"]
+  }
+}

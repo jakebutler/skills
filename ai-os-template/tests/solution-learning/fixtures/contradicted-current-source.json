@@ -1,0 +1,6 @@
+{
+  "base_fixture": "new-bug.json",
+  "grounding_status": "contradicted",
+  "claim_status": "contradicted",
+  "reason": "The current source no longer contains the behavior asserted by the session."
+}

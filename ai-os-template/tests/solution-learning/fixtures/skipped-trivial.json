@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "disposition": "skip",
+  "skip_reason": "The episode was task-specific and did not change how a future agent should act.",
+  "source_candidate": {
+    "candidate_id": "session:trivial:2026-07-28",
+    "git_commit": "2222222222222222222222222222222222222222",
+    "route": "wrap-session"
+  }
+}

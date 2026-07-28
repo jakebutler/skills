@@ -30,8 +30,10 @@ Excluded candidates stay out of v1 for clear ownership reasons:
 - `/update-docs` is automatic maintenance handled by checkpoint hooks, not a command.
 - `/prove` and `/publish-slice` remain repo-specific skills until their patterns
   generalize.
-- `/autoskill` runs inside `/commit`, `/commit-pr`, and `/wrap-session` as a proposal
-  pass; it is not standalone in v1.
+- `/autoskill` runs inside `/commit`, `/commit-pr`, and `/wrap-session` as a
+  one-candidate grounded-learning pass; it is not standalone. Skill and instruction
+  changes remain proposals, while validated Tier B solution knowledge uses the
+  versioned `SOLUTION-LEARNING.md` contract.
 
 Command specs must reference workflow filenames and define invocation, output, and
 model routing only. Workflow steps live in `../workflows/`.

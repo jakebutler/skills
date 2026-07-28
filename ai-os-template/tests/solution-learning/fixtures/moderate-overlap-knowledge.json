@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "track": "knowledge",
+  "title": "Keep provider aliases at the route boundary",
+  "slug": "provider-aliases-at-route-boundary",
+  "date": "2026-07-30",
+  "category": "routing",
+  "module": "model-router",
+  "tags": ["routing", "aliases"],
+  "problem_type": "durable-convention",
+  "capture_reason": "A verified routing convention should remain discoverable near related normalization guidance.",
+  "source_candidate": {
+    "candidate_id": "session:route-alias-convention:2026-07-30",
+    "git_commit": "4444444444444444444444444444444444444444",
+    "route": "live-session"
+  },
+  "provenance": {
+    "observed_at": "2026-07-30T12:00:00Z",
+    "source_kind": "verified-session",
+    "author_id": "implementer"
+  },
+  "content": {
+    "context": "Provider aliases are accepted from callers but canonical identifiers drive routing.",
+    "guidance": "Resolve aliases once at the route boundary and keep the registry canonical.",
+    "why_it_matters": "Scattered alias handling makes route evidence and fallbacks inconsistent.",
+    "boundaries": "This applies to provider identity, not model-version aliases owned by provider adapters.",
+    "examples": "Good: map an alias before registry lookup. Counterexample: duplicate alias keys throughout the registry."
+  },
+  "grounding": {
+    "validator_id": "independent-verifier",
+    "status": "verified",
+    "claims": [
+      {
+        "kind": "documentation",
+        "statement": "The routing guide treats provider failure as control flow.",
+        "source_path": "routing/model-routing.md",
+        "source_quote": "Provider failure is ordinary control flow.",
+        "status": "verified"
+      }
+    ]
+  },
+  "related": {
+    "docs": ["routing/model-routing.md"],
+    "issues": ["https://github.com/jakebutler/skills/issues/4"]
+  }
+}

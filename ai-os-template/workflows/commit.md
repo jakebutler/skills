@@ -28,7 +28,12 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
    extraction or explicit deferral before commit.
 9. `implementer`: address accepted findings with scoped edits, then rerun affected verification.
 10. `doc-maintainer`: update `{{PROJECT_STATUS_FILE}}`, `{{CHANGELOG_FILE}}`, and relevant docs according to doc write tiers. Use Tier A automatic updates, Tier B guarded updates, and no Tier C direct edits.
-11. `autoskill-improver`: run the four-route triage in `agents/autoskill-improver.md` (skill proposal, doc proposal, solution doc, or skip); proposals are staged, while solution docs are written directly as Tier B.
+11. `autoskill-improver`: freeze one source candidate and run the four-route triage
+    in `agents/autoskill-improver.md` (skill proposal, doc proposal, grounded
+    solution learning, or explicit skip). The orchestrator runs the versioned
+    solution-learning processor; proposals are staged, and only a validated solution
+    document may be written directly as Tier B. Reuse the prior disposition when
+    wrap-session sees the same fingerprint.
 12. Orchestrator: review the final diff and status again, then create one focused commit with message `{{COMMIT_MESSAGE}}` including only the intended files.
 
 ## **Output contract**
@@ -37,7 +42,10 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 - `{{TASK_DOCS_DIR}}/{{TASK_ID}}/commit.md`: commands run, results, review findings and dispositions, docs updates, triage outcome (route taken or explicit skip), skipped checks with reasons, and final commit hash.
 - Updated `{{PROJECT_STATUS_FILE}}` when handoff state changed.
 - Updated `{{CHANGELOG_FILE}}` when the change is meaningful to users or operators.
-- Triage outputs only when a durable lesson qualified: a staged proposal under `dev/skill-proposals/` (Tier C) or a solution doc under `{{DOCS_DIR}}/solutions/` (Tier B, with recorded `capture_reason`).
+- One triage disposition: a staged proposal under `dev/skill-proposals/` (Tier C),
+  a grounded solution document under `{{DOCS_DIR}}/solutions/` (Tier B), or an
+  explicit in-memory/task-packet skip. The disposition records the frozen candidate
+  identity and fingerprint when applicable.
 
 ## **Verification**
 
@@ -49,6 +57,8 @@ This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains
 - For proof-required work, candidate identity, review resolution, and invariant
   extraction closure all validate before commit.
 - Final commit contains only intended files.
+- Solution-learning processing passed its schema, grounding, overlap, path, and
+  headless-safety checks; contradicted or stale candidates did not write.
 
 ## **Ceremony scaling**
 

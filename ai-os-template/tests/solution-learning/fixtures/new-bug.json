@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "track": "bug",
+  "title": "Normalize provider identifiers before route lookup",
+  "slug": "normalize-provider-identifiers",
+  "date": "2026-07-28",
+  "category": "routing",
+  "module": "model-router",
+  "tags": ["routing", "providers"],
+  "problem_type": "incorrect-route-selection",
+  "capture_reason": "A verified normalization gap caused the same routing failure twice.",
+  "source_candidate": {
+    "candidate_id": "session:route-fix:2026-07-28",
+    "git_commit": "1111111111111111111111111111111111111111",
+    "route": "live-session"
+  },
+  "provenance": {
+    "observed_at": "2026-07-28T12:00:00Z",
+    "source_kind": "verified-session",
+    "author_id": "implementer"
+  },
+  "content": {
+    "problem": "Mixed-case provider identifiers bypassed the configured route.",
+    "investigation": "The registry was correct, but lookup used the raw identifier.",
+    "root_cause": "Provider identifiers were compared before normalization.",
+    "solution": "Normalize identifiers before consulting the route registry.",
+    "why_it_works": "Every lookup now uses the registry's canonical key format.",
+    "prevention": "Keep the mixed-case route fixture in the runtime suite.",
+    "verification": "The representative route fixture selects the configured provider."
+  },
+  "grounding": {
+    "validator_id": "independent-verifier",
+    "status": "verified",
+    "claims": [
+      {
+        "kind": "code",
+        "statement": "The fixture contains the provider route.",
+        "source_path": "routing/task-routes.json",
+        "source_quote": "\"providerFamily\": \"openai\"",
+        "status": "verified"
+      }
+    ]
+  },
+  "related": {
+    "docs": ["routing/model-routing.md"],
+    "issues": ["https://github.com/jakebutler/skills/issues/4"]
+  }
+}

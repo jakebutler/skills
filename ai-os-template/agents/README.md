@@ -48,7 +48,7 @@ passing tests for understanding.
 | Invariant extractor | `invariant-extractor.md` | bounded read-only normalization; deterministic writer appends candidates | never promotes active policy or edits product code |
 | Auditor | `auditor.md` | Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis | independent lenses at High tier |
 | Doc maintainer | `doc-maintainer.md` | Luna; GLM/Terra fallback | Tier A/B files only |
-| Autoskill improver | `autoskill-improver.md` | Terra; Sonnet for language-sensitive proposals | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |
+| Autoskill improver | `autoskill-improver.md` | Terra; Sonnet for language-sensitive proposals | One grounded learning or explicit skip; Tier C changes stay staged, and direct writes are limited to independently validated Tier B solution docs |
 
 The frontmatter `model:` in each definition file is only the Claude adapter binding.
 It is not the complete route. The v0.7 routing matrix is authoritative: the reviewer
