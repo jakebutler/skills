@@ -117,10 +117,16 @@ const stale = processSolutionLearning(
 assert.equal(stale.status, "stale");
 assert.match(stale.reason, /newer stored learning/);
 
+const historicalCandidate = readSolutionLearningCandidate(
+  path.join(import.meta.dirname, "fixtures/historical-deleted-path.json"),
+);
+historicalCandidate.grounding.claims[0].source_commit = spawnSync(
+  "git",
+  ["-C", root, "rev-parse", "HEAD"],
+  { encoding: "utf8" },
+).stdout.trim();
 const historical = processSolutionLearning(
-  readSolutionLearningCandidate(
-    path.join(import.meta.dirname, "fixtures/historical-deleted-path.json"),
-  ),
+  historicalCandidate,
   {
     repositoryRoot: root,
     solutionsDirectory: path.join(temp, "historical-solutions"),
