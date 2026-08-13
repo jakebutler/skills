@@ -2,59 +2,58 @@
 
 ## **Trigger**
 
-This workflow starts when the user reports a bug, a verification command fails, logs or telemetry reveal a defect, a hook delegates a failure investigation, or another workflow cannot proceed because behavior is not understood.
+Run for a reported bug, failing check, or unexplained runtime behavior. Diagnosis alone
+does not authorize a fix.
 
 ## **Inputs**
 
-- The observed failure, user report, failing command, log excerpt, or reproduction hint.
-- `{{PROJECT_STATUS_FILE}}`, relevant docs in `{{DOCS_DIR}}/`, and any related task docs.
-- Safe log location `{{TRANSIENT_LOG_DIR}}` and durable task-doc location `{{TASK_DOCS_DIR}}/{{TASK_ID}}/`.
-- Repo-specific commands for boot, logs, tests, and smoke checks: `{{DEV_COMMAND}}`, `{{LOG_COMMAND}}`, `{{TEST_COMMAND}}`, `{{SMOKE_COMMAND}}`.
-- Repo-specific reproduction command `{{REPRO_COMMAND}}` and transient-log retention policy `{{LOG_RETENTION_RULE}}`.
+- Symptom, complete failing output, or reproduction hint.
+- Relevant source, tests, logs, configuration, and recent changes.
+- Safe focused reproduction and verification commands.
 
 ## **Steps**
 
-1. Orchestrator: classify the debug task complexity and create `{{TASK_DOCS_DIR}}/{{TASK_ID}}/debug.md` for Medium and High tiers.
-2. Orchestrator: start searchable transient logs in `{{TRANSIENT_LOG_DIR}}/{{TASK_ID}}/` using `{{LOG_COMMAND}}` or the repo's logging process; record the exact command.
-3. `implementer` through the Codex exploration route: grep existing logs, traces, test output, issue reports, and known troubleshooting docs before asking the user to reproduce.
-4. `implementer`: reproduce or observe the issue with `{{REPRO_COMMAND}}`, browser steps, CLI steps, or the failing verification command; if reproduction is impossible, capture what was tried and the closest observable evidence.
-5. `implementer`: assess the failure by separating facts, hypotheses, ruled-out causes, and unknowns in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/debug.md`.
-6. Orchestrator: approve a focused plan before code changes; for Simple tier this can be inline, for Medium and High tiers it is written in the debug doc with rollback and verification.
-7. `implementer` through the Codex implementation route: make the smallest scoped code or test change needed to test the leading hypothesis.
-8. `implementer`: run the focused verification command and the reproduction path; append results to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/debug.md`.
-9. Orchestrator and `implementer`: repeat assess, plan, code, test until fixed, blocked, or the hypothesis set is exhausted.
-10. `verifier`: independently run the reproduction path and focused verification for Medium and High tiers; write results to `{{TASK_DOCS_DIR}}/{{TASK_ID}}/verification.md`.
-11. Orchestrator: identify whether the issue revealed a durable repo convention or recurring trap. If yes, run the Tier C staged-review process by invoking `autoskill-improver` to create proposals under `dev/skill-proposals/`; Tier A/B docs may be delegated to `doc-maintainer`.
-12. Orchestrator: clear or archive transient logs according to `{{LOG_RETENTION_RULE}}`; never leave unreported running log processes.
-13. Orchestrator: chain into `commit` after the fix and durable lesson handling are complete.
+1. Confirm whether the user requested diagnosis only or diagnosis plus a fix.
+2. Reproduce with the smallest safe command/path and capture complete output.
+3. Before editing, search relevant logs and inspect every plausible in-scope entry
+   point, caller, sibling path, configuration, and runtime/build boundary. Maintain one
+   short register of observations, hypotheses, ruled-out causes, and unknowns.
+4. Test hypotheses using read-only or focused diagnostics. Do not patch the leading
+   symptom while the affected surface is still being mapped.
+5. If a fix is authorized, add a failing regression check and implement all confirmed
+   in-scope root causes as one coherent batch.
+6. Run the reproduction and focused checks. Collect their complete failures before any
+   next edit. Run a broad gate once only after focused checks pass and only when the
+   blast radius requires it.
+7. Add independent reproduction/review only for genuinely High-risk behavior,
+   substantial unresolved uncertainty, or explicit request. Concurrent lenses return
+   one consolidated list before remediation.
+8. Record root cause, change, verification, and residual uncertainty concisely. Update
+   durable docs only for a reusable project fact.
 
 ## **Output contract**
 
-- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/debug.md`: symptoms, commands run, log locations, reproduction steps, facts, hypotheses, ruled-out causes, changes made, and final root cause or unresolved status.
-- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/verification.md`: required for Medium and High tiers; independent confirmation that the reproduction path no longer fails.
-- Code or test changes scoped to the defect.
-- Tier A/B doc updates when stable troubleshooting knowledge changed.
-- Tier C proposals in `dev/skill-proposals/` when `AGENTS.md`, `CLAUDE.md`, hooks, or skills need durable updates.
-- Transient logs removed, archived, or explicitly reported according to `{{LOG_RETENTION_RULE}}`.
+- Reproduction evidence, breadth-first cause map, confirmed root cause or bounded
+  unknown, scoped fix when authorized, verification, and residual risk.
+- A debug artifact only for long-running/High-risk incidents or explicit request.
 
 ## **Verification**
 
-- Existing traces and logs were searched before asking the user for reproduction.
-- The issue was reproduced or the inability to reproduce is documented with commands and evidence.
-- The focused verification and reproduction path pass after the fix.
-- Medium and High tiers have independent verifier confirmation.
-- Orchestrator confirms no unreported log processes remain.
+- Existing evidence was searched before asking for another reproduction.
+- The complete affected surface was inspected before the first edit.
+- Focused reproduction/checks pass after one coherent batch.
+- Broad verification ran only if the affected boundary justified it.
 
 ## **Ceremony scaling**
 
-- Simple: short debug note, existing log grep, direct reproduction, smallest fix, focused verification, chain to commit.
-- Medium: written debug doc, explicit hypothesis list, independent verifier, docs/status update if the defect teaches a durable lesson.
-- High: full incident-style debug doc, rollback notes, broader affected-area verification, independent verifier, specialist review for security/data/architecture as applicable, Tier C proposals for recurring traps.
+- Simple/Medium: inline defect register, one batch, focused verification.
+- High: durable incident note/rollback, one independent verifier, and one relevant
+  broad or release check.
 
 ## **Failure handling**
 
-- If logs cannot be started, continue only with available traces and record the logging gap in `{{TASK_DOCS_DIR}}/{{TASK_ID}}/debug.md`.
-- If reproduction requires user-only credentials or environment, provide exact reproduction steps and evidence needed, then stop before speculative code changes.
-- If a fix fails verification twice, stop and ask orchestrator to re-plan or invoke `researcher` for prior art and related issues.
-- If the root cause is outside repo scope, document the boundary and recommended owner, then run `wrap-session` instead of `commit`.
-- If durable lesson capture would touch Tier C files, stage a proposal in `dev/skill-proposals/` and do not apply it automatically.
+- Two unsuccessful coherent strategies trigger a stop and evidence handoff, not a
+  sequence of smaller patches.
+- Credentials or live effects required for reproduction: provide exact safe steps and
+  stop before speculative mutation.
+- Out-of-scope root cause: report boundary/owner; do not widen the task silently.

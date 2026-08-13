@@ -1,43 +1,36 @@
 # Review Convergence Policy
 
-Review is a coverage gate, not an unbounded search for more opinions.
+Review is a bounded defect-discovery pass, not a serial implementation loop.
 
-## Design convergence
+## Default topology
 
-Proof-required work follows `workflows/design-proof.md`. Production implementation has
-no authority until the exact approved builder-packet hash exists.
+- Routine reversible work has no mandatory delegated review.
+- When independence is warranted, use one fresh-context general reviewer.
+- Add specialist lenses only for concrete security, data, UX, architecture, test, or
+  operations risk visible in the diff. Run them concurrently against one candidate.
+- Proof-required work may bind multiple blocking roles, but every source packet fans
+  into one consolidated findings list before remediation.
 
-## Implementation convergence
+## Convergence
 
-All reviewers receive the same frozen base, tree/diff identity, approved builder packet,
-selected invariants, inventories, and proof plan. Reviews run concurrently and fan into
-one validated resolution before remediation.
+1. Reviewers inspect the full affected surface breadth-first before returning findings.
+2. Freeze all source findings; do not show one reviewer's output to the implementer
+   while other expected lanes are still running.
+3. Deduplicate and disposition the complete set once.
+4. Apply one coherent correction batch and run affected focused checks.
+5. Run a targeted residual review only when the correction materially changed
+   sensitive logic or a P0/P1 finding remains.
 
-Acceptance requires:
+Do not repeat review at commit and again at PR creation when the exact diff and review
+evidence are unchanged.
 
-- generated and reviewer surface inventories reconcile;
-- every reachable surface and applicable invariant has a disposition;
-- deterministic checks pass against the reviewed snapshot;
-- every requirement traces to code and executable evidence;
-- no unresolved P0/P1 or blocking conflict remains; and
-- one scoped residual adversarial pass finds no new blocking class.
+## Forced reset
 
-## Forced replan
+A second review that reveals a novel blocking class does not start another drip-fix
+round. Stop edits, widen the breadth-first impact inventory once, decide whether the
+approved design is still valid, then make one replacement batch. Return to design-proof
+only for a new authority/product decision or a contradiction of the approved design;
+missing implementation coverage inside that design is a batch finding.
 
-- The first implementation defect inside the approved design receives one consolidated
-  remediation.
-- A second candidate review reporting the same root-cause class revokes production-edit
-  authority. Local extensions of the old design are prohibited.
-- Sol writes a replacement architecture packet, reduces the review unit, and obtains
-  fresh architecture and security approval before implementation resumes.
-- The replacement requirements matrix must fail for its intended reasons before new
-  production code is accepted.
-- The same invariant missed on another sibling path is an inventory failure: rebuild and
-  recheck the complete sibling set.
-
-Round limits never authorize accepting a known defect. They force a strategy change or
-HITL decision.
-
-After the residual adversarial pass, every reproduced novel root-cause class enters
-`workflows/extract-invariant.md`. Extraction status is part of closure; the deterministic
-writer can append only candidate events and cannot promote blocking policy.
+Round limits never authorize accepting a known defect. They prevent unbounded review
+spend by forcing one consolidated re-assessment or an explicit risk decision.

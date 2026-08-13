@@ -3,12 +3,12 @@
 These specs define the v1 Claude Code hook set for the AI Engineering OS template.
 Hooks are repo safety rails and workflow accelerators, not a second orchestrator.
 
-The executable v0.8 dispatcher is `../scripts/ai-os-hook.mjs`; the project-settings
+The executable v0.9 dispatcher is `../scripts/ai-os-hook.mjs`; the project-settings
 shape is `../runtime/claude-settings.template.json`. Instances vendor the dispatcher,
 bind `.ai/ai-os.json`, and commit `.claude/settings.json`. The dispatcher uses the
 current `hookSpecificOutput` contract: `PreToolUse` returns `permissionDecision`,
-context hooks return `additionalContext`, and the Stop review reminder respects
-`stop_hook_active` to avoid continuation loops.
+context hooks return `additionalContext`. Verification runs once at stop for a changed
+batch; delegated review is disabled by default.
 
 `ai-os-doctor --write` refreshes the generated tool cache. A successful tool probe
 means the executable exists locally; it does not prove authentication, quota,
@@ -19,14 +19,13 @@ project linkage, production permission, or another machine's availability.
 | Classification | Authority | v1 use |
 |---|---|---|
 | Blocking | Stop a tool call when continuing would create a safety or correctness risk. Use sparsely. | `secrets-guard`, `destructive-git-guard` |
-| Advisory | Surface a reminder or verification result. Never blocks the prompt or response. | `skill-activation`, low-error `verify-on-change` |
-| Delegating | Convert a detected condition into a bounded subagent task using the standard delegation contract. | high-error `verify-on-change`, `delegating-review` |
+| Advisory | Surface a reminder or verification result. Never blocks the prompt or response. | `skill-activation`, end-of-batch `verify-on-change` |
+| Delegating | Reserved for an instance that explicitly opts a High-risk/proof task into concurrent review. | disabled-by-default `delegating-review` |
 | Automatic maintenance | Update Tier A files or generated caches without user approval. | `status-checkpoint`, `tool-cache-refresh` |
 
-Blocking hooks are limited to secrets exposure, client-side model API keys,
-destructive git operations without explicit permission, and instantiated repos that
-choose to treat failed build/typecheck gates as blocking. Most quality concerns are
-advisory or delegating so the OS avoids interrupting normal engineering flow.
+Blocking hooks are limited to secrets exposure, client-side model API keys, and
+destructive git operations without explicit permission. A required failed check stays
+visible, but hooks do not create a requirement to run an expensive check.
 
 ## Anti-Churn Guardrails
 
@@ -64,9 +63,9 @@ Every blocking hook supports the same local override convention:
 | Hook | Classification | Event |
 |---|---|---|
 | `skill-activation.md` | Advisory | `UserPromptSubmit` |
-| `verify-on-change.md` | Advisory escalating to delegating | `PostToolUse`, `Stop` |
+| `verify-on-change.md` | Advisory | `Stop` when changes exist |
 | `secrets-guard.md` | Blocking | `PreToolUse` |
 | `destructive-git-guard.md` | Blocking | `PreToolUse` on `Bash` |
 | `status-checkpoint.md` | Automatic maintenance | `Stop`, `SessionEnd` |
-| `delegating-review.md` | Delegating | `Stop` |
+| `delegating-review.md` | Disabled by default; opt-in High-risk advisory | `Stop` |
 | `tool-cache-refresh.md` | Automatic maintenance | `SessionStart` (config changes detected via fingerprint compare) |

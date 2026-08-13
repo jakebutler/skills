@@ -3,8 +3,8 @@
 **v1 roster: twelve roles.** Reduced from the twenty candidates in the source notes —
 roles that were sub-cases of another role became named invocations instead:
 
-- *type fixer, build-error resolver* → `implementer` invoked by the verify-on-change
-  delegating hook with a fix-types/fix-build task
+- *type fixer, build-error resolver* → `implementer` receives the complete end-of-batch
+  failure set as one correction task when needed
 - *route tester, app/browser verification agent* → `verifier` with a browser or route
   scope
 - *plan reviewer, strategic plan architect, architecture confirmer* → the orchestrator
@@ -19,31 +19,30 @@ Each definition file uses Claude Code agent frontmatter (`name`, `description`,
 Model bindings follow `../routing/model-routing.md` — the frontmatter holds the
 default; the delegation may override per the rubric.
 
-## Contracts (binding for every role)
+## Contracts
 
-**Delegation contract** — every task given to a subagent specifies: goal · repo/paths ·
-files to inspect · excluded areas · expected output artifact · allowed tools · model
-preference · verification requirement · quality bar · stop condition.
+Delegate only when leverage exceeds coordination cost. Routine tasks specify goal ·
+scope · exclusions · expected result · verification · stop condition. Proof-required,
+external, or experimental work adds the heavier provenance it needs.
 
-**Return packet** — every subagent ends with: task assigned · files/docs inspected ·
-facts found · decisions made · output artifact or patch summary · verification run ·
-risks · open questions · recommended next action.
+Routine returns include findings or changes · verification · risks · next action. Do
+not require unused artifacts.
 
 **Prohibitions** — no unbounded repo-wide rewrites; no irreversible external changes
-without permission; never touch secrets; never self-approve own work; never substitute
-passing tests for understanding.
+without permission; never touch secrets; never self-approve High-risk work; never
+substitute passing tests for understanding.
 
 ## Roster
 
-| Role | File | Default route (matrix v0.7) | Independence rule |
+| Role | File | Default route (matrix v0.9) | Independence rule |
 |---|---|---|---|
 | Initializer | `initializer.md` | Codex Sol (codex-implementation pattern) | — |
 | Researcher | `researcher.md` | Codex Terra read-only packet; GLM research skill for offloaded web sweeps | — |
 | Research consolidator | `research-consolidator.md` | Terra; Sonnet when prose quality warrants the quota | not one of the researchers |
-| Implementer | `implementer.md` | Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical) | never sole reviewer of own work |
+| Implementer | `implementer.md` | Current session by default; bounded worker only when faster or mechanically useful | separate review only for High-risk or uncertain work |
 | Frontend designer | `frontend-designer.md` | Impeccable on Sol High for judgment; Composer for crisp build-out; Terra fallback; GLM-5.2 experimental | does not self-approve visual quality |
-| Verifier | `verifier.md` | Sol (codex-computer-use for runtime/browser) | did not write the code under test |
-| Reviewer | `reviewer.md` | paired fresh-context native Sol 5.6 xhigh + direct Claude Opus 5; Fable only as exceptional principal/architect escalation | both standard lanes independent of implementer and of each other before fan-in |
+| Verifier | `verifier.md` | Sol (codex-computer-use for runtime/browser) | independent only when risk/dispute warrants it |
+| Reviewer | `reviewer.md` | one fresh-context reviewer when warranted; concurrent specialists for concrete High-risk/proof triggers | all expected lanes finish before one findings fan-in |
 | Review resolver | `review-resolver.md` | route-neutral read-only synthesis; Sol owns final disposition | did not design or implement the candidate |
 | Invariant extractor | `invariant-extractor.md` | bounded read-only normalization; deterministic writer appends candidates | never promotes active policy or edits product code |
 | Auditor | `auditor.md` | Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis | independent lenses at High tier |
@@ -51,6 +50,5 @@ passing tests for understanding.
 | Autoskill improver | `autoskill-improver.md` | Terra; Sonnet for language-sensitive proposals | Tier C: staged proposals only, never applied; direct writes limited to Tier B solution docs |
 
 The frontmatter `model:` in each definition file is only the Claude adapter binding.
-It is not the complete route. The v0.7 routing matrix is authoritative: the reviewer
-also requires a separate fresh-context native Sol 5.6 xhigh pass, and family-level
-quota failure skips all Claude frontmatter routes.
+It is not the complete route. The v0.9 routing matrix is authoritative; family-level
+quota failure skips all unavailable-family routes.

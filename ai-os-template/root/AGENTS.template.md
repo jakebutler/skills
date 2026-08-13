@@ -14,12 +14,13 @@ routing) live in the adapter file for that harness (`CLAUDE.md` for Claude Code)
 
 ## Startup
 
-Scale the startup to the task. For any repo-mutating work:
+Scale startup to the task. For repo-mutating work:
 
 1. Confirm the working directory (`pwd`) — especially inside worktrees.
-2. Read `{{PROJECT_STATUS_FILE}}` for current state and handoff notes.
-3. Check recent git history (`git log --oneline -10`) for context.
-4. If resuming a tracked task, read all files in `{{TASK_DOCS_DIR}}/<task>/` before acting.
+2. Read files named by the user and the source/tests directly in scope.
+3. Read `{{PROJECT_STATUS_FILE}}`, recent history, and task docs only when resuming,
+   overlapping, or reporting on tracked work. Stale or unrelated status does not
+   impose gates on a new task.
 
 For larger sessions or autonomous continuation, additionally:
 
@@ -49,6 +50,32 @@ These are non-negotiable regardless of task size:
 - Reflect on tool results before choosing the next action.
 - Plan proportional to risk (see Complexity, below). Run the relevant verification
   before declaring work done. Leave clean handoff state.
+
+## Throughput and batch rule
+
+The default development loop is:
+
+`breadth-first inspection -> one implementation batch -> focused checks -> one consolidated review when warranted -> broad verification once`
+
+- Before editing, inspect the requested surface and its nearby callers, sibling paths,
+  tests, configuration, contracts, and runtime/build boundary. Keep one short impact
+  or defect list. Finish the sweep before fixing the first item.
+- For a failing command or review, collect the complete available failure set before
+  editing. Apply one coherent correction batch; never alternate one finding, one edit,
+  and one expensive build.
+- Use the cheapest reliable feedback while editing. Run an expensive broad gate only
+  after the batch is internally consistent and focused checks pass. If it fails,
+  collect all failures, make one consolidated correction, then run one confirmation.
+  A third broad run requires a concrete affected-boundary reason.
+- Reviews fan in before remediation. Parallel lenses share one frozen diff and return
+  one findings list. A residual review is targeted and runs only when a correction
+  materially changed sensitive logic.
+- Reuse evidence from the exact unchanged diff. Commit, PR creation, and review are
+  separate entry points, not a mandatory chain that repeats checks or review.
+- Reversible repository-local work inside scope needs no extra approval. Human gates
+  remain for production/external effects, credentials, destructive or
+  difficult-to-recover actions, spend, publication/send actions, and explicit product
+  decisions.
 
 ## Doc map
 
@@ -81,12 +108,12 @@ must not block.
 
 | Workflow | Use when |
 |---|---|
-| spec | New feature or significant change: grill → PRD → issues → TDD plan |
+| spec | User-requested planning or genuinely ambiguous/high-risk product change |
 | design-proof | Proof-required change: enumerate effects → prove architecture → independent architecture/security approval |
 | implement-tdd | Executing a planned change test-first |
 | debug | Investigating a defect: logs → reproduce → assess → fix → lesson |
-| commit | Any commit: verify → review → docs → focused commit |
-| commit-pr | Commit plus branch, PR, and review loop |
+| commit | Inspect the exact diff, reuse current evidence, create a focused commit |
+| commit-pr | Commit and publish without duplicating unchanged checks or review |
 | review-pr | Reviewing a PR: bugs, regressions, missing tests, security first |
 | wrap-session | End of session: status, docs, changelog, next action |
 | init | First-time repo/worktree setup |
@@ -105,29 +132,36 @@ Research and prototype are callable from the spec workflow or standalone.
 | Build | `{{BUILD_COMMAND}}` |
 | Dev server | `{{DEV_COMMAND}}` |
 
-Scope verification to the change: focused checks for small diffs, broader runs when the
-blast radius requires it. {{VERIFICATION_SCOPING_NOTES}}
+Scope verification to the change: focused checks while editing, then broader checks
+once when the actual blast radius requires them. A build is not a generic code-change
+gate; reserve it for build/runtime/configuration boundaries, a requested release
+preflight, or a reproduced build-only failure. {{VERIFICATION_SCOPING_NOTES}}
 
 ## Complexity and ceremony
 
-Classify each task before starting (full rubric: {{RUBRIC_LOCATION}}):
+Classify by consequence, ambiguity, and reversibility rather than file count (full
+rubric: {{RUBRIC_LOCATION}}):
 
-- **Simple** — single file, known pattern, easily reversible, no data/security surface.
-  Minimal ceremony; one combined audit of the plan; focused verification.
-- **Medium** — multi-file, new behavior, or user-facing. Written plan; adversarial,
-  steelman, and unbiased audit passes; reviewer independent of the implementer.
-- **High** — architecture, auth/security/payments/data migration, cross-repo, or low
-  reversibility. Full plan with rollback; independent audit agents; explicit release plan.
+- **Simple** — localized, known, easily reversible. Inline intent and focused checks.
+- **Medium** — bounded new behavior whose intent is clear and reversible. Inline
+  checklist, one implementation batch, and proportional verification. No plan
+  artifact or independent reviewer is required by default.
+- **High** — actually alters authorization/tenancy, destructive migration, credential
+  or payment authority, externally persistent production effects, an irreversible
+  public contract, or similarly costly-to-recover behavior. Written plan with
+  rollback and one independent review.
 
-Any single high-risk dimension (security, data loss, irreversibility) promotes the tier
-regardless of size.
+User-facing scope, multiple files, cross-repo coordination, a sensitive-path label, or
+the word "security" does not promote a task by itself. A narrow fix preserving an
+approved boundary is not High merely because the boundary is sensitive.
 
-Proof-required work must enter the bound `design-proof` workflow before production
-edits. Implementation requires a validated approved builder-packet hash. Discovery of
-a missing trust root, reachable effect, sibling path, lifecycle behavior, or requirement
-invalidates that packet and returns control to design. The invariant catalog and
-task-specific matrices are retrieved into the task packet; they do not belong in this
-root file or every model request.
+Proof-required work is the subset that introduces or materially changes authority,
+trust boundaries, destructive/external effects, migration semantics, concurrency
+ownership, historical authority, or hard-to-reverse architecture. It enters the bound
+`design-proof` workflow before production edits. Narrow implementation fixes that
+preserve an approved design stay in the batched loop. Only a new design decision or a
+contradiction of the approved authority model invalidates the builder packet; newly
+noticed implementation paths join the consolidated defect list.
 
 ## Model routing and provider failure
 
@@ -137,10 +171,11 @@ the human routing guide explains the policy but does not override JSON. Codex So
 is the default orchestrator. Model workers receive bounded contracts; decision
 authority does not transfer merely because a route is stronger or cheaper.
 
-Implementation and PR code review uses two independent standard lanes against one
-frozen candidate: fresh-context native `gpt-5.6-sol` at xhigh reasoning and direct
-`claude-opus-5`. Fable is an optional third principal-engineer/architect consultation
-only after a concrete exceptional trigger; it never replaces either standard lane.
+Routine implementation has no mandatory delegated review. When independence is
+warranted, use one fresh-context reviewer. Proof-required or exceptional High-risk
+work may use multiple concurrent specialist lanes against one frozen candidate.
+Fable remains an optional principal-engineer/architect consultation after a concrete
+exceptional trigger.
 
 Treat availability at the provider-family level:
 
@@ -152,37 +187,32 @@ Treat availability at the provider-family level:
 - preserve partial output, exact failure, last verified checkpoint, and fallback route
   in task context
 
-The standard code-review pair is stricter than ordinary delegation fallback: after one
-transient retry, an unavailable Sol or Opus lane makes the review incomplete. Preserve
-the completed packet and request user approval before any reduced topology.
-
-The orchestrator reports the chosen route and next checkpoint at start, every phase
-boundary with evidence, every retry or fallback immediately, and the final implementer,
-reviewers, verification, skipped checks, fallback events, and residual risk. A failed
-command is never described as still running.
+The orchestrator reports material route changes, failures, verification, skipped
+checks, and residual risk. Routine internal phase boundaries do not need ceremonial
+status or artifact production. A failed command is never described as still running.
 
 ## Delegation
 
-When work is delegated to subagents, every delegation must specify: goal, paths, files
-to inspect, excluded areas, expected output artifact, allowed tools, verification
-requirement, and stop condition. Every subagent returns a packet: files inspected,
-facts found, decisions made, output summary, verification run, risks, open questions,
-recommended next action.
+Delegate only when work can run independently and expected parallel speedup or
+fresh-context value exceeds coordination cost. File count alone is not a delegation
+trigger. Routine delegations name a concise goal, scope, exclusions, expected result,
+verification, and stop condition; heavyweight packets and provenance are reserved for
+proof-required, external, or experimental work.
 
-The return packet also includes the route used, provider-family state changes,
-continuation or retry count, checkpoint path, and any reduction in review diversity.
+Routine returns include findings or changes, verification, risks, and next action. Do
+not require an output artifact that nobody will use.
 
-Subagents must not: perform unbounded repo-wide rewrites, make irreversible external
-changes without permission, touch secrets, self-approve their own work, or substitute
-passing tests for understanding. The implementer is never the sole reviewer.
+Subagents must not perform unbounded repo-wide rewrites, make irreversible external
+changes without permission, touch secrets, self-approve High-risk work, or substitute
+passing tests for understanding. Routine reversible work does not require a separate
+reviewer solely to satisfy process.
 
 ## Worktrees <!-- OPTIONAL: delete if this repo never uses worktrees -->
 
 Use an isolated worktree when collision risk exists (parallel agents, risky changes).
-Each worktree must be able to boot the app, reach required env vars via
-{{ENV_ACCESS_PROCESS}}, capture logs locally, and run verification. Worktree-local
-logs/traces are disposable; durable knowledge goes in the shared docs above before a
-worktree is deleted.
+A worktree must support only the checks its task needs; documentation or static work
+does not need app boot or runtime credentials. Worktree-local logs/traces are
+disposable; durable knowledge goes in the shared docs above before deletion.
 
 ## Repo standards
 

@@ -2,11 +2,15 @@
 
 ## Trigger
 
-Run this workflow before production implementation when the complexity rubric marks a
-task `proof_required`. Security, authorization, tenant isolation, destructive effects,
-external effects, persistent-state authority, migrations, concurrency/takeover,
-historical compatibility, and hard-to-reverse architecture are proof-required by
-default.
+Run this workflow before production implementation only when a change introduces or
+materially alters authorization, tenant isolation, destructive or externally
+persistent effects, migration semantics, concurrency ownership, historical authority,
+or another hard-to-reverse architecture boundary.
+
+Touching sensitive code is not enough. A narrow defect fix, test, refactor, or missing
+sibling implementation path that preserves an approved contract stays in the normal
+batched implementation workflow. If no exact new authority or irreversible decision
+can be named, do not enter design-proof.
 
 The project instance resolves artifact paths, validation commands, invariant registry,
 inventory source, and review roles from its machine-readable proof-harness binding.
@@ -91,8 +95,10 @@ an independently editable source of truth.
 11. Run the read-only review resolver. It validates identity, normalizes and clusters
     findings, maps every source item exactly once, detects conflicts, applies the
     precedence policy, and emits one resolution contract.
-12. Sol remediates the design contract, not production code. Any material change creates
-    a new candidate hash and invalidates previous approval.
+12. Sol remediates the design contract, not production code. A change to authority,
+    requirements, or the architecture decision creates a new candidate hash. Missing
+    implementation coverage that fits the same design joins the consolidated code
+    batch and does not reopen design.
 13. After architecture and security approval of the same exact candidate, compute the
     approved builder-packet hash from the candidate identity, exact review-coverage
     bytes, and a stable canonical form of the resolution contract with the hash field
@@ -105,8 +111,9 @@ an independently editable source of truth.
 - The same architecture version may receive one remediation and re-review.
 - A second verdict with the same root-cause class invalidates that architecture version
   and forces a replacement decision contract or smaller review unit.
-- A new trust root, effect boundary, lifecycle model, sibling path, or requirement set
-  creates a new architecture version immediately.
+- A new trust root, effect boundary, lifecycle model, or requirement set creates a new
+  architecture version. A sibling path does so only when it changes the approved
+  authority or lifecycle model.
 - After three frozen design versions without approval, report `blocked` with the
   unresolved decision graph and require HITL before more review spend.
 - Stable finding and requirement IDs carry obligations forward across versions.
@@ -134,5 +141,6 @@ The implementation handoff contains the approved packet, not raw reviewer prompt
   weaken a project-pinned review role.
 - Conflicting valid directives: route the compact conflict to Sol plus the bound
   architecture role or user. Do not send both directives to an implementer.
-- Incomplete design discovered during implementation: revoke the builder packet and
-  return here before further production edits.
+- A new design decision or contradiction discovered during implementation: revoke the
+  builder packet and return here. Missing implementation coverage inside the approved
+  design is corrected in one batch without restarting design-proof.

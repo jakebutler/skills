@@ -9,18 +9,19 @@ Start with [WALKTHROUGH.html](WALKTHROUGH.html) for a guided review, then use
 [DESIGN-MEMO.md](DESIGN-MEMO.md) for the architecture, contracts, and decisions
 record. The directory layout and instantiation procedure are in memo §9–10.
 
-**Status:** runtime and routing v0.8. Codex Sol High is the primary orchestrator. Routine code
-review pairs a fresh-context native GPT-5.6 Sol reviewer at xhigh reasoning with direct
-Claude Opus 5 against one frozen candidate. Fable is reserved for exceptional
-principal-engineer/architect escalation. Composer is the validated bounded frontend
-implementation default. Luna is the provisional bounded and mechanical route; Terra
-is a guarded fallback until repo-local evaluations establish a clearer niche.
+**Status:** runtime and routing v0.9. Codex Sol High is the primary orchestrator. The
+default delivery loop is breadth-first inspection, one implementation batch, focused
+checks, one consolidated review when warranted, then one broad gate. Routine reversible
+work has no mandatory delegated review; proof-required and exceptional High-risk work
+retain concurrent independent lenses. Fable is reserved for exceptional
+principal-engineer/architect escalation. Composer is an optional bounded frontend
+route when delegation is faster than direct work.
 FreshProof and Lower dB are first, followed by corvo-labs-dot-com.
 
 The human routing guide now has a machine-readable source of truth:
 `routing/task-routes.json`, backed by dated evidence in `routing/model-evidence.json`.
-The resolver promotes high-risk work to the Codex backbone, refuses silent fallback,
-and returns required companion review lanes:
+The resolver promotes genuinely High-risk work to the Codex backbone, refuses silent
+fallback, and returns companion review lanes only for proof-required review:
 
 ```bash
 node scripts/resolve-model-route.mjs --task bounded-implementation --risk high

@@ -25,8 +25,7 @@ next review or commit action.
 
 ## Model routing note
 
-Codex Sol High keeps scope and acceptance criteria stable. Codex is the primary
-implementation workhorse, including test writing, code edits, repo exploration, and
-verification. At the review gate, independence is preserved through paired
-fresh-context Sol 5.6 xhigh and Opus 5 review of one frozen candidate; verification
-remains a separate evidence lane.
+Codex Sol High keeps scope and acceptance criteria stable. Implementation begins with
+one breadth-first impact sweep, proceeds as one coherent batch, and uses focused checks
+before one warranted broad gate. Independent review is added only for High-risk work,
+material uncertainty, or explicit request; multiple lenses run concurrently.
