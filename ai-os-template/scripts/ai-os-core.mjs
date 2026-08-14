@@ -61,8 +61,8 @@ export function validateRegistry(registry, evidence) {
   if (!registry || typeof registry !== "object" || Array.isArray(registry)) {
     return ["registry must be an object"];
   }
-  if (!/^0\.8(?:\.\d+)?$/.test(registry.version ?? "")) {
-    errors.push("registry.version must be 0.8 or 0.8.x");
+  if (!/^0\.(?:8|9)(?:\.\d+)?$/.test(registry.version ?? "")) {
+    errors.push("registry.version must be 0.8.x or 0.9.x");
   }
   if (registry.policies?.noSilentSubstitution !== true) {
     errors.push("registry must enable noSilentSubstitution");
@@ -591,10 +591,16 @@ export function evaluateHook(hookName, input, config, cwd) {
   }
 
   if (hookName === "verify-on-change") {
+    const status = spawnSync("git", ["status", "--porcelain"], {
+      cwd,
+      encoding: "utf8",
+      timeout: 5_000,
+    });
+    if (status.status !== 0 || !status.stdout.trim()) return {};
     return hookOutput(
-      eventName || "PostToolUse",
+      eventName || "Stop",
       config.hooks?.verificationReminder ??
-        "Run focused verification for the changed surface before treating the task as complete.",
+        "Run focused verification after the coherent batch. Add a broad gate only when the actual blast radius warrants it.",
     );
   }
 
@@ -608,7 +614,7 @@ export function evaluateHook(hookName, input, config, cwd) {
     if (status.status !== 0 || !status.stdout.trim()) return {};
     return hookOutput(
       eventName || "Stop",
-      "Tracked or untracked changes remain. Before stopping, run the configured independent review topology or explicitly record why review is deferred.",
+      "High-risk review was explicitly enabled for this instance. Run all warranted lenses concurrently, freeze their findings, then remediate one consolidated list. Routine changes do not require review.",
     );
   }
 

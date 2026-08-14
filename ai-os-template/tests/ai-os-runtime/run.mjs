@@ -21,6 +21,28 @@ const orchestrator = resolveRoute(registry, { task: "plan", risk: "medium" });
 assert.equal(orchestrator.status, "selected");
 assert.equal(orchestrator.route.id, "codex-sol-high");
 
+const boundedRoutine = resolveRoute(registry, {
+  task: "bug-fix",
+  risk: "medium",
+});
+assert.equal(boundedRoutine.requiresIndependentReview, false);
+
+const routineReview = resolveRoute(registry, {
+  task: "pr-review",
+  risk: "medium",
+});
+assert.equal(routineReview.route.id, "codex-sol-xhigh-review");
+assert.deepEqual(routineReview.companionRoutes, []);
+
+const proofReview = resolveRoute(registry, {
+  task: "proof-review",
+  risk: "high",
+});
+assert.deepEqual(
+  proofReview.companionRoutes.map((route) => route.id),
+  ["claude-opus5-high"],
+);
+
 const boundedHighRisk = resolveRoute(registry, {
   task: "bug-fix",
   risk: "high",

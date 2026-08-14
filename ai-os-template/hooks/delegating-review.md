@@ -1,92 +1,29 @@
 # delegating-review
 
-## Name
-
-`delegating-review`
-
 ## Classification
 
-Delegating.
-
-## Claude Code event
-
-`Stop`
+Disabled by default. Advisory when a project explicitly enables it for High-risk or
+proof-required work.
 
 ## Trigger condition
 
-At response stop, when any of these conditions are true:
-
-- changed diff is larger than `{{LARGE_DIFF_THRESHOLD}}` lines
-- frontend files changed, such as `*.tsx`, `*.jsx`, CSS, route components, design
-  tokens, or UI test fixtures
-- docs drift is detected: behavior changed without corresponding Tier A/B doc update,
-  or docs mention old file paths, commands, states, or intent
-- proof-required files changed, or a proof-required builder packet is present
+An instance may enable this hook only when its task state explicitly marks the current
+candidate High-risk/proof-required and names the required review topology. A dirty
+working tree, large diff, frontend change, documentation drift, or file count does not
+trigger review.
 
 ## Action
 
-Emit one or more bounded subagent delegation packets:
-
-- Large diff: route to `reviewer` with architecture focus.
-- Frontend file changes: route to `frontend-designer` for UX and visual review.
-- Docs drift: route to `doc-maintainer` for Tier A/B maintenance.
-- Proof-required change: freeze one candidate identity; emit bounded architecture,
-  security, correctness, and other triggered lens packets against that same identity;
-  then emit a `review-resolver` packet only after every durable source packet exists.
-
-Any implementation or PR code-review trigger emits both standard reviewer packets
-against one freeze: fresh-context native `gpt-5.6-sol` at xhigh and direct
-`claude-opus-5`. A Fable packet is emitted only when the orchestrator records a
-qualifying principal-engineer/architect trigger; it never replaces either standard
-packet.
-
-Each packet follows the delegation contract: goal, repo/paths, files to inspect,
-excluded areas, expected output artifact, allowed tools, model preference,
-verification requirement, quality bar, and stop condition.
+Remind the orchestrator to launch all warranted independent/specialist lenses
+concurrently against one frozen candidate, wait for every expected finding packet,
+then remediate one consolidated list.
 
 ## Guardrails
 
-- Do not run unbounded repo-wide reviews from the hook.
-- Do not auto-apply reviewer or doc-maintainer edits; the orchestrator decides.
-- Keep review independence: the implementer is not the sole reviewer of its own work.
-- Keep the Sol and Opus packets isolated until both are frozen. Reject an
-  inherited-context Sol pass or a packet without exact model/provenance evidence.
-- Deduplicate routes when the same file set triggers multiple checks.
-- Respect doc write tiers: `doc-maintainer` may handle Tier A/B only; Tier C changes
-  become proposals.
-- A hook never auto-approves a candidate, applies review fixes, promotes an invariant
-  to blocking policy, or edits the active registry.
-- Do not forward individual source findings to implementation. Only a validated
-  resolution packet may become actionable feedback.
-- If the candidate identity changes, invalidate all outstanding source and resolution
-  packets and begin a new bounded review generation.
-- If either standard route is unavailable, preserve completed packets and emit an
-  incomplete-review notice for user disposition; do not silently substitute another
-  route.
-
-## Failure behavior
-
-If diff analysis fails, print an advisory note and include enough context for the
-orchestrator to decide whether to review manually. Do not block the response. If
-delegation infrastructure is unavailable, emit the packet text so the orchestrator can
-run the subagent explicitly.
-
-## Example .claude/settings.json snippet
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/delegating-review.mjs --large-diff-threshold {{LARGE_DIFF_THRESHOLD}} --frontend-globs \"**/*.{tsx,jsx,css,scss,vue,svelte}\" --docs-drift-check"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+- Routine reversible work has no mandatory delegated review.
+- Do not emit standard paired reviewers for every commit or PR.
+- Do not forward individual findings before expected lenses finish.
+- Do not rerun review at commit and PR creation when the candidate is unchanged.
+- A residual review is targeted and runs only after a correction materially changes
+  sensitive logic or a P0/P1 remains.
+- Hook failure never blocks ordinary work.

@@ -24,13 +24,13 @@ summaries below remain the fallback when that portable binding is unavailable.
 
 | Command | Purpose |
 |---|---|
-| `/spec` | grill → PRD → issues → TDD plan (calls research/prototype as needed) |
+| `/spec` | user-requested planning or genuinely ambiguous/high-risk product work |
 | `/research` | standalone research with consolidation packet |
 | `/prototype` | standalone exploration of UI/state/interaction uncertainty |
 | `/implement-tdd` | execute a planned change test-first |
 | `/debug-mode` | log-driven defect investigation loop |
-| `/commit` | verify → review → docs → focused commit |
-| `/commit-pr` | commit workflow plus branch, PR, and review loop |
+| `/commit` | inspect exact diff, reuse current evidence, create focused commit |
+| `/commit-pr` | commit and publish without duplicating unchanged checks or review |
 | `/review-pr` | PR review: bugs, regressions, missing tests, security first |
 | `/wrap-session` | end-of-session status, docs, changelog, next action |
 
@@ -45,23 +45,24 @@ What to expect:
   significance check, each with a recorded update reason.
 - **Advisory** notices (docs/tests/error-handling reminders): consider them, then act
   or briefly say why not.
-- **Delegating** triggers (type-error pileup, large diff, frontend diff): hand off to
-  the named subagent rather than pushing through.
+- **Delegation hints** are advisory. Hand off only when independent parallel work or
+  fresh context is likely to save more time than coordination costs. File count and a
+  frontend diff do not force delegation.
 - **Blocking** gates fire only on secrets exposure, client-side API keys, destructive
-  git ops, or failed build/typecheck on code changes. Override for local non-production
-  work: {{BLOCKING_OVERRIDE}}.
+  git ops, or an explicitly required check that has failed. Hooks do not create a
+  requirement to run an expensive check. Override for local non-production work:
+  {{BLOCKING_OVERRIDE}}.
 
 Hooks may inject skill-activation reminders before a prompt is processed. Treat a
 named skill as a strong default, not a suggestion.
 
 ## Claude lane
 
-The primary control plane is Codex Sol High. A Claude Code session normally serves one
-of three bounded roles: Opus 5 supplies the standard independent Anthropic code-review
-lane; Fable reviews an exceptional advanced architecture or system-design packet;
-Sonnet writes copy from a voice and acceptance brief. Claude becomes the fallback
-orchestrator only when the Codex family is unavailable and the user accepts Anthropic
-quota use.
+The primary control plane is Codex Sol High. Claude Code supplies an independent Opus
+review only when risk or uncertainty warrants one, Fable reviews exceptional advanced
+architecture or system design, and Sonnet writes copy from a bounded brief. Claude
+becomes the fallback orchestrator only when Codex is unavailable and the user accepts
+Anthropic quota use.
 
 Follow the delegation contract and return-packet format in `AGENTS.md` § Delegation.
 Return decisions, evidence, risks, and the next action to the Sol orchestrator. Do not
@@ -85,8 +86,9 @@ an `opus` alias is valid only when it resolves to `claude-opus-5`.
 | Offloaded web research | {{RESEARCH_ROUTE}} |
 | Written content | Sonnet; Terra fallback |
 | Advanced architecture and system-design feedback | Fable on a compact Sol decision packet |
-| Code review | fresh-context native `gpt-5.6-sol` at xhigh + direct `claude-opus-5` against one frozen candidate |
-| Principal engineer / architect escalation | Fable only after a concrete exceptional trigger; never a replacement for Sol or Opus |
+| Routine code review | one fresh-context reviewer when independence is warranted |
+| Proof-required/high-risk review | concurrent diff-triggered reviewers against one frozen candidate |
+| Principal engineer / architect escalation | Fable only after a concrete exceptional trigger |
 
 Optional full matrix and complexity rubric: {{ROUTING_LOCATION}}. The binding must be
 repo-relative or use the documented `AI_OS_HOME` variable. When it is unavailable, use

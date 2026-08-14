@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/task-route-registry.schema.json",
-  "version": "0.8.0",
-  "updatedAt": "2026-07-24",
+  "version": "0.9.0",
+  "updatedAt": "2026-08-13",
   "backboneRouteId": "codex-sol-high",
   "policies": {
     "noSilentSubstitution": true,
@@ -30,7 +30,7 @@
       "availability": "verified",
       "capabilities": ["independent-review", "security-review", "high-risk-verification"],
       "evidenceIds": ["aa-codex-agent-index"],
-      "notes": "Must run in a fresh context against a frozen candidate."
+      "notes": "Use when independent review is warranted; fresh context and a frozen candidate are required for blocking High-risk review."
     },
     {
       "id": "codex-luna-max",
@@ -126,7 +126,7 @@
       "primaryRouteId": "codex-luna-max",
       "fallbackRouteIds": ["cursor-composer25", "codex-sol-high"],
       "confidence": "provisional",
-      "requiresIndependentReview": true,
+      "requiresIndependentReview": false,
       "requiresRepoEval": true,
       "stopRule": "Promote to Sol when scope, ambiguity, or risk grows."
     },
@@ -136,7 +136,7 @@
       "primaryRouteId": "cursor-composer25",
       "fallbackRouteIds": ["codex-luna-max", "codex-sol-high"],
       "confidence": "medium",
-      "requiresIndependentReview": true,
+      "requiresIndependentReview": false,
       "requiresRepoEval": true,
       "stopRule": "Preserve the design packet and deterministic browser checks across reroutes."
     },
@@ -152,14 +152,24 @@
     },
     {
       "id": "independent-code-review",
-      "aliases": ["review", "pr-review", "security-review"],
+      "aliases": ["review", "pr-review"],
+      "primaryRouteId": "codex-sol-xhigh-review",
+      "fallbackRouteIds": ["claude-opus5-high"],
+      "confidence": "high",
+      "requiresIndependentReview": true,
+      "requiresRepoEval": false,
+      "stopRule": "One fresh-context lane is sufficient for routine review; disclose any fallback."
+    },
+    {
+      "id": "proof-required-code-review",
+      "aliases": ["proof-review", "high-risk-review", "security-review"],
       "primaryRouteId": "codex-sol-xhigh-review",
       "fallbackRouteIds": [],
       "requiredCompanionRouteIds": ["claude-opus5-high"],
       "confidence": "high",
       "requiresIndependentReview": true,
       "requiresRepoEval": false,
-      "stopRule": "Pair with claude-opus5-high; an unavailable lane makes the review incomplete."
+      "stopRule": "Run project-required lanes concurrently against one frozen candidate; unavailable blocking lanes leave the review incomplete."
     },
     {
       "id": "copy",

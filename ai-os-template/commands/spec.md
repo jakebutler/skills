@@ -6,8 +6,8 @@
 
 ## Purpose
 
-Turn an ambiguous feature, product change, or architecture request into a concrete
-specification path: grill, PRD, issues, and an implementation-ready TDD plan.
+Turn an explicitly requested or genuinely ambiguous change into the smallest
+implementation-usable plan artifact.
 
 ## Invocation (args)
 
@@ -22,9 +22,8 @@ Execute `../workflows/spec.md`.
 
 ## Output contract
 
-The user sees a concise spec packet: decision summary, selected scope, open questions,
-links or paths to created artifacts, verification or review gates, and the next
-implementation action.
+The user sees one concise implementation-usable plan plus only the optional research,
+prototype, PRD, or issue artifacts that resolve a named downstream need.
 
 ## Model routing note
 

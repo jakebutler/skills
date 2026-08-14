@@ -25,13 +25,13 @@ PRs, and wrap the session.
 
 Excluded candidates stay out of v1 for clear ownership reasons:
 
-- `/fix-types` is a delegating-hook target for `verify-on-change`, not a user-facing
-  command.
+- `/fix-types` is unnecessary: verification is end-of-batch and failures return as one
+  consolidated implementation/debug list.
 - `/update-docs` is automatic maintenance handled by checkpoint hooks, not a command.
 - `/prove` and `/publish-slice` remain repo-specific skills until their patterns
   generalize.
-- `/autoskill` runs inside `/commit`, `/commit-pr`, and `/wrap-session` as a proposal
-  pass; it is not standalone in v1.
+- `/autoskill` is not an automatic commit/PR phase; invoke durable-learning work only
+  when a recurring lesson warrants it.
 
 Command specs must reference workflow filenames and define invocation, output, and
 model routing only. Workflow steps live in `../workflows/`.
