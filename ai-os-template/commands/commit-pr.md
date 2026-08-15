@@ -6,8 +6,7 @@
 
 ## Purpose
 
-Run the commit workflow and continue through branch, PR creation, and review loop for
-a ready slice.
+Commit and publish a ready slice without duplicating unchanged verification or review.
 
 ## Invocation (args)
 
@@ -24,8 +23,6 @@ summary, review status, unresolved risks, and requested reviewer action.
 
 ## Model routing note
 
-Codex Sol High owns PR framing, final review readiness, and conflict resolution.
-Every PR review uses fresh-context Sol 5.6 xhigh plus Opus 5 against the same frozen
-candidate. Bounded routes handle implementation cleanup, verification, browser checks,
-and PR mechanics where allowed. Fable is an optional principal/architect escalation
-only after a concrete trigger.
+Codex Sol High owns PR framing and conflict resolution. PR creation does not trigger a
+new review. Review runs only when requested, genuinely High-risk, still uncertain, or
+changed after prior review; concurrent lenses fan into one findings list.

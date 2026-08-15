@@ -7,7 +7,7 @@
   "required": ["version", "backboneRouteId", "policies", "routes", "tasks"],
   "properties": {
     "$schema": { "type": "string" },
-    "version": { "type": "string", "pattern": "^0\\.8(?:\\.\\d+)?$" },
+    "version": { "type": "string", "pattern": "^0\\.(?:8|9)(?:\\.\\d+)?$" },
     "updatedAt": { "type": "string", "format": "date" },
     "backboneRouteId": { "type": "string", "minLength": 1 },
     "policies": {

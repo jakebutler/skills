@@ -505,7 +505,7 @@
       <table>
         <tr><th>Principle</th><th>What it means in practice</th></tr>
         <tr><td>Concrete abstraction</td><td>Every recommendation maps to a file, hook, command, workflow, skill, agent, routing rule, verification gate, or convention. Nothing ships as advice-only.</td></tr>
-        <tr><td>Orchestrator, not laborer</td><td>Codex Sol High owns task state, framing, delegation, synthesis, and user updates. Terra, Luna, GLM-5.2, Composer, Sonnet, and Fable do bounded work under contracts.</td></tr>
+        <tr><td>Delegate for leverage</td><td>The current session owns coherent work. Delegate only independent slices where parallel speedup, mechanical volume, or fresh context outweighs coordination cost.</td></tr>
         <tr><td>Repo-resident memory</td><td>Models forget; the repo persists. Everything an agent needs is in the repo or explicitly mapped from it.</td></tr>
         <tr><td>Proportional ceremony</td><td>The solo path is lighter than a production-team path, but never below the floor of inspect before edit, plan proportional to risk, run verification, and leave a clean handoff.</td></tr>
         <tr><td>Merge, don't bulldoze</td><td>Instantiation adapts to a repo's existing conventions via a manifest. The template never silently overwrites or renames what a repo already has.</td></tr>
@@ -523,7 +523,7 @@
         <tr><td>Worktrees</td><td>Conventions in <code>AGENTS.md</code> + <code>init</code> workflow</td><td>Parallel agents don't collide; risky work is isolated; logs are worktree-local and disposable.</td></tr>
         <tr><td>Skills</td><td><code>INVENTORY.md</code> + skill-activation hook</td><td>Reusable how-to guidance the agent should default to instead of guessing. Auto-activation solves "the agent didn't remember to use the available skill."</td></tr>
         <tr><td>Connectors</td><td>Tool inventory cache (<code>.ai/tools.md</code>) + routing rules</td><td>Don't rediscover stable tools every session.</td></tr>
-        <tr><td>Subagents</td><td><code>agents/</code> + delegation contract</td><td>Cheaper models do bounded work; the implementer is never the sole reviewer of its own work.</td></tr>
+        <tr><td>Subagents</td><td><code>agents/</code> + delegation contract</td><td>Delegate only when parallel speedup or fresh context exceeds coordination cost; High-risk review stays independent.</td></tr>
         <tr><td>Memory</td><td>Doc system (§4) + task-local docs + <code>PROJECT-STATUS.md</code></td><td>Session-to-session continuity without noisy churn.</td></tr>
       </table>
 
@@ -570,12 +570,12 @@
 
       <table>
         <tr><th>Workflow</th><th>What it does</th><th>Called by</th></tr>
-        <tr><td><code>spec</code></td><td>grill-with-docs → PRD → issues → TDD plan. Accelerated grill: up to 5 user questions, ~20 self-grill with options-considered and rationale, batched review.</td><td><code>/spec</code>, or chained from another workflow that discovers ambiguity</td></tr>
-        <tr><td><code>implement-tdd</code></td><td>Failing test → minimum correct impl → focused verification → refactor only when justified → docs update.</td><td><code>/implement-tdd</code>, or chained from <code>spec</code></td></tr>
-        <tr><td><code>debug</code></td><td>Logs → reproduce → assess → plan → code → test → capture durable lesson → clear transient logs → commit.</td><td><code>/debug-mode</code></td></tr>
-        <tr><td><code>commit</code></td><td>Verify → independent review → address findings → docs/status/changelog updates → autoskill scan → focused commit.</td><td><code>/commit</code>, or chained from every implementation workflow</td></tr>
-        <tr><td><code>commit-pr</code></td><td>Commit workflow → push → PR (Summary / Why / Changes / Verification / Risks &amp; Rollback / Follow-up) → PR review → address → final status.</td><td><code>/commit-pr</code></td></tr>
-        <tr><td><code>review-pr</code></td><td>Findings first, cite file:line, prioritize bugs/regressions/security/broken contracts. Delegating sub-reviews by diff content at higher tiers.</td><td><code>/review-pr</code></td></tr>
+        <tr><td><code>spec</code></td><td>One breadth-first uncertainty sweep → only material questions → the smallest useful plan artifact.</td><td><code>/spec</code>, when the user requests planning or genuine ambiguity blocks implementation</td></tr>
+        <tr><td><code>implement-tdd</code></td><td>Breadth-first impact sweep → failing check → one coherent implementation batch → focused checks → one warranted broad gate.</td><td><code>/implement-tdd</code>, directly or from an accepted plan</td></tr>
+        <tr><td><code>debug</code></td><td>Complete evidence sweep → root-cause register → one fix batch → focused reproduction → one warranted broad gate.</td><td><code>/debug-mode</code></td></tr>
+        <tr><td><code>commit</code></td><td>Inspect exact diff → reuse valid checks/review → run only missing warranted checks → focused commit.</td><td><code>/commit</code> when authorized</td></tr>
+        <tr><td><code>commit-pr</code></td><td>Commit if needed → push → concise PR. Review is not repeated unless requested, High-risk, or the candidate changed.</td><td><code>/commit-pr</code></td></tr>
+        <tr><td><code>review-pr</code></td><td>One breadth-first findings pass; concurrent specialists only for concrete High-risk/proof triggers; one findings fan-in.</td><td><code>/review-pr</code></td></tr>
         <tr><td><code>wrap-session</code></td><td>Overwrite status, docs if needed, changelog if meaningful, autoskill scan, record next action, list verification done AND skipped.</td><td><code>/wrap-session</code></td></tr>
         <tr><td><code>init</code></td><td>Initializer creates doc skeleton, seed status, <code>init.sh</code>, tool cache, baseline verification; verifies app boots, env access works, smoke passes.</td><td>Once per repo; once per new worktree</td></tr>
         <tr><td><code>experiment</code></td><td>Hypothesis-driven comparison of LLMs/prompts/setups against the same bounded task; identical acceptance checks per arm; lab-notebook entry; feeds routing matrix.</td><td><code>/experiment</code> or from <code>spec</code>/<code>debug</code></td></tr>
@@ -586,50 +586,50 @@
       <p>Experimentation is a first-class methodology and the routing matrix's evidence engine.</p>
 
       <div class="callout judgment">
-        <span class="tag">Judgment · #A4 — accelerated grill</span>
-        <p>The packet said "possible pattern: 5 questions with user, 20 self-questions, then review." I codified that as the <strong>spec workflow's step 4–5</strong> and made options-considered + selected-option rationale <em>required</em> for each self-grill question. The user only gets asked when answers would materially change the plan. This is the primary way solo work stays disciplined without the full team-production grill.</p>
+        <span class="tag">Judgment · #A4 — smallest useful planning artifact</span>
+        <p>The original accelerated grill created planning work even when intent was already clear. Routing v0.9 keeps one breadth-first uncertainty sweep, asks only questions that materially change behavior or a difficult-to-reverse choice, and produces only the artifact a downstream consumer needs.</p>
       </div>
     </section>
 
     <section id="quality">
       <h2>6 · Quality system — complexity tiers and audit lenses</h2>
-      <p>Every non-trivial task is classified before starting. The tier drives planning depth, audit lenses, review independence, and model routing.</p>
+      <p>Tasks are classified by actual consequence, ambiguity, and reversibility. File count and user-facing scope do not create process by themselves.</p>
 
       <table>
         <tr><th>Tier</th><th>Looks like</th><th>Plan</th><th>Audit</th><th>Review</th></tr>
-        <tr><td>Simple</td><td>Single file, known pattern, easily reversible, no data/security surface.</td><td>Inline intent</td><td>One combined pass (adversarial+steelman+neutral baked in)</td><td>Self-review OK</td></tr>
-        <tr><td>Medium</td><td>Multi-file, new behavior, or user-facing.</td><td>Written plan in task docs</td><td>Three lens passes by one auditor subagent</td><td>Reviewer independent of implementer</td></tr>
-        <tr><td>High</td><td>Architecture, auth/security/payments/data migration, cross-repo, low reversibility.</td><td>Full plan + rollback</td><td>Three independent lens subagents; orchestrator synthesizes</td><td>Independent reviewer + specialist lenses</td></tr>
+        <tr><td>Simple</td><td>Localized, known, easily reversible.</td><td>Inline intent</td><td>None by default</td><td>Self-review</td></tr>
+        <tr><td>Medium</td><td>Bounded new behavior with clear intent and cheap rollback.</td><td>Inline checklist</td><td>None by default</td><td>Self-review; add one independent pass only for real uncertainty</td></tr>
+        <tr><td>High</td><td>Actually changes authority, destructive/external effects, irreversible contracts, or similarly costly recovery.</td><td>Plan + rollback</td><td>One breadth-first risk inventory</td><td>One independent reviewer + concrete concurrent specialists</td></tr>
       </table>
 
-      <p><strong>Promotion rule:</strong> a single High on <em>risk, reversibility, or blast radius</em> makes the task High regardless of size. When in doubt between tiers, take the higher one — the extra ceremony is one audit pass, not a process tax.</p>
+      <p><strong>Promotion rule:</strong> name the concrete irreversible or high-consequence behavior. A sensitive-path label, multiple files, cross-repo work, or “user-facing” does not promote by itself.</p>
 
-      <p><strong>Review independence</strong> is the non-negotiable core: the coding agent is never the sole reviewer of its own work. This is what most of the routing and delegation rules are protecting.</p>
+      <p><strong>Throughput rule:</strong> finish breadth-first discovery, implement one batch, use focused checks, fan in review when warranted, then run one broad gate at the stable boundary.</p>
     </section>
 
     <section id="contracts">
       <h2>7 · Contracts — the four rules everything else depends on</h2>
 
       <h3>7.1 · Delegation contract</h3>
-      <p>Every subagent task must specify: <em>goal · repo/paths · files to inspect · excluded areas · expected output artifact · allowed tools · model preference · verification requirement · quality bar · stop condition</em>. If you can't write those ten, you're not ready to delegate.</p>
+      <p>Delegate only when leverage exceeds coordination cost. A routine task needs <em>goal · scope · exclusions · expected result · verification · stop condition</em>. Proof-required, external, or experimental work adds heavier provenance only when needed.</p>
 
       <p><strong>Subagents may not:</strong> perform unbounded repo-wide rewrites, make irreversible external changes without permission, touch secrets, self-approve their own work, or substitute passing tests for understanding.</p>
 
       <h3>7.2 · Return packet</h3>
-      <p>Every subagent result must contain: <em>task assigned · files/docs inspected · facts found · decisions made · output artifact or patch summary · verification run · risks · open questions · recommended next action</em>. Concise packet, not a transcript.</p>
+      <p>A routine result contains <em>findings or changes · verification · risks · next action</em>. Do not create an output artifact that nobody will use.</p>
 
       <h3>7.3 · Hook classification</h3>
       <table>
         <tr><th>Class</th><th>Uses</th><th>Guidance</th></tr>
-        <tr><td>Blocking</td><td>Secrets exposure, client-side API keys, destructive git ops without permission, failed build/typecheck on code changes</td><td>Sparse. Documented local override for non-production work.</td></tr>
+        <tr><td>Blocking</td><td>Secrets exposure, client-side API keys, destructive git ops without permission</td><td>Sparse. Hooks never create a requirement to run an expensive check.</td></tr>
         <tr><td>Advisory</td><td>Missing docs/tests consideration, error-handling reminders, architecture concerns</td><td>Notice; agent decides.</td></tr>
-        <tr><td>Delegating</td><td>Type errors → fix-types; large diff → architecture reviewer; frontend diff → UX reviewer; docs drift → doc maintainer</td><td>Hand off instead of pushing through.</td></tr>
+        <tr><td>Delegating</td><td>Explicit High-risk/proof review only</td><td>Disabled by default; size/frontend/docs changes alone never hand off.</td></tr>
         <tr><td>Automatic maintenance</td><td><code>PROJECT-STATUS.md</code>, changelog draft, tool cache, generated docs</td><td>Fire at checkpoints; significance-gated; anti-churn rules apply.</td></tr>
       </table>
 
       <div class="callout judgment">
         <span class="tag">Judgment · #A5 — blocking hooks conservatively scoped</span>
-        <p>The packet said "aggressive blocking hooks are frustrating." I limited blocking to <strong>four cases</strong>: secrets exposure, client-side model API keys, destructive git ops on the main branch without in-conversation permission, and failed build/typecheck on code changes. Everything softer (type-error volume, large diff, missing tests) becomes delegating or advisory. The blocking-hook override convention is documented so local non-production work isn't gated by a hook you'd have to fight.</p>
+        <p>Blocking remains limited to secrets, client-side provider keys, and destructive git without permission. Verification is one advisory at the stable batch boundary; dirty trees, large diffs, frontend changes, and type-error counts do not auto-delegate or create review gates.</p>
       </div>
 
       <h3>7.4 · Doc write tiers</h3>
@@ -638,7 +638,7 @@
 
     <section id="routing">
       <h2>8 · Model routing and failover</h2>
-      <p><strong>v0.7 operating decision:</strong> Codex Sol High is the control plane. Routine code review pairs fresh-context native GPT-5.6 Sol xhigh with Claude Opus 5 against one frozen candidate. Fable is a scarce, optional principal-engineer/architect escalation rather than a routine reviewer. Codex handles most engineering work, Composer owns crisp bounded frontend implementation, Terra is its first fallback, GLM-5.2 remains experimental, and Sonnet writes copy.</p>
+      <p><strong>v0.9 operating decision:</strong> Codex Sol High is the control plane. Routine reversible work stays in the current session and has no mandatory delegated review. One fresh-context reviewer is used when independence adds value; proof-required/high-risk work adds concrete concurrent specialists. Fable remains a scarce architecture escalation.</p>
 
       <div class="route-lab" id="route-lab">
         <h3 style="margin-top: 0;">Routing lab</h3>
@@ -711,7 +711,7 @@
 
             <fieldset class="control-group">
               <legend>Fable ROI gate</legend>
-              <p class="control-help">The first four confirmations govern every Fable consultation. The final checkbox applies only to implementation and PR code-review escalation, after paired review. Leave any uncertain condition unchecked.</p>
+              <p class="control-help">The first four confirmations govern every Fable consultation. The final checkbox applies only after a concrete High-risk review exposes an architectural trigger. Leave uncertain conditions unchecked.</p>
               <div class="gate-list">
                 <label class="gate-check">
                   <input type="checkbox" data-fable-gate="durable">
@@ -757,8 +757,9 @@
         <tr><td>Frontend implementation</td><td>Composer 2.5 for a crisp bounded slice</td><td>Terra; Sol for High complexity; GLM-5.2 only as an explicit experiment</td></tr>
         <tr><td>Frontend design judgment</td><td>Impeccable on Sol High</td><td>Impeccable on Terra; Fable only for rare high-value critique</td></tr>
         <tr><td>Product, editorial, and marketing copy</td><td>Claude Sonnet</td><td>Terra for routine copy; Sol Standard for high-stakes copy</td></tr>
-        <tr><td>Implementation and PR code review</td><td>Fresh-context native GPT-5.6 Sol xhigh + direct Claude Opus 5</td><td>No automatic replacement; preserve the completed packet and stop for user disposition if either lane is unavailable</td></tr>
-        <tr><td>Principal engineer / architect escalation</td><td>Fable only after a concrete exceptional trigger</td><td>Not a replacement for either standard code-review lane</td></tr>
+        <tr><td>Routine independent code review</td><td>One fresh-context Sol or Opus lane when warranted</td><td>Self-review remains sufficient for clear reversible work</td></tr>
+        <tr><td>Proof-required/high-risk review</td><td>Project-bound general reviewer + concrete concurrent specialists</td><td>Required lanes share one candidate and fan into one list</td></tr>
+        <tr><td>Principal engineer / architect escalation</td><td>Fable only after a concrete exceptional trigger</td><td>Optional architecture consultation, not a routine reviewer</td></tr>
       </table>
 
       <h3>Fable ROI gate</h3>
@@ -767,7 +768,7 @@
 
       <div class="callout dedup">
         <span class="tag">Local subscription route</span>
-        <p>Codex can invoke the standard review lane with <code>claude -p --model claude-opus-5</code> and the exceptional architecture lane with <code>claude -p --model fable</code> through the installed Claude Code CLI and authenticated Claude subscription. The route must preflight auth, must not use <code>--bare</code>, and must be treated as unavailable in cloud or CI unless that environment has separate Claude authentication.</p>
+        <p>When a High-risk cross-family review is warranted, Codex can invoke <code>claude -p --model claude-opus-5</code>; the exceptional architecture lane uses <code>claude -p --model fable</code>. The route must preflight auth and be treated as unavailable where separate Claude authentication is absent.</p>
       </div>
 
       <h3>What you should see while work runs</h3>
@@ -791,10 +792,10 @@
         <tr><td>Initializer</td><td>Codex Sol (codex-implementation pattern)</td><td>First-time repo/worktree scaffold; proves the app boots.</td></tr>
         <tr><td>Researcher</td><td>Codex Terra read-only packet; GLM research skill for offloaded web sweeps</td><td>One bounded question, evidence with confidence.</td></tr>
         <tr><td>Research consolidator</td><td>Terra; Sonnet when prose quality warrants quota</td><td>Merges multiple researcher packets; preserves disagreement.</td></tr>
-        <tr><td>Implementer</td><td>Sol (heavy/multi-file) · Terra (scoped) · Composer 2.5 (bounded, crisp requirements) · Luna (trivial mechanical)</td><td>Executes the planned change test-first. Also the fix-types/fix-build delegating-hook target.</td></tr>
+        <tr><td>Implementer</td><td>Current session by default; bounded worker only when faster or mechanically useful</td><td>Completes breadth-first discovery, one coherent batch, and focused checks before any broad gate.</td></tr>
         <tr><td>Frontend designer</td><td>Impeccable on Sol High for judgment; Composer for bounded build-out; Terra fallback; GLM-5.2 experimental</td><td>Produces the design packet, coordinates implementation, and records visible checkpoints.</td></tr>
         <tr><td>Verifier</td><td>Sol (codex-computer-use for runtime/browser)</td><td>Exercises the flow itself; passing tests are evidence, not proof.</td></tr>
-        <tr><td>Reviewer</td><td>Fresh-context native Sol 5.6 xhigh + direct Claude Opus 5</td><td>Independent frozen packets, findings first, cite file:line. Fable is an optional third principal/architect escalation only.</td></tr>
+        <tr><td>Reviewer</td><td>One fresh-context lane when warranted; concurrent specialists for concrete High-risk/proof triggers</td><td>Findings first, cite file:line, finish all expected lanes before one fan-in.</td></tr>
         <tr><td>Auditor</td><td>Terra and GLM lenses; Fable architecture lens when warranted; Sol synthesis</td><td>Audits <em>plans</em> through adversarial, steelman, and neutral lenses.</td></tr>
         <tr><td>Doc maintainer</td><td>Luna; GLM/Terra fallback</td><td>Tier A/B files only; anti-churn significance check; never touches Tier C.</td></tr>
         <tr><td>Autoskill improver</td><td>Terra; Sonnet for language-sensitive proposals</td><td>Stages proposals in <code>dev/skill-proposals/</code>; never applies changes.</td></tr>
@@ -819,7 +820,7 @@
 
       <table>
         <tr><th>Family / Skill</th><th>Count</th><th>Verdict</th><th>Why</th></tr>
-        <tr><td>matt-pocock</td><td>7</td><td>Adopt</td><td>Spec backbone (grill → PRD → issues → TDD) originates here.</td></tr>
+        <tr><td>matt-pocock</td><td>7</td><td>Selective</td><td>Use individual planning/TDD skills when requested; do not chain the full stack by default.</td></tr>
         <tr><td>convex</td><td>6</td><td>Keep</td><td>Both first instances are Convex-backed. Self-contained vertical.</td></tr>
         <tr><td>impeccable</td><td>1 (62 files)</td><td>Keep</td><td>The frontend design route in the routing matrix.</td></tr>
         <tr><td>marketingskills</td><td>17</td><td>Keep, fenced</td><td>Lives with the parallel GTM swarm. Engineering OS borrows only copy/landing/conversion via a <code>docs/gtm/</code> handoff interface.</td></tr>
@@ -833,7 +834,7 @@
         <p>Skills that ship in the installed environment overlap with catalog skills. Canonicals I picked:</p>
         <ul>
           <li><code>tdd</code> (matt-pocock) canonical; <code>test-driven-development</code> deprecated</li>
-          <li>Accelerated grill inside <code>/spec</code> workflow is canonical; standalone <code>grill-me</code> retained for plan stress-tests outside spec work</li>
+          <li>Routine <code>/spec</code> uses one breadth-first uncertainty sweep; standalone <code>grill-me</code> is retained only for requested plan stress-tests</li>
           <li>OS workflow specs + <code>dev/active/</code> task docs canonical; <code>writing-plans</code> and <code>executing-plans</code> deprecated from active path</li>
           <li>Reviewer/verifier agent roles canonical; <code>code-reviewer</code>/<code>architect-review</code> skills merged in as reviewer focuses</li>
           <li>Codex <code>codex exec</code> canonical for research; GLM <code>research</code> skill kept as zero-token alternate route</li>
@@ -894,7 +895,7 @@
 │   └── delegating-review.md   tool-cache-refresh.md
 ├── agents/                   10 subagent role definitions with Claude Code frontmatter
 ├── routing/
-│   ├── model-routing.md      v0.7 matrix (paired code review + bounded escalation routes)
+│   ├── model-routing.md      v0.9 matrix (risk-based review + batched delivery routes)
 │   └── complexity-rubric.md  Task tiering rules
 ├── skills/                   Generalized Codex delegation surfaces
 │   ├── codex-implementation/SKILL.template.md
@@ -916,7 +917,7 @@
         <tr><td>Lower dB</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Your repo-overlay installed verbatim (kernel + operations docs + skills) + <code>docs/ai-os-manifest.md</code> + dated changelog entry. 16 files staged by name per house rules.</td></tr>
         <tr><td>FreshProof</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Expanded <code>AGENTS.md</code> (nextjs-agent-rules marker block preserved byte-identical), thin <code>CLAUDE.md</code> adapter, new <code>PROJECT-STATUS.md</code> + <code>CHANGELOG.md</code> (missing roles), manifest, bound Codex skills. 8 files.</td></tr>
         <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Composer is the bounded frontend default; a smaller slice may revalidate the experimental GLM route.</td></tr>
-        <tr><td>ai-os-template itself</td><td class="status-live">v0.7 routing validation complete</td><td><code>codex/opus5-review-routing</code></td><td>Routine code review pairs fresh-context Sol 5.6 xhigh with Opus 5; Fable remains an exceptional principal/architect escalation. Historical Composer and GLM experiment results remain under <code>experiments/</code>.</td></tr>
+        <tr><td>ai-os-template itself</td><td class="status-live">v0.9 throughput policy validation</td><td><code>codex/agent-throughput-policy</code></td><td>Breadth-first discovery, one correction batch, focused checks, risk-based review, and one broad gate are executable policy. Historical routing experiments remain under <code>experiments/</code>.</td></tr>
       </table>
 
       <p>Neither instance branch is pushed. Review the worktree diffs at your leisure. Lower dB has its own <code>/publish-slice</code>; FreshProof can go via <code>gh pr create</code>.</p>
@@ -924,11 +925,11 @@
 
     <section id="decisions">
       <h2>13 · Decisions and routing rebalance</h2>
-      <p class="lede">The original twelve decisions remain below. Six routing decisions were added on 2026-07-13 after the always-on Fable control plane exhausted Claude Pro quota too quickly. D19 records the first model-route experiment on 2026-07-14. D20 records the paired Opus 5 and fresh-context Sol xhigh code-review standard adopted on 2026-07-24.</p>
+      <p class="lede">The original decisions remain as history. D20 records the paired-review policy adopted on 2026-07-24; D22 supersedes it on 2026-08-13 after repeated ceremony and serial build/review loops caused major throughput loss.</p>
 
       <div class="callout judgment">
         <span class="tag">Routing decisions · D13–D20</span>
-        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the entire provider family for the task. <strong>D15:</strong> GLM-5.2 was the initial streamed frontend hypothesis. <strong>D16:</strong> Sonnet writes copy. <strong>D17:</strong> review diversity scales with tier and uses multiple families when practical. <strong>D18:</strong> visible route, phase, checkpoint, failure, takeover, and final ledger are part of the output contract. <strong>D19:</strong> the identical-slice experiment demotes GLM to experimental and makes Composer the bounded frontend default with Terra fallback. <strong>D20:</strong> routine code review pairs fresh-context native GPT-5.6 Sol xhigh with Claude Opus 5; Fable is only an exceptional third principal/architect escalation.</p>
+        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the unavailable provider family. <strong>D19:</strong> the identical-slice experiment demoted GLM to experimental. <strong>D20 (superseded):</strong> routine code review paired Sol and Opus. <strong>D22:</strong> routine reversible work uses no mandatory delegated review; discovery and findings complete before one implementation batch, focused checks precede one broad gate, and High-risk/proof work retains concurrent independent lenses.</p>
       </div>
 
       <ol class="decisions-list">
@@ -992,7 +993,7 @@
         <tr><td>A1</td><td>Memory split into three tiers (durable / task-scoped / worktree-local)</td><td>Packet left worktree scope open; without this, cleanup erases memory or task docs pollute SPEC.</td></tr>
         <tr><td>A2</td><td><code>AGENTS.md</code> canonical, <code>CLAUDE.md</code> thin adapter, no generation</td><td>Mirrors drift, generation adds a build step; matches how lower-db overlay already works.</td></tr>
         <tr><td>A3</td><td>Three doc write tiers (A auto / B guarded / C staged)</td><td>Reconciles "auto-edit docs" preference with "avoid noisy churn" risk.</td></tr>
-        <tr><td>A4</td><td>Accelerated grill codified into spec workflow as required steps</td><td>Only way to make the 5-user + 20-self-grill pattern actually happen.</td></tr>
+        <tr><td>A4</td><td>Smallest useful planning artifact</td><td>One breadth-first uncertainty sweep replaces mandatory grill/PRD/issues/TDD-plan chaining.</td></tr>
         <tr><td>A5</td><td>Blocking hooks limited to 4 cases + documented override</td><td>"Aggressive blocking hooks are frustrating."</td></tr>
         <tr><td>A6</td><td>Codex delegation skills generalized to template; lower-db keeps bound copies</td><td>Your repo-overlay codex-* skills are the canonical delegation surface. Codex generalized them cleanly.</td></tr>
         <tr><td>A7</td><td>Isolated worktree branched from <code>origin/main</code> for both instances</td><td>Both root checkouts sat dirty on active <code>codex/*</code> branches; committing there would have mixed the instance with in-flight work.</td></tr>
@@ -1008,8 +1009,8 @@
         <tr><th>#</th><th>Merge</th><th>Winner</th></tr>
         <tr><td>M1</td><td>Frontend route split</td><td>Frontend <em>design judgment</em> = Impeccable on Sol High. Crisp bounded <em>implementation</em> = Composer, with Terra fallback. GLM-5.2 remains a deadline-bound experiment.</td></tr>
         <tr><td>M2</td><td>20 candidate subagent roles → 10</td><td>Type-fixer/build-fixer → implementer; route/browser verifier → verifier; plan-related roles → orchestrator+auditor; architecture/simplification/PR reviewers → reviewer with focus; web research → researcher.</td></tr>
-        <tr><td>M3</td><td>Environment skill collisions</td><td><code>tdd</code> over <code>test-driven-development</code>; accelerated grill in <code>/spec</code> over standalone <code>grill-me</code> (which stays for standalone stress-tests); OS workflows over <code>writing-plans</code>/<code>executing-plans</code>; reviewer/verifier agents over <code>code-reviewer</code>/<code>architect-review</code> (merged as focuses); Codex over GLM for research (GLM kept as zero-token alternate).</td></tr>
-        <tr><td>M4</td><td>15 candidate slash commands → 9</td><td><code>/fix-types</code> became a delegating-hook target; <code>/update-docs</code> became automatic maintenance; <code>/prove</code> and <code>/publish-slice</code> stayed repo-specific (lower-db) rather than promoted to OS commands; <code>/autoskill</code> runs inside <code>/commit</code> and <code>/wrap-session</code>, not standalone.</td></tr>
+        <tr><td>M3</td><td>Environment skill collisions</td><td><code>tdd</code> over duplicate TDD skills; standalone <code>grill-me</code> only for requested stress-tests; one reviewer surface with optional focuses; one workflow is never an excuse to chain every other workflow.</td></tr>
+        <tr><td>M4</td><td>15 candidate slash commands → 9</td><td><code>/fix-types</code> was removed from the active loop; end-of-batch failures return as one implementation/debug list. <code>/prove</code> and <code>/publish-slice</code> stay repo-specific; autoskill work is explicit rather than an automatic commit phase.</td></tr>
         <tr><td>M5</td><td>openspec, writing-plans, executing-plans</td><td>Deprecated from active path. Their proposal→apply→archive pipeline duplicates spec workflow + task docs.</td></tr>
       </table>
     </section>
@@ -1018,7 +1019,7 @@
       <h2>16 · Next steps</h2>
 
       <ol>
-        <li><strong>Propagate routing v0.7 deliberately</strong> to each app instance, preserving its house conventions and recording the new paired Sol xhigh + Opus 5 review pin.</li>
+        <li><strong>Propagate routing v0.9 deliberately</strong> to each app instance, preserving hard external-effect boundaries while removing blanket review/build/planning triggers.</li>
         <li><strong>Implement the Fable consultation wrapper</strong> around local <code>claude -p</code> with auth preflight, streaming output, quota circuit breaker, and a read-only compact packet.</li>
         <li><strong>Revalidate GLM only after a smaller packet or diff protocol</strong>; require two consecutive sub-ten-minute passes before promotion.</li>
         <li><strong>Hook implementation next</strong> in the D11 priority order after the routing wrappers have observable status.</li>
@@ -1102,10 +1103,10 @@
       }
       const codeReviewEscalation = isCodeReviewTask(task);
       if (codeReviewEscalation && !gate.reviewTrigger) {
-        return ['Not scheduled', 'The four-condition ROI gate passed, but no concrete code-review escalation trigger is recorded. Evaluate reviewer disagreement only after Sol/Opus resolver fan-in.'];
+        return ['Not scheduled', 'The four-condition ROI gate passed, but no concrete High-risk architectural trigger is recorded.'];
       }
       const timing = codeReviewEscalation
-        ? 'Append one compact principal/architect packet after paired-review resolver fan-in'
+        ? 'Append one compact principal/architect packet after consolidated High-risk review'
         : 'Run one compact critique';
       if (eligible(state, 'anthropic')) return [codeReviewEscalation ? 'Fable principal/architect escalation' : 'Fable critique', `${timing}, plus at most one focused follow-up.`];
       if (eligible(state, 'zai')) return ['GLM-5.2 critique', `${timing} through the consultation fallback because Anthropic cannot take new work.`];
@@ -1114,30 +1115,31 @@
     }
 
     function review(tier, state, implementer, consultationRoute) {
-      const hasSol = eligible(state, 'codex');
-      const hasOpus = eligible(state, 'anthropic');
-      if (!hasSol || !hasOpus) {
-        const missing = [!hasSol && 'fresh-context Sol 5.6 xhigh', !hasOpus && 'Claude Opus 5']
-          .filter(Boolean)
-          .join(' and ');
-        return ['Human review disposition required', `${missing} unavailable. Preserve any completed packet; do not silently substitute or count Fable as a replacement.`];
+      if (tier !== 'high') {
+        return [
+          'Self-review; fresh-context review only if uncertain',
+          'Inspect the exact diff breadth-first. Routine reversible work has no mandatory delegated review.',
+        ];
       }
-      const specialist = tier === 'high'
-        ? ' Add diff-triggered specialist verification.'
-        : tier === 'medium'
-          ? ' Add a verifier for user-facing behavior and only diff-triggered specialist lenses.'
-          : ' No specialist lens unless the diff contains a concrete trigger.';
+      const route = eligible(state, 'codex')
+        ? 'Fresh-context Sol 5.6 xhigh'
+        : eligible(state, 'anthropic')
+          ? 'Claude Opus 5'
+          : null;
+      if (!route) {
+        return ['Human review disposition required', 'No independent High-risk reviewer is available. Preserve the candidate and verification evidence.'];
+      }
       const escalation = consultationRoute === 'Fable principal/architect escalation'
-        ? ' After resolver fan-in, append the separately justified Fable principal/architect consultation as an optional third packet.'
+        ? ' After findings fan-in, append the separately justified Fable architecture consultation.'
         : ' Fable remains unscheduled.';
       return [
-        'Fresh-context Sol 5.6 xhigh + Claude Opus 5',
-        `Both review the same frozen candidate independently before resolver fan-in.${specialist}${escalation}`,
+        route,
+        `One independent general review; add only concrete diff-triggered specialists concurrently.${escalation}`,
       ];
     }
 
     function verification(task, state, implementer) {
-      if (eligible(state, 'codex')) return [/Sol/.test(implementer) ? 'Fresh-context Terra verifier' : 'Sol verifier', task === 'frontend' ? 'Browser and interaction checks, independent of implementation.' : 'Runs the scoped checks and inspects behavior.'];
+      if (eligible(state, 'codex')) return ['Focused verification in current route', task === 'frontend' ? 'Run deterministic browser/interaction checks; independent verification only for High-risk or disputed behavior.' : 'Run focused checks, then one broad gate only when the boundary warrants it.'];
       if (eligible(state, 'cursor')) return ['Deterministic Composer checks', 'Scripted checks only; human verification remains required.'];
       return ['Human verification', 'Codex cannot take new verification work.'];
     }

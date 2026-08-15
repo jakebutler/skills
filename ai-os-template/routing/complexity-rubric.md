@@ -1,64 +1,69 @@
 # Task Complexity Rubric
 
-**Version 0.1 — 2026-07-08.** Classify every non-trivial task before starting. The tier
-drives planning depth, audit lenses, review independence, and model routing.
+**Version 0.2 — 2026-08-13.** Classification controls only the safeguards justified by
+the change's actual consequences. It must not turn file count into process.
 
 ## Dimensions
 
-Score each dimension Low / Medium / High:
+Assess consequence, ambiguity, and reversibility:
 
 | Dimension | High looks like |
 |---|---|
-| Risk to production, data, or security | auth, payments, migrations, secrets, PII |
-| Blast radius | many modules, shared abstractions, public contracts |
-| Reversibility | hard to roll back once shipped or run |
-| Ambiguity | requirements or approach genuinely unclear |
-| Cross-module dependencies | change threads through several subsystems |
-| Architectural permanence | future work will build on this decision |
-| Creative design judgment | UX, API shape, or product behavior needs taste |
-| External research need | facts, libraries, or prior art must be gathered |
-| Verification cost | browser/E2E/manual checks needed to trust it |
-| User-facing impact | visible behavior or copy changes for real users |
+| Authority/security consequence | changes authorization, tenancy, secrets, payments, or a trust boundary |
+| Destructive/external consequence | can delete data, spend money, send/publish, deploy, or create persistent provider state |
+| Reversibility | rollback is uncertain, lossy, or operationally expensive |
+| Contract permanence | changes a public or historical contract that downstream systems cannot cheaply migrate |
+| Ambiguity | product behavior or architecture is genuinely undecided |
+| Blast radius | one defect can corrupt or expose many independent tenants, records, or systems |
+| Verification cost | confidence requires slow E2E, provider, deployment, or manual evidence |
+
+File count, user-facing scope, cross-repo coordination, or touching a sensitive path
+does not make a task High by itself. Treat a narrow fix that preserves an approved
+boundary according to its actual new risk.
 
 ## Tiering
 
-- **Simple** — all dimensions Low: single file or known pattern, easily reversible,
-  no data/security surface. Examples: copy edit, tiny fix in a known file, simple UI
-  polish, test update with clear behavior.
-- **Medium** — any dimension Medium, none High: multi-file change, new behavior,
-  non-trivial component, API route with persistence, workflow update.
-- **High** — any dimension High: architecture change, auth/security/payments/data
-  migration, cross-repo work, production rollout, significant product direction.
+- **Simple** — localized, known, easily reversible behavior. Use inline intent and
+  focused checks.
+- **Medium** — bounded new behavior whose intent is clear and reversible. Use an
+  inline checklist, one breadth-first impact sweep, one coherent implementation batch,
+  and proportional verification. No plan artifact or independent reviewer is required
+  by default.
+- **High** — actually alters a High-consequence boundary above or is genuinely
+  difficult to reverse. Use a written plan with rollback, one breadth-first inventory,
+  one implementation batch, and one independent review. Add specialists only for
+  concrete diff-triggered risks and run them concurrently.
 
-**Promotion rule:** a single High on *risk, reversibility, or blast radius* makes the
-task High regardless of size. When in doubt between tiers, take the higher one; the
-extra ceremony is one audit pass, not a process tax.
+When uncertain, name the exact irreversible consequence. If none can be named, do not
+promote merely for caution.
 
 ## Proof-required predicate
 
-Complexity tier controls ceremony volume. `proof_required` independently controls
-whether production edits need the shift-left design-proof gate.
+`proof_required` is narrower than High. Set it only when the change introduces or
+materially changes:
 
-Set `proof_required: true` when a task changes or relies on any of:
-
-- authorization, tenancy, identity, secrets, or sensitive-data boundaries;
-- allow-capable, destructive, external, or durable-write effects;
-- migrations, backfills, lifecycle transitions, retention, deletion, or replay;
-- concurrency, retries, takeover, worker progress, idempotency, or reconciliation;
+- authorization, tenancy, identity, secret, or sensitive-data authority;
+- destructive, allow-capable, externally persistent, or durable-write semantics;
+- migration, backfill, deletion, retention, replay, or lifecycle authority;
+- concurrency ownership, takeover, idempotency, or reconciliation semantics;
 - immutable, historical, or public-contract authority; or
-- a hard-to-reverse architecture boundary whose failure can create P0/P1 impact.
+- another hard-to-reverse boundary whose failure can create P0/P1 impact.
 
-A High-tier copy, research, or reversible UX task may be `proof_required: false` with a
-recorded reason. A small security or destructive-state change is proof-required even if
-its diff is Simple. Proof-required work runs `workflows/design-proof.md` before the
-first production RED/GREEN edit.
+A narrow regression fix, test, refactor, or missing sibling implementation path that
+preserves an already approved authority model is not proof-required. Discovery returns
+to design-proof only when it exposes a new product/authority decision or contradicts
+the approved design.
 
 ## What each tier requires
 
 | | Simple | Medium | High |
 |---|---|---|---|
-| Plan | inline intent | written plan in task docs | full plan + rollback in task docs |
-| Audit | one combined audit (adversarial + steelman + neutral baked in) | three lens passes by one auditor subagent | three independent lens subagents, orchestrator synthesizes |
-| Review | paired fresh-context Sol 5.6 xhigh + Opus 5 | paired fresh-context Sol 5.6 xhigh + Opus 5 | paired fresh-context Sol 5.6 xhigh + Opus 5, specialist lenses as diff dictates, optional Fable principal/architect escalation only after a concrete trigger |
-| Verification | focused checks on the change | scoped checks + affected-area tests | full relevant suite + release/rollback plan |
-| Docs | status checkpoint | status + changelog + touched docs | status + changelog + spec/ADR update |
+| Plan | inline intent | inline checklist | written plan + rollback |
+| Discovery | relevant local surface | breadth-first affected-surface sweep | reconciled breadth-first risk inventory |
+| Implementation | one batch | one coherent batch | one coherent batch under approved boundaries |
+| Review | self-review is sufficient | independent review only when uncertainty warrants it | one independent review; concurrent specialists only for concrete risk |
+| Verification | focused checks | focused checks, then one warranted broad gate | focused checks, then one relevant release/broad gate |
+| Docs | only if durable truth changed | only if behavior or handoff changed | durable decision/operations docs when changed |
+
+Across every tier, collect complete failures and reviewer findings before editing.
+Never run one finding -> one fix -> one expensive gate loops.

@@ -2,79 +2,58 @@
 
 ## **Trigger**
 
-This workflow starts when the user requests `{{COMMIT_COMMAND}}`, `debug` chains into commit, `implement-tdd` finishes a verified slice, or the orchestrator determines a focused change is ready for commit.
+Run only when the user authorizes a commit or an explicitly authorized delivery flow
+reaches commit.
 
 ## **Inputs**
 
-- A completed implementation or documentation slice with known scope and complexity tier.
-- Current working directory and branch context.
-- Repo-specific commands: `{{FORMAT_COMMAND}}`, `{{LINT_COMMAND}}`, `{{TYPECHECK_COMMAND}}`, `{{TEST_COMMAND}}`, `{{BUILD_COMMAND}}`.
-- Repo commit message format or template `{{COMMIT_MESSAGE}}`.
-- Any task docs under `{{TASK_DOCS_DIR}}/{{TASK_ID}}/` and status/docs/changelog rules.
+- Intended diff and branch.
+- Existing exact-candidate verification/review evidence.
+- Repository commit conventions.
 
 ## **Steps**
 
-1. Orchestrator: confirm working directory with `pwd` and confirm the user permits a commit in the current branch.
-2. Orchestrator: run `git status --short` and identify changed, untracked, and unrelated files without staging anything.
-3. Orchestrator: review the diff for files in scope using `git diff -- {{SCOPED_PATHS}}` and inspect untracked files that are part of the intended change.
-4. Orchestrator: separate intended changes from unrelated work; stop and ask the user before touching, staging, or committing any ambiguous file.
-5. Orchestrator or `implementer`: run formatter and lint commands scoped to the change when the repo supports scoped runs; otherwise run the standard `{{FORMAT_COMMAND}}` and `{{LINT_COMMAND}}` if safe for the branch.
-6. Orchestrator or `verifier`: run tests, typecheck, and build scoped to the change: `{{TYPECHECK_COMMAND}}`, `{{TEST_COMMAND}}`, `{{BUILD_COMMAND}}`, or documented focused variants.
-7. `reviewer`: perform the frozen review topology from `review-pr`; the implementer is
-   never the sole reviewer. For proof-required work, require validated coverage and
-   resolver fan-in before any review-driven edits.
-8. Orchestrator: disposition each consolidated finding as fixed, accepted-risk,
-   deferred with owner, or rejected with reason. Close any required novel-finding
-   extraction or explicit deferral before commit.
-9. `implementer`: address accepted findings with scoped edits, then rerun affected verification.
-10. `doc-maintainer`: update `{{PROJECT_STATUS_FILE}}`, `{{CHANGELOG_FILE}}`, and relevant docs according to doc write tiers. Use Tier A automatic updates, Tier B guarded updates, and no Tier C direct edits.
-11. `autoskill-improver`: freeze one source candidate and run the four-route triage
-    in `agents/autoskill-improver.md` (skill proposal, doc proposal, grounded
-    solution learning, or explicit skip). The orchestrator runs the versioned
-    solution-learning processor; proposals are staged, and only a validated solution
-    document may be written directly as Tier B. Reuse the prior disposition when
-    wrap-session sees the same fingerprint.
-12. Orchestrator: review the final diff and status again, then create one focused commit with message `{{COMMIT_MESSAGE}}` including only the intended files.
+1. Confirm the worktree, branch, commit authority, and `git status --short`.
+2. Inspect the complete intended diff and intended untracked files. Preserve unrelated
+   work and resolve genuinely ambiguous ownership before staging.
+3. Reuse checks and review against the exact unchanged diff. Run only a missing check
+   justified by actual blast radius. Reaching commit does not require a full suite,
+   build, new reviewer, doc pass, or autoskill pass.
+4. Require one independent review only for genuinely High-risk work, material
+   uncertainty, or explicit request. If it runs, freeze all findings, apply one
+   correction batch, and rerun only affected checks plus one warranted confirmation.
+5. Update status/changelog/durable docs only when handoff truth, user/operator-visible
+   behavior, or durable intent changed.
+6. Review the final diff/status, stage explicit intended paths, and create one focused
+   commit.
 
 ## **Output contract**
 
-- One focused commit on the current branch containing only intended changes.
-- `{{TASK_DOCS_DIR}}/{{TASK_ID}}/commit.md`: commands run, results, review findings and dispositions, docs updates, triage outcome (route taken or explicit skip), skipped checks with reasons, and final commit hash.
-- Updated `{{PROJECT_STATUS_FILE}}` when handoff state changed.
-- Updated `{{CHANGELOG_FILE}}` when the change is meaningful to users or operators.
-- One triage disposition: a staged proposal under `dev/skill-proposals/` (Tier C),
-  a grounded solution document under `{{DOCS_DIR}}/solutions/` (Tier B), or an
-  explicit in-memory/task-packet skip. The disposition records the frozen candidate
-  identity and fingerprint when applicable.
+- One focused commit containing only intended files.
+- Concise report: hash, paths, checks reused/run, review state, and residual risk.
+- No mandatory commit narration artifact for routine mechanics.
+- Durable-learning work is optional and signal-driven. When invoked, it returns one
+  grounded solution, staged proposal, reused disposition, or explicit skip through
+  `SOLUTION-LEARNING.md`; it never expands routine commit ceremony.
 
 ## **Verification**
 
-- `git status --short` was inspected before committing.
-- The diff was reviewed before committing.
-- Formatter/lint ran or was explicitly skipped with reason.
-- Tests/typecheck/build ran at the scope required by the complexity tier or were explicitly skipped with reason.
-- An independent reviewer reviewed the change; implementer was not the sole reviewer.
-- For proof-required work, candidate identity, review resolution, and invariant
-  extraction closure all validate before commit.
+- Status and full intended diff were inspected.
+- Required checks pass or valid exact-diff evidence was reused.
 - Final commit contains only intended files.
 - Solution-learning processing passed its schema, grounding, overlap, path, and
   headless-safety checks; contradicted or stale candidates did not write.
 
 ## **Ceremony scaling**
 
-- Simple: status, diff review, focused formatter/lint/test where available, paired
-  fresh-context Sol 5.6 xhigh + Opus 5 review, concise status update.
-- Medium: scoped formatter/lint/typecheck/tests, paired fresh-context Sol 5.6 xhigh +
-  Opus 5 review, docs/status/changelog significance check, autoskill scan.
-- High: full relevant suite or release gate, paired fresh-context Sol 5.6 xhigh +
-  Opus 5 review plus specialist review as needed, changelog and durable docs updates,
-  rollback notes in task docs, autoskill scan. Fable remains an optional exceptional
-  principal/architect escalation only after a concrete trigger.
+- Simple/Medium: diff inspection, reuse current evidence, run only missing focused
+  checks, commit.
+- High: one independent review and one relevant broad/release gate; reuse both if the
+  candidate is unchanged.
 
 ## **Failure handling**
 
-- If unrelated work is present, leave it untouched and commit only intended files; if file ownership is ambiguous, stop for user direction.
-- If formatting changes unrelated files, inspect the diff and include only changes required for the slice.
-- If verification fails, do not commit; return to `implement-tdd` or `debug` with the failing command and evidence.
-- If independent review finds blocking issues, address them and rerun verification before committing.
-- If autoskill proposes Tier C updates, leave them as proposal files and mention them in the commit packet; never include applied Tier C changes unless separately requested and reviewed.
+- Ambiguous unrelated work: stop only for the affected file; preserve everything else.
+- Required check failure: collect the complete failure set and return one consolidated
+  batch to implementation/debug.
+- Do not bypass checks, rewrite unrelated history, or commit secrets/transient output.

@@ -10,7 +10,7 @@
 
 | Family | Count | Verdict | Rationale |
 |---|---|---|---|
-| matt-pocock | 7 | **adopt** | The spec backbone (grill → PRD → to-issues → TDD) comes from here. Canonical planning/implementation discipline for the OS. |
+| matt-pocock | 7 | **selective** | Individual planning/TDD skills remain useful when requested; the full grill → PRD → issues → TDD chain is not a default workflow. |
 | convex | 6 | **keep** | Both first instance repos are Convex-backed. Self-contained vertical; no overlaps. |
 | impeccable | 1 (62 files) | **keep** | The frontend design/UX route in the routing matrix. Monolithic but internally progressive; do not modularize in v1. |
 | marketingskills | 17 | **keep, fenced** | Lives with the parallel GTM swarm (decision #9). The engineering OS borrows only the product-facing subset via the `docs/gtm/` handoff interface. **Engineering-OS subset for Jake's audit (D9):** `copywriting`, `copy-editing`, `marketing-psychology` (conversion), `onboarding` (UX copy), `site-architecture`, `product-marketing`, `seo-audit`. The other ten (`ai-seo`, `analytics`, `aso`, `content-strategy`, `customer-research`, `emails`, `image`, `launch`, `marketing-ideas`, `social`) stay GTM-swarm-only. |
@@ -22,13 +22,13 @@
 
 | Cluster | Canonical | Verdict on the rest |
 |---|---|---|
-| Grilling | `grill-me` mechanics inside the `/spec` workflow's accelerated grill (5 user + ~20 self-grill with options-considered) | matt-pocock grill variants **merge** into `/spec`; standalone `grill-me` stays for plan stress-tests outside spec work |
+| Grilling | standalone `grill-me` only when the user asks to stress-test a plan | routine `/spec` uses one breadth-first uncertainty sweep and only material questions |
 | TDD | `tdd` (matt-pocock), wired to the implement-tdd workflow | `test-driven-development` **deprecate** from active use |
 | PRD breakdown | `prd-to-issues` (backbone step) | `prd-to-plan` **keep** as the non-GitHub alternative (local plans/ output) |
 | Plan write/execute | OS workflow specs + `dev/active/` task docs | `writing-plans`, `executing-plans` **deprecate** from the OS path |
 | Brainstorm/elicit | `brainstorming` (installed) | `bmad-brainstorming`, `bmad-advanced-elicitation` **hold** with BMAD |
-| Review | paired fresh-context native Sol 5.6 xhigh + direct Claude Opus 5 through the OS reviewer/verifier agents | `code-reviewer`, `architect-review` skills **merge** — their stances are absorbed into `agents/reviewer.md` focuses; Fable is only an exceptional principal/architect escalation |
-| Web research | Terra or Sol through Codex (routing v0.7) | `research` (GLM-5) **keep** as the cross-family alternate route |
+| Review | one fresh-context reviewer when warranted; concurrent specialists for concrete High-risk/proof triggers | `code-reviewer`, `architect-review` stances merge into reviewer focuses; Fable remains exceptional |
+| Web research | Terra or Sol through Codex (routing v0.9) | `research` (GLM-5) **keep** as the cross-family alternate route |
 | Session rituals | template workflows commit / commit-pr / wrap-session | `prove`, `publish-slice`, `wrap-session` **keep as repo-specific bindings** — they ARE the Lower dB instance of those workflows; the instance manifest maps to them rather than replacing them |
 | Codex delegation | **adopt + generalize**: `codex-implementation`, `codex-review`, `codex-computer-use` (from the lower-db repo-overlay) | These become template-level skills with lower-db specifics parameterized to {{PLACEHOLDER}}s — action item below |
 | Prose | `humanizer` **keep** for user-facing writing | — |

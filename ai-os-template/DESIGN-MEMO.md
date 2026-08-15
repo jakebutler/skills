@@ -23,16 +23,16 @@ verification, and inconsistent planning.
 1. **Concrete abstraction.** Every recommendation maps to a file, hook, slash command,
    workflow spec, skill, subagent, routing rule, verification gate, or repo convention.
    Nothing ships as advice-only.
-2. **Orchestrator, not laborer.** Codex Sol High owns framing, decomposition, task
-   state, conflict resolution, synthesis, and user updates. It delegates bounded labor
-   across Sol, Terra, Luna, GLM-5.2, Composer, and Claude Sonnet. Fable is a scarce
-   consulting route for critique of advanced architecture and system-design decisions,
-   not the always-on control plane.
+2. **Delegate for leverage.** Codex Sol High owns coherent work by default. It
+   delegates only independent slices where parallel speedup, mechanical volume, or
+   fresh context outweighs coordination cost. Fable is a scarce consulting route for
+   advanced architecture, not an always-on control plane.
 3. **Repo-resident memory.** Models forget; the repo persists. Everything an agent needs
    is in the repo or explicitly mapped from it.
-4. **Proportional ceremony.** A solo path lighter than a production-team path, but never
-   below the floor: inspect before edit, plan proportional to risk, run relevant
-   verification, update docs automatically, leave clean handoff state.
+4. **Batched proportionality.** Inspect the affected surface breadth-first, implement
+   one batch, use focused checks, consolidate any warranted review, then run one broad
+   gate. Add artifacts or reviewers only when a downstream consumer or actual risk
+   justifies them.
 5. **Merge, don't bulldoze.** Instantiation adapts to a repo's existing conventions via a
    manifest. The template never silently overwrites or renames what a repo already has.
 6. **Codex-first, harness-portable.** Harness-neutral content lives in `AGENTS.md`.
@@ -77,10 +77,10 @@ Never the reverse. `PROJECT-STATUS.md` holds only the current handoff.
 
 ## 5. Workflow backbone
 
-Primary spec flow: `grill-with-docs → PRD → to-issues → TDD implementation`.
-
-Accelerated grill: up to 5 critical user questions → ~20 self-grill questions, each with
-options considered and rationale for the selection → batched user review → docs/PRD update.
+Planning is an explicit entry point, not a mandatory prelude. The spec workflow performs
+one breadth-first uncertainty sweep, asks only material user questions, and produces
+the smallest downstream artifact needed: inline plan, task plan, PRD, or issue drafts.
+Research and prototypes resolve named uncertainties rather than running automatically.
 
 Research and prototype are subroutines of `/spec` **and** standalone commands.
 
@@ -100,41 +100,42 @@ confirm or rebind them, with the matrix version citing the experiment.
 ## 6. Quality system
 
 **Complexity tiers** (full rubric in `routing/complexity-rubric.md`):
-- **Simple** — single file, known pattern, easily reversible, no data/security surface.
-- **Medium** — multi-file, new behavior, or user-facing.
-- **High** — architecture, auth/security/payments/data migration, cross-repo, low
-  reversibility, or production rollout. Any single high-risk dimension promotes the
-  tier regardless of size.
+- **Simple** — localized, known, easily reversible.
+- **Medium** — bounded new behavior whose intent is clear and reversible.
+- **High** — actually changes an authority, destructive/external effect, irreversible
+  contract, or similarly costly-to-recover behavior. File count, user-facing scope,
+  cross-repo coordination, or a sensitive-path label does not promote by itself.
 
-**Audit lenses by tier:**
-- Simple → one combined audit inline (adversarial + steelman + neutral guidance baked in).
-- Medium → three lenses as three passes by one cheap auditor subagent.
-- High → three lenses as independent subagents; Sol High synthesizes, with a compact
-  Fable gate only when advanced architecture or system design warrants it.
+**Review by tier:** Simple and Medium work self-review by default; add one
+fresh-context reviewer only when uncertainty warrants it. High work gets one
+independent reviewer plus concurrent specialists for concrete diff-triggered risks.
+Proof-required work uses its project-bound blocking roles.
 
-**Review independence:** the coding agent is never the sole reviewer of its own work.
+Every tier uses breadth-first discovery, one coherent implementation/correction batch,
+focused checks during development, and one warranted broad gate at the stable boundary.
 
 ## 7. Contracts
 
-### 7.1 Delegation contract (every subagent task)
-Goal · repo/paths · files to inspect · excluded areas · expected output artifact ·
-allowed tools · model preference · verification requirement · quality bar · stop condition.
+### 7.1 Delegation contract
+Delegate only when expected parallel speedup or fresh-context value exceeds coordination
+cost. Routine packets need goal · scope · exclusions · expected result · verification ·
+stop condition. Heavy provenance is reserved for proof/external/experimental work.
 
 Subagents must not: perform unbounded repo-wide rewrites, make irreversible external
 changes without permission, touch secrets, self-approve their own work, or substitute
 passing tests for understanding.
 
-### 7.2 Return packet (every subagent result)
-Task assigned · files/docs inspected · facts found · decisions made · output artifact or
-patch summary · verification run · risks · open questions · recommended next action.
+### 7.2 Return packet
+Routine results contain findings or changes · verification · risks · next action. Do
+not create unused artifacts.
 
 ### 7.3 Hook classification
-- **Blocking** (sparse): secrets exposure, client-side model API keys, destructive git
-  ops without permission, failed build/typecheck on code changes. Documented local
-  override for non-production work.
+- **Blocking** (sparse): secrets exposure, client-side model API keys, and destructive
+  git ops without permission. An explicitly required failed check remains visible but
+  a hook never creates a requirement to run one.
 - **Advisory:** missing docs/tests consideration, error-handling and architecture reminders.
-- **Delegating:** too many type errors → fix-types agent; large diff → architecture
-  reviewer; frontend diff → UX reviewer; docs drift → doc maintainer.
+- **Delegating:** disabled by default; projects may opt High-risk/proof work into
+  concurrent review. Large/frontend diffs alone do not delegate.
 - **Automatic maintenance:** `PROJECT-STATUS.md`, changelog draft, tool cache, generated docs.
 
 ### 7.4 Doc write tiers
@@ -152,16 +153,15 @@ guide, and `routing/model-evidence.json` records dated claims, authority, recenc
 limitations. The resolver applies the complexity override and refuses silent
 substitution.
 
-Defaults as of routing v0.8: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and
+Defaults as of routing v0.9: **Codex Sol High** (`gpt-5.6-sol`) is the orchestrator and
 hard-work route; **Codex Luna Max** (`gpt-5.6-luna`) is the provisional bounded and
 mechanical route with narrow paths and deterministic checks; **Codex Terra**
-(`gpt-5.6-terra`) is a guarded fallback pending repo-local evaluation; **Composer 2.5** owns crisp bounded frontend
-implementation; **Claude Sonnet** writes copy. Routine code review pairs a
-fresh-context native **GPT-5.6 Sol xhigh** pass with direct **Claude Opus 5** against
-one frozen candidate. **Fable** is only an optional principal-engineer/architect
-escalation after a concrete trigger. **GLM-5.2** remains an installed experimental
-implementation route. Acceptance checks survive rerouting, but neither standard
-code-review lane is silently replaceable.
+(`gpt-5.6-terra`) is a guarded fallback pending repo-local evaluation; **Composer 2.5**
+is an optional crisp bounded frontend route; **Claude Sonnet** writes copy. Routine
+review, when warranted, uses one fresh-context reviewer. Proof-required/high-risk
+review may add concurrent specialist lanes. **Fable** is only an optional
+principal-engineer/architect escalation after a concrete trigger. **GLM-5.2** remains
+an installed experimental implementation route.
 
 Provider failures are modeled as state, not improvisation. Quota, auth, or invalid-model
 errors mark an entire family unavailable; transient failures get one checkpointed retry;

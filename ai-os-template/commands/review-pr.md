@@ -25,10 +25,7 @@ short summary.
 
 ## Model routing note
 
-Codex Sol High owns review synthesis. Every code-review generation runs two independent
-lanes against one frozen candidate: fresh-context native `gpt-5.6-sol` at xhigh
-reasoning and direct Claude subscription `claude-opus-5`. Their packets remain separate
-until resolver fan-in. Fable is an optional third principal-engineer/architect
-consultation only when a concrete escalation trigger is recorded; it never replaces
-Sol or Opus. If either standard lane is unavailable, stop and request explicit approval
-before using a reduced topology.
+Codex Sol High owns review synthesis. Use one fresh-context general reviewer when
+independence is warranted. Add specialists only for concrete diff-triggered risk and
+run them concurrently against one candidate. Freeze all expected findings before one
+correction batch; routine review does not require paired model families.
