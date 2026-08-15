@@ -31,7 +31,9 @@ Excluded candidates stay out of v1 for clear ownership reasons:
 - `/prove` and `/publish-slice` remain repo-specific skills until their patterns
   generalize.
 - `/autoskill` is not an automatic commit/PR phase; invoke durable-learning work only
-  when a recurring lesson warrants it.
+  when a recurring lesson warrants it. When invoked, it dispositions one frozen
+  candidate through the versioned `SOLUTION-LEARNING.md` contract. Skill and
+  instruction changes remain proposals.
 
 Command specs must reference workflow filenames and define invocation, output, and
 model routing only. Workflow steps live in `../workflows/`.

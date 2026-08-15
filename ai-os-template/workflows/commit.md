@@ -32,12 +32,17 @@ reaches commit.
 - One focused commit containing only intended files.
 - Concise report: hash, paths, checks reused/run, review state, and residual risk.
 - No mandatory commit narration artifact for routine mechanics.
+- Durable-learning work is optional and signal-driven. When invoked, it returns one
+  grounded solution, staged proposal, reused disposition, or explicit skip through
+  `SOLUTION-LEARNING.md`; it never expands routine commit ceremony.
 
 ## **Verification**
 
 - Status and full intended diff were inspected.
 - Required checks pass or valid exact-diff evidence was reused.
 - Final commit contains only intended files.
+- Solution-learning processing passed its schema, grounding, overlap, path, and
+  headless-safety checks; contradicted or stale candidates did not write.
 
 ## **Ceremony scaling**
 

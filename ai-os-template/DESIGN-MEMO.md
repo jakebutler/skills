@@ -254,6 +254,7 @@ ai-os-template/
 | D19 | The first identical-slice experiment rejected GLM as the frontend default; Composer becomes the bounded implementation route, Terra first fallback, and GLM remains experimental behind a ten-minute deadline and automatic takeover |
 | D20 | Code review uses two independent standard lanes against one frozen candidate: fresh-context native GPT-5.6 Sol at xhigh and Claude Opus 5. Fable is an optional third principal-engineer/architect escalation only after a concrete trigger and never replaces either lane. |
 | D21 | Skill improvement remains proposal/PR-only at every maturity level: validation gates may authorize a reviewable candidate, never direct live-file adoption or merge. Scheduled proposal runs require a separate human activation decision and cannot edit root instructions, hooks, or routes. See `SKILL-IMPROVEMENT.md` v0.2 and epic #2. |
+| D22 | Tier B solution learning uses one versioned candidate contract and stable semantic-slug identity. Commit and wrap-session reuse one fingerprint; newer current evidence outranks stale sessions; independent grounding blocks contradicted claims; headless discoverability gaps are report-only. Legacy date-prefixed paths migrate only in reviewed PRs. See `SOLUTION-LEARNING.md` and issue #4. |
 
 ### v0.2 context additions (same session)
 

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "track": "bug",
+  "title": "Normalize provider identifiers before route lookup",
+  "slug": "normalize-provider-identifiers",
+  "date": "2026-07-27",
+  "category": "routing",
+  "module": "model-router",
+  "tags": ["routing", "providers"],
+  "problem_type": "incorrect-route-selection",
+  "capture_reason": "An older transcript proposed replacing newer verified guidance.",
+  "source_candidate": {
+    "candidate_id": "session:older-route-fix:2026-07-27",
+    "git_commit": "5555555555555555555555555555555555555555",
+    "route": "session-history"
+  },
+  "provenance": {
+    "observed_at": "2026-07-27T12:00:00Z",
+    "source_kind": "historical-session",
+    "author_id": "implementer"
+  },
+  "content": {
+    "problem": "Mixed-case provider identifiers bypassed the configured route.",
+    "investigation": "An old transcript assumed case preservation was required.",
+    "root_cause": "The older session attributed the failure to the registry.",
+    "solution": "Preserve raw case and duplicate every provider key.",
+    "why_it_works": "This was claimed by the old transcript but superseded later.",
+    "prevention": "Prefer current-tree evidence and explicit corrections.",
+    "verification": "The candidate was compared with newer stored guidance."
+  },
+  "grounding": {
+    "validator_id": "independent-verifier",
+    "status": "verified",
+    "claims": [
+      {
+        "kind": "documentation",
+        "statement": "Current routing documentation is authoritative for the fixture.",
+        "source_path": "routing/model-routing.md",
+        "source_quote": "task-routes.json",
+        "status": "verified"
+      }
+    ]
+  },
+  "related": {
+    "docs": ["routing/model-routing.md"],
+    "issues": ["https://github.com/jakebutler/skills/issues/4"]
+  }
+}

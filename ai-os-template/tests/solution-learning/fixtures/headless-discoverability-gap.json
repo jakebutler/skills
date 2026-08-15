@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "disposition": "skip",
+  "skip_reason": "The learning already exists; only a discoverability gap remains.",
+  "source_candidate": {
+    "candidate_id": "session:headless-gap:2026-07-30",
+    "git_commit": "8888888888888888888888888888888888888888",
+    "route": "headless-wrap"
+  },
+  "discoverability_gap": {
+    "target": "root/AGENTS.template.md",
+    "reason": "The instantiated root instructions do not mention selective solution retrieval."
+  }
+}

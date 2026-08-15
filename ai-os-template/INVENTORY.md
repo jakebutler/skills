@@ -32,7 +32,7 @@
 | Session rituals | template workflows commit / commit-pr / wrap-session | `prove`, `publish-slice`, `wrap-session` **keep as repo-specific bindings** — they ARE the Lower dB instance of those workflows; the instance manifest maps to them rather than replacing them |
 | Codex delegation | **adopt + generalize**: `codex-implementation`, `codex-review`, `codex-computer-use` (from the lower-db repo-overlay) | These become template-level skills with lower-db specifics parameterized to {{PLACEHOLDER}}s — action item below |
 | Prose | `humanizer` **keep** for user-facing writing | — |
-| Autoskill | `agents/autoskill-improver.md` (Tier C staged proposals; direct writes only for Tier B solution docs) | external autoskill plugin **experiment**. D21 (2026-07-28) supersedes the earlier graduated-trust proposal: every skill edit, including metadata, remains proposal/PR-only. A validation gate can qualify a candidate for review, never direct adoption or merge; root instructions, hooks, and routes remain staged and human-reviewed. |
+| Autoskill | `agents/autoskill-improver.md`, `SOLUTION-LEARNING.md`, `schemas/solution-learning.schema.json`, and `scripts/process-solution-learning.mjs` (one grounded learning or explicit skip; direct writes only for validated Tier B solution docs) | v1.1 grounded-compounding contract. Stable semantic identities dedupe commit/wrap capture; independent grounding, stale-evidence precedence, narrow overlap recommendations, and headless report-only behavior gate writes. D21 still keeps every skill edit, including metadata, proposal/PR-only. |
 
 ## Action items
 

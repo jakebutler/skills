@@ -1,0 +1,5 @@
+{
+  "base_fixture": "new-bug.json",
+  "related_doc": "docs/does-not-exist.md",
+  "related_issue": "not-a-github-issue"
+}
