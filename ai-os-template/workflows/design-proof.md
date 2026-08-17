@@ -95,8 +95,8 @@ an independently editable source of truth.
    baseline, candidate hash, requirements hash, selected invariants, inventories, and
    assigned questions. Preserve each provider/task run ID and transcript hash; record
     independently observed start/end candidate hashes rather than a bare self-attested
-    boolean. Record the selected preflight probe identity as
-    `transport_probe_run_id` in each blocking coverage row.
+    boolean. Pin the selected preflight probe identity in the review request and retain
+    the same `transport_probe_run_id` in each required blocking coverage row.
 11. Require binary `satisfied`, `violated`, or `not_verifiable` verdicts for every
     assigned requirement from blocking reviewers. A reviewer that cannot reproduce the
     candidate hash is recorded with `authority: advisory`; its findings still enter

@@ -396,7 +396,7 @@ function validateRequiredReviewerRequests(requests, policies) {
 }
 
 export function preflightReviewerTransport(request, probes, pinnedPolicy) {
-  for (const field of ["lens", "model", "effort", "model_route"]) nonEmpty(request?.[field], `review request.${field}`);
+  for (const field of ["lens", "model", "effort", "model_route", "transport_probe_run_id"]) nonEmpty(request?.[field], `review request.${field}`);
   if (request.read_only !== true) fail("review request must require read-only capability");
   if (pinnedPolicy && (request.model !== pinnedPolicy.model || request.effort !== pinnedPolicy.effort || request.model_route !== pinnedPolicy.model_route)) {
     fail(`${request.lens} reviewer request does not match pinned policy ${pinnedPolicy.model_route} ${pinnedPolicy.model} ${pinnedPolicy.effort}`);
@@ -412,7 +412,7 @@ export function preflightReviewerTransport(request, probes, pinnedPolicy) {
     Array.isArray(pinnedPolicy?.transport_families) && pinnedPolicy.transport_families.includes(probe.transport) &&
     probe.read_only === true &&
     typeof probe.provider === "string" && probe.provider.trim() !== "" &&
-    typeof probe.provider_task_run_id === "string" && probe.provider_task_run_id.trim() !== "",
+    probe.provider_task_run_id === request.transport_probe_run_id,
   );
   if (!eligible) {
     fail(`no authenticated read-only reviewer transport provides exact ${request.model} ${request.effort} with provider/task-run identity capture`);

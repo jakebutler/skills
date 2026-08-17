@@ -94,12 +94,18 @@ function exactJson(actual, expected, label) {
 
 function selectedReviewerTransport(request, probes, policy) {
   if (!request || !policy) fail("blocking review binding requires a pinned review request and policy");
-  if (
-    request.model_route !== policy.model_route ||
-    request.model !== policy.model ||
-    request.effort !== policy.effort ||
-    request.read_only !== true
-  ) {
+  for (const field of ["lens", "model_route", "model", "effort", "transport_probe_run_id"]) {
+    requireString(request[field], `review request.${field}`);
+  }
+  for (const field of ["model_route", "model", "effort", "provider"]) {
+    requireString(policy[field], `${request.lens} reviewer policy.${field}`);
+  }
+  if (!Array.isArray(policy.transport_families) || policy.transport_families.length === 0 ||
+    policy.transport_families.some((transport) => typeof transport !== "string" || transport.trim() === "")) {
+    fail(`${request.lens} reviewer policy.transport_families must contain non-empty strings`);
+  }
+  if (request.model_route !== policy.model_route || request.model !== policy.model ||
+    request.effort !== policy.effort || request.read_only !== true) {
     fail(`${request.lens} review request does not match pinned reviewer policy`);
   }
   const eligible = Array.isArray(probes) && probes.find((probe) =>
@@ -111,7 +117,7 @@ function selectedReviewerTransport(request, probes, policy) {
     probe.provider === policy.provider &&
     Array.isArray(policy.transport_families) && policy.transport_families.includes(probe.transport) &&
     probe.read_only === true &&
-    typeof probe.provider_task_run_id === "string" && probe.provider_task_run_id.trim() !== ""
+    probe.provider_task_run_id === request.transport_probe_run_id
   );
   if (!eligible) fail(`no pinned reviewer transport remains eligible for ${request.lens}`);
   return eligible;
@@ -149,8 +155,9 @@ function validateBlockingReviewBinding(review, binding) {
   if (review.model_route !== request.model_route) {
     fail(`${review.lens} blocking review route does not match pinned review request`);
   }
-  if (review.transport_probe_run_id !== selected.provider_task_run_id) {
-    fail(`${review.lens} blocking review does not retain the selected transport probe identity`);
+  if (review.transport_probe_run_id !== request.transport_probe_run_id ||
+    selected.provider_task_run_id !== request.transport_probe_run_id) {
+    fail(`${review.lens} blocking review does not retain the pinned transport probe identity`);
   }
 }
 
@@ -557,7 +564,8 @@ export function validate(directory, reviewBinding = undefined) {
     if (review.authority === "blocking" && review.snapshot_reproduced !== true) {
       fail(`${review.review_id} blocking review did not reproduce the design snapshot`);
     }
-    if (review.authority === "blocking" && reviewBinding) {
+    if (review.authority === "blocking" && reviewBinding &&
+      reviewBinding.review_requests.some((request) => request?.lens === review.lens)) {
       validateBlockingReviewBinding(review, reviewBinding);
     }
     if (review.snapshot_reproduced === true && (

@@ -84,8 +84,8 @@ const reviewBinding = {
   task_id: "fixture-sensitive-write",
   semantic_authority_hash: "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
   review_requests: [
-    { lens: "architecture", model_route: "fable", model: "claude-fable-5", effort: "high", read_only: true },
-    { lens: "security", model_route: "opus-4.8", model: "claude-opus-4-8", effort: "high", read_only: true },
+    { lens: "architecture", model_route: "fable", model: "claude-fable-5", effort: "high", read_only: true, transport_probe_run_id: "PROBE-ARCH-001" },
+    { lens: "security", model_route: "opus-4.8", model: "claude-opus-4-8", effort: "high", read_only: true, transport_probe_run_id: "PROBE-SEC-001" },
   ],
   reviewer_policies: {
     architecture: { model_route: "fable", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-fable-5", effort: "high" },
@@ -117,6 +117,70 @@ assert.throws(
   }),
   /final review binding does not match the design candidate/i,
 );
+const malformedBinding = structuredClone(reviewBinding);
+delete malformedBinding.review_requests[0].model;
+delete malformedBinding.reviewer_policies.architecture.model;
+delete malformedBinding.transport_probes.architecture[0].model;
+assert.throws(
+  () => validatePacket(path.join(here, "fixtures", "approved"), malformedBinding),
+  /review request\.model must be a non-empty string/i,
+  "production validation must reject malformed request, policy, and probe identities",
+);
+
+const reselectedProbeDirectory = fs.mkdtempSync(
+  path.join(os.tmpdir(), "proof-harness-reselected-probe-"),
+);
+try {
+  fs.cpSync(path.join(here, "fixtures", "approved"), reselectedProbeDirectory, { recursive: true });
+  const coveragePath = path.join(reselectedProbeDirectory, "design-review-coverage.json");
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  coverage.reviews[0].transport_probe_run_id = "PROBE-ARCH-RESELECTED";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
+  refreshBuilderPacket(reselectedProbeDirectory);
+  const reorderedBinding = structuredClone(reviewBinding);
+  reorderedBinding.transport_probes.architecture.unshift({
+    transport: "claude-cli", provider: "anthropic", model_route: "fable", available: true,
+    authenticated: true, model: "claude-fable-5", effort: "high", read_only: true,
+    provider_task_run_id: "PROBE-ARCH-RESELECTED",
+  });
+  assert.throws(
+    () => validatePacket(reselectedProbeDirectory, reorderedBinding),
+    /architecture blocking review does not retain the pinned transport probe identity/i,
+    "final approval must retain the exact probe selected before review despite later eligible probes",
+  );
+} finally {
+  fs.rmSync(reselectedProbeDirectory, { recursive: true, force: true });
+}
+
+const additionalBlockingLensDirectory = fs.mkdtempSync(
+  path.join(os.tmpdir(), "proof-harness-additional-blocking-lens-"),
+);
+try {
+  fs.cpSync(path.join(here, "fixtures", "approved"), additionalBlockingLensDirectory, { recursive: true });
+  const coveragePath = path.join(additionalBlockingLensDirectory, "design-review-coverage.json");
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  coverage.reviews.push({
+    ...structuredClone(coverage.reviews[0]),
+    review_id: "REVIEW-SPECIALIST-001",
+    review_run_id: "RUN-SPECIALIST-001",
+    transport_probe_run_id: null,
+    lens: "specialist",
+    model_route: "specialist-adopted-route",
+    transcript_sha256: `sha256:${"3".repeat(64)}`,
+  });
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
+  const resolutionPath = path.join(additionalBlockingLensDirectory, "design-review-resolution.json");
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, "utf8"));
+  resolution.source_review_ids.push("REVIEW-SPECIALIST-001");
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`, "utf8");
+  refreshBuilderPacket(additionalBlockingLensDirectory);
+  assert.doesNotThrow(
+    () => validatePacket(additionalBlockingLensDirectory, reviewBinding),
+    "additional blocking lenses must retain their pre-v0.10 compatibility when no pinned request exists",
+  );
+} finally {
+  fs.rmSync(additionalBlockingLensDirectory, { recursive: true, force: true });
+}
 
 const wrongProbeDirectory = fs.mkdtempSync(
   path.join(os.tmpdir(), "proof-harness-wrong-probe-"),
@@ -130,7 +194,7 @@ try {
   refreshBuilderPacket(wrongProbeDirectory);
   assert.throws(
     () => validatePacket(wrongProbeDirectory, reviewBinding),
-    /architecture blocking review does not retain the selected transport probe identity/i,
+    /architecture blocking review does not retain the pinned transport probe identity/i,
   );
 } finally {
   fs.rmSync(wrongProbeDirectory, { recursive: true, force: true });
@@ -157,35 +221,21 @@ try {
   fs.rmSync(downgradedReviewDirectory, { recursive: true, force: true });
 }
 
-const downgradedStateDirectory = fs.mkdtempSync(
-  path.join(os.tmpdir(), "proof-harness-downgraded-state-"),
+const downgradedBinding = structuredClone(reviewBinding);
+downgradedBinding.review_requests[0] = {
+  lens: "architecture", model_route: "weaker-fallback", model: "gpt-5.6-luna", effort: "low", read_only: true,
+  transport_probe_run_id: "PROBE-ARCH-WEAK",
+};
+downgradedBinding.transport_probes.architecture = [{
+  transport: "claude-cli", provider: "anthropic", model_route: "weaker-fallback", available: true,
+  authenticated: true, model: "gpt-5.6-luna", effort: "low", read_only: true,
+  provider_task_run_id: "PROBE-ARCH-WEAK",
+}];
+assert.throws(
+  () => validatePacket(path.join(here, "fixtures", "approved"), downgradedBinding),
+  /architecture review request does not match pinned reviewer policy/i,
+  "final approval must reject review state that downgrades the pinned model or effort",
 );
-try {
-  fs.cpSync(path.join(here, "fixtures", "approved"), downgradedStateDirectory, { recursive: true });
-  const coveragePath = path.join(downgradedStateDirectory, "design-review-coverage.json");
-  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
-  coverage.reviews[0].model_route = "weaker-fallback";
-  coverage.reviews[0].transport_probe_run_id = "PROBE-ARCH-WEAK";
-  coverage.reviews[1].transport_probe_run_id = "PROBE-SEC-001";
-  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
-  refreshBuilderPacket(downgradedStateDirectory);
-  const downgradedBinding = structuredClone(reviewBinding);
-  downgradedBinding.review_requests[0] = {
-    lens: "architecture", model_route: "weaker-fallback", model: "gpt-5.6-luna", effort: "low", read_only: true,
-  };
-  downgradedBinding.transport_probes.architecture = [{
-    transport: "claude-cli", provider: "anthropic", model_route: "weaker-fallback", available: true,
-    authenticated: true, model: "gpt-5.6-luna", effort: "low", read_only: true,
-    provider_task_run_id: "PROBE-ARCH-WEAK",
-  }];
-  assert.throws(
-    () => validatePacket(downgradedStateDirectory, downgradedBinding),
-    /architecture review request does not match pinned reviewer policy/i,
-    "final approval must reject review state that downgrades the pinned model or effort",
-  );
-} finally {
-  fs.rmSync(downgradedStateDirectory, { recursive: true, force: true });
-}
 
 const placeholderReviewDirectory = fs.mkdtempSync(
   path.join(os.tmpdir(), "proof-harness-placeholder-review-"),

@@ -87,13 +87,14 @@
     "reviewRequest": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["lens", "model_route", "model", "effort", "read_only"],
+      "required": ["lens", "model_route", "model", "effort", "read_only", "transport_probe_run_id"],
       "properties": {
         "lens": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "model_route": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "effort": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
-        "read_only": { "const": true }
+        "read_only": { "const": true },
+        "transport_probe_run_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
       }
     },
     "transportProbe": {
