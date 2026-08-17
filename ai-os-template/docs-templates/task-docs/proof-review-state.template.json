@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "candidate_generation": 1,
+  "candidate_kind": "initial",
+  "semantic_authority_hash": "{{SEMANTIC_AUTHORITY_HASH}}",
+  "provenance_hash": "{{PROVENANCE_HASH}}",
+  "current_root_cause_classes": [],
+  "prior_generations": [],
+  "review_requests": [
+    { "lens": "architecture", "model": "{{ARCHITECTURE_MODEL}}", "effort": "{{ARCHITECTURE_EFFORT}}", "read_only": true },
+    { "lens": "security", "model": "{{SECURITY_MODEL}}", "effort": "{{SECURITY_EFFORT}}", "read_only": true }
+  ],
+  "transport_probes": {
+    "architecture": [
+      {
+        "transport": "{{ARCHITECTURE_TRANSPORT}}",
+        "provider": "{{ARCHITECTURE_PROVIDER}}",
+        "available": false,
+        "authenticated": false,
+        "model": "{{ARCHITECTURE_MODEL}}",
+        "effort": "{{ARCHITECTURE_EFFORT}}",
+        "read_only": true,
+        "provider_task_run_id": null
+      }
+    ],
+    "security": [
+      {
+        "transport": "{{SECURITY_TRANSPORT}}",
+        "provider": "{{SECURITY_PROVIDER}}",
+        "available": false,
+        "authenticated": false,
+        "model": "{{SECURITY_MODEL}}",
+        "effort": "{{SECURITY_EFFORT}}",
+        "read_only": true,
+        "provider_task_run_id": null
+      }
+    ]
+  },
+  "process_receipts": {
+    "implementation_approved_at": "{{IMPLEMENTATION_APPROVED_AT}}",
+    "observed_at": "{{OBSERVED_AT}}",
+    "first_meaningful_red_at": null,
+    "first_production_code_change_at": null,
+    "design_candidate_count": 1,
+    "full_review_rounds": 0,
+    "broad_suite_runs": [],
+    "provenance_only_invalidated_shas": []
+  },
+  "budget_exception_records": []
+}

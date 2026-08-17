@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/proof-review-state.schema.json",
+  "title": "Proof Review Bounded Convergence State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "candidate_generation",
+    "candidate_kind",
+    "semantic_authority_hash",
+    "provenance_hash",
+    "current_root_cause_classes",
+    "prior_generations",
+    "review_requests",
+    "transport_probes",
+    "process_receipts",
+    "budget_exception_records"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "candidate_generation": { "type": "integer", "minimum": 1 },
+    "candidate_kind": { "enum": ["initial", "remediation", "final_replacement", "smaller_review_unit", "hitl_continuation"] },
+    "semantic_authority_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "provenance_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "current_root_cause_classes": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" } },
+    "prior_generations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generation", "semantic_authority_hash", "provenance_hash", "root_cause_classes", "disposition", "generator_profile"],
+        "properties": {
+          "generation": { "type": "integer", "minimum": 1 },
+          "semantic_authority_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+          "provenance_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+          "root_cause_classes": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" } },
+          "disposition": { "enum": ["superseded", "replaced", "split"] },
+          "generator_profile": { "$ref": "#/$defs/generatorProfile" }
+        }
+      }
+    },
+    "hitl_continuation": { "$ref": "#/$defs/hitlContinuation" },
+    "review_requests": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/reviewRequest" },
+      "allOf": [
+        { "contains": { "properties": { "lens": { "const": "architecture" } }, "required": ["lens"] }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "lens": { "const": "security" } }, "required": ["lens"] }, "minContains": 1, "maxContains": 1 }
+      ]
+    },
+    "transport_probes": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/transportProbe" } }
+    },
+    "process_receipts": { "$ref": "#/$defs/processReceipts" },
+    "budget_exception_records": { "type": "array", "items": { "$ref": "#/$defs/budgetException" } }
+  },
+  "$defs": {
+    "generatorProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    },
+    "hitlContinuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "timestamp", "reason", "unresolved_decision_class", "newly_authorized_direction"],
+      "properties": {
+        "actor": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "reason": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "unresolved_decision_class": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "newly_authorized_direction": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    },
+    "reviewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lens", "model", "effort", "read_only"],
+      "properties": {
+        "lens": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "effort": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "read_only": { "const": true }
+      }
+    },
+    "transportProbe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport", "provider", "available", "authenticated", "model", "effort", "read_only", "provider_task_run_id"],
+      "properties": {
+        "transport": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "provider": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "available": { "type": "boolean" },
+        "authenticated": { "type": "boolean" },
+        "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "effort": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "read_only": { "type": "boolean" },
+        "provider_task_run_id": { "type": ["string", "null"] }
+      }
+    },
+    "processReceipts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementation_approved_at", "observed_at", "first_meaningful_red_at", "first_production_code_change_at", "design_candidate_count", "full_review_rounds", "broad_suite_runs", "provenance_only_invalidated_shas"],
+      "properties": {
+        "implementation_approved_at": { "type": "string", "format": "date-time" },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "first_meaningful_red_at": { "type": ["string", "null"], "format": "date-time" },
+        "first_production_code_change_at": { "type": ["string", "null"], "format": "date-time" },
+        "design_candidate_count": { "type": "integer", "minimum": 1 },
+        "full_review_rounds": { "type": "integer", "minimum": 0 },
+        "broad_suite_runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["boundary_hash", "duration_seconds"],
+            "properties": {
+              "boundary_hash": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+              "duration_seconds": { "type": "number", "minimum": 0 },
+              "changed_affected_boundary": { "type": "boolean" }
+            }
+          }
+        },
+        "provenance_only_invalidated_shas": { "type": "array", "maxItems": 0, "items": { "$ref": "common.schema.json#/$defs/gitObject" } },
+        "checkpoint": { "$ref": "#/$defs/checkpoint" }
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unresolved_decision", "why_implementation_cannot_start", "smallest_next_action", "hitl_required"],
+      "properties": {
+        "unresolved_decision": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "why_implementation_cannot_start": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "smallest_next_action": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "hitl_required": { "type": "boolean" }
+      }
+    },
+    "budgetException": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["budget_name", "authorized_limit", "actor", "timestamp", "reason"],
+      "properties": {
+        "budget_name": { "enum": ["max_active_packet_bytes", "max_generated_line_count", "max_generated_diff_ratio"] },
+        "authorized_limit": { "type": "number", "exclusiveMinimum": 0 },
+        "actor": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "reason": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "candidate_generation": { "const": 1 } } },
+      "then": { "properties": { "candidate_kind": { "const": "initial" }, "prior_generations": { "maxItems": 0 } } }
+    },
+    {
+      "if": { "properties": { "candidate_generation": { "const": 2 } } },
+      "then": { "properties": { "candidate_kind": { "const": "remediation" }, "prior_generations": { "minItems": 1, "maxItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "candidate_generation": { "const": 3 } } },
+      "then": { "properties": { "candidate_kind": { "enum": ["final_replacement", "smaller_review_unit"] }, "prior_generations": { "minItems": 2, "maxItems": 2 } } }
+    },
+    {
+      "if": { "properties": { "candidate_generation": { "minimum": 4 } } },
+      "then": {
+        "required": ["hitl_continuation"],
+        "properties": { "candidate_kind": { "const": "hitl_continuation" }, "prior_generations": { "minItems": 3 } }
+      }
+    }
+  ]
+}

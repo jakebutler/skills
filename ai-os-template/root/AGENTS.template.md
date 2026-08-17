@@ -76,6 +76,15 @@ The default development loop is:
   remain for production/external effects, credentials, destructive or
   difficult-to-recover actions, spend, publication/send actions, and explicit product
   decisions.
+- Proof review is machine-bounded: deterministic preflight precedes dispatch; `v1` is
+  initial, `v2` is the only remediation, and `v3` is a final replacement or smaller
+  review unit. A later candidate requires an explicit HITL continuation record, while
+  a repeated unresolved root-cause class fails closed.
+- Treat semantic authority identity separately from review/provenance identity.
+  Metadata-only corrections do not revoke semantic approval or restart paired review.
+- Record convergence receipts and use the configured packet budgets. Checkpoint after
+  90 minutes without meaningful RED/code, before a second remediation, or before a
+  third broad run with no changed affected boundary.
 
 ## Doc map
 

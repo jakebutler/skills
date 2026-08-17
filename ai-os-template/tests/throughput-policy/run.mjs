@@ -13,6 +13,8 @@ for (const required of [
   "collect the complete available failure set",
   "A third broad run requires a concrete affected-boundary reason",
   "Reuse evidence from the exact unchanged diff",
+  "Proof review is machine-bounded",
+  "Metadata-only corrections do not revoke semantic approval",
 ]) {
   assert.match(canonical, new RegExp(required), `missing policy: ${required}`);
 }
@@ -76,5 +78,13 @@ const stopCommands = claudeSettings.hooks.Stop.flatMap((group) => group.hooks).m
 );
 assert.ok(stopCommands.some((command) => command.includes("verify-on-change")));
 assert.ok(!stopCommands.some((command) => command.includes("delegating-review")));
+
+const proofConfigTemplate = JSON.parse(read("docs-templates/proof-harness-config.template.json"));
+assert.equal(proofConfigTemplate.bounded_convergence.max_active_packet_bytes, 5 * 1024 * 1024);
+assert.equal(proofConfigTemplate.bounded_convergence.max_generated_line_count, 50_000);
+assert.equal(proofConfigTemplate.bounded_convergence.max_active_candidate_generations, 1);
+assert.deepEqual(Object.keys(proofConfigTemplate.bounded_convergence.reviewer_policies).sort(), ["architecture", "security"]);
+assert.deepEqual(proofConfigTemplate.bounded_convergence.legacy_read_only_roots, []);
+assert.match(proofConfigTemplate.commands.preflight_review, /PREFLIGHT_REVIEW_COMMAND/);
 
 console.log("throughput policy fixtures passed");

@@ -9,7 +9,7 @@ Start with [WALKTHROUGH.html](WALKTHROUGH.html) for a guided review, then use
 [DESIGN-MEMO.md](DESIGN-MEMO.md) for the architecture, contracts, and decisions
 record. The directory layout and instantiation procedure are in memo §9–10.
 
-**Status:** runtime and routing v0.9. Codex Sol High is the primary orchestrator. The
+**Status:** runtime v0.10 and routing v0.9. Codex Sol High is the primary orchestrator. The
 default delivery loop is breadth-first inspection, one implementation batch, focused
 checks, one consolidated review when warranted, then one broad gate. Routine reversible
 work has no mandatory delegated review; proof-required and exceptional High-risk work
@@ -48,6 +48,15 @@ capture with advisory-only automated promotion, a TypeScript/Convex inventory ad
 and deterministic rendered views. A project must still bind and pass its own manifest,
 adapter, schema, and positive/negative dogfood fixtures before advertising the gate as
 installed.
+
+Runtime v0.10 adds a deterministic pre-review gate and `proof-review-state.json`.
+It machine-enforces the v1/v2/v3 convergence limit, separate semantic-authority and
+review/provenance identities, current-only packets and size/line/diff budgets,
+generator/source/mapping integrity, reviewer transport equivalence, and process
+tripwires before a model review launches. Existing packets remain readable through
+their installed validator; repositories opt into v0.10 explicitly and may mark
+immutable historical packets with a narrow read-only legacy exemption rather than
+regenerating them.
 
 The paired builder apparatus uses separate honest producers: Cursor Agent is restricted
 to Composer 2.5, while native Sol uses a deterministic prepare packet, one ephemeral
