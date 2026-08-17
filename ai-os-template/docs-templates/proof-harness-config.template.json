@@ -28,7 +28,6 @@
   },
   "bounded_convergence": {
     "state_file": "proof-review-state.json",
-    "diff_base_ref": "{{DIFF_BASE_REF}}",
     "max_active_packet_bytes": 5242880,
     "max_generated_line_count": 50000,
     "max_generated_diff_ratio": 0.7,

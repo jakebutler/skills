@@ -46,10 +46,9 @@
     "bounded_convergence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["state_file", "diff_base_ref", "max_active_packet_bytes", "max_generated_line_count", "max_generated_diff_ratio", "generated_diff_ratio_action", "max_active_candidate_generations", "supported_generator_profiles", "reviewer_policies", "legacy_read_only_roots"],
+      "required": ["state_file", "max_active_packet_bytes", "max_generated_line_count", "max_generated_diff_ratio", "generated_diff_ratio_action", "max_active_candidate_generations", "supported_generator_profiles", "reviewer_policies", "legacy_read_only_roots"],
       "properties": {
         "state_file": { "const": "proof-review-state.json" },
-        "diff_base_ref": { "type": "string", "minLength": 1 },
         "max_active_packet_bytes": { "type": "integer", "minimum": 1, "default": 5242880 },
         "max_generated_line_count": { "type": "integer", "minimum": 1, "default": 50000 },
         "max_generated_diff_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "default": 0.7 },

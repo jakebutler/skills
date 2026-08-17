@@ -11,6 +11,7 @@
     "candidate_kind",
     "semantic_authority_hash",
     "provenance_hash",
+    "diff_base_commit",
     "current_root_cause_classes",
     "prior_generations",
     "review_requests",
@@ -25,6 +26,7 @@
     "candidate_kind": { "enum": ["initial", "remediation", "final_replacement", "smaller_review_unit", "hitl_continuation"] },
     "semantic_authority_hash": { "$ref": "common.schema.json#/$defs/sha256" },
     "provenance_hash": { "$ref": "common.schema.json#/$defs/sha256" },
+    "diff_base_commit": { "$ref": "common.schema.json#/$defs/gitObject" },
     "current_root_cause_classes": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" } },
     "prior_generations": {
       "type": "array",

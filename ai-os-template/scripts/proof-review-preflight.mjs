@@ -553,7 +553,7 @@ export function validateConvergenceState(state) {
 function validateOperationalState(state) {
   const required = [
     "schema_version", "task_id", "candidate_generation", "candidate_kind", "semantic_authority_hash",
-    "provenance_hash", "current_root_cause_classes", "prior_generations", "review_requests",
+    "provenance_hash", "diff_base_commit", "current_root_cause_classes", "prior_generations", "review_requests",
     "transport_probes", "process_receipts", "budget_exception_records",
   ];
   if (!state || typeof state !== "object" || Array.isArray(state)) fail("proof review state must be an object");
@@ -565,6 +565,7 @@ function validateOperationalState(state) {
   for (const field of ["semantic_authority_hash", "provenance_hash"]) {
     if (!/^sha256:[0-9a-f]{64}$/.test(state[field] ?? "")) fail(`proof review state.${field} must be a sha256 identity`);
   }
+  if (!/^[0-9a-f]{40,64}$/.test(state.diff_base_commit ?? "")) fail("proof review state.diff_base_commit must be a full Git object ID");
   if (!Array.isArray(state.current_root_cause_classes) || new Set(state.current_root_cause_classes).size !== state.current_root_cause_classes.length) {
     fail("proof review state current_root_cause_classes must be a unique array");
   }
@@ -627,7 +628,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     if (!fixtureOnly && !fs.existsSync(statePath)) fail("missing required canonical artifact: proof-review-state.json");
     const state = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, "utf8")) : undefined;
     if (!fixtureOnly) validateOperationalState(state);
-    const diffMetrics = repository ? deriveGitDiffMetrics(repository, resolved, bounded.diff_base_ref) : {};
+    const diffMetrics = repository && state ? deriveGitDiffMetrics(repository, resolved, state.diff_base_commit) : {};
     const packetBudgets = {
       max_active_packet_bytes: bounded.max_active_packet_bytes,
       max_generated_line_count: bounded.max_generated_line_count,

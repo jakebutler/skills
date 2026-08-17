@@ -5,6 +5,7 @@
   "candidate_kind": "initial",
   "semantic_authority_hash": "{{SEMANTIC_AUTHORITY_HASH}}",
   "provenance_hash": "{{PROVENANCE_HASH}}",
+  "diff_base_commit": "{{FROZEN_DIFF_BASE_COMMIT}}",
   "current_root_cause_classes": [],
   "prior_generations": [],
   "review_requests": [
