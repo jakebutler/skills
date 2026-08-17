@@ -76,6 +76,11 @@ does not read the subscription OAuth/keychain session. Remote and CI environment
 not assume this local authentication exists. Record the provider-returned exact model;
 an `opus` alias is valid only when it resolves to `claude-opus-5`.
 
+Before proof review dispatch, use the repository's deterministic transport preflight.
+It verifies executable availability, authentication, exact model and effort, read-only
+capability, and provider/task-run identity capture. An equivalent wrapper is acceptable
+when those semantics match; wrapper identity alone is not authority.
+
 | Work | Route to |
 |---|---|
 | Orchestration, framing, synthesis | Codex Sol High; Fable only as quota-approved fallback |

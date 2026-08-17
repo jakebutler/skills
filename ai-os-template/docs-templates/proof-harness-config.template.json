@@ -13,6 +13,7 @@
     "select_invariants": "{{SELECT_INVARIANTS_COMMAND}}",
     "hash_design": "{{HASH_DESIGN_COMMAND}}",
     "hash_builder_packet": "{{HASH_BUILDER_PACKET_COMMAND}}",
+    "preflight_review": "{{PREFLIGHT_REVIEW_COMMAND}}",
     "extract_invariant": "{{EXTRACT_INVARIANT_COMMAND}}",
     "promote_advisory": "{{PROMOTE_ADVISORY_INVARIANT_COMMAND}}",
     "validate_design": "{{VALIDATE_DESIGN_COMMAND}}",
@@ -24,5 +25,25 @@
     "architecture": "{{ARCHITECTURE_REVIEW_ROLE}}",
     "security": "{{SECURITY_REVIEW_ROLE}}",
     "resolver": "{{REVIEW_RESOLVER_ROLE}}"
+  },
+  "bounded_convergence": {
+    "state_file": "proof-review-state.json",
+    "max_active_packet_bytes": 5242880,
+    "max_generated_line_count": 50000,
+    "max_generated_diff_ratio": 0.7,
+    "generated_diff_ratio_action": "warn",
+    "max_active_candidate_generations": 1,
+    "legacy_read_only_roots": [],
+    "reviewer_policies": {
+      "architecture": { "model_route": "{{ARCHITECTURE_MODEL_ROUTE}}", "provider": "{{ARCHITECTURE_PROVIDER}}", "transport_families": ["{{ARCHITECTURE_TRANSPORT}}"], "model": "{{ARCHITECTURE_MODEL}}", "effort": "{{ARCHITECTURE_EFFORT}}" },
+      "security": { "model_route": "{{SECURITY_MODEL_ROUTE}}", "provider": "{{SECURITY_PROVIDER}}", "transport_families": ["{{SECURITY_TRANSPORT}}"], "model": "{{SECURITY_MODEL}}", "effort": "{{SECURITY_EFFORT}}" }
+    },
+    "supported_generator_profiles": [
+      {
+        "id": "{{EFFECT_INVENTORY_GENERATOR_ID}}",
+        "versions": ["{{EFFECT_INVENTORY_GENERATOR_VERSION}}"],
+        "historical_versions": []
+      }
+    ]
   }
 }

@@ -46,10 +46,14 @@ Under `{{TASK_DOCS_DIR}}/{{TASK_ID}}/`:
 - `architecture-proof.json`
 - `proof-plan.json`
 - `design-snapshot.json`
+- `proof-review-state.json`
 - `design-review-coverage.json`
 - `design-review-resolution.json`
 - generated human review views under `rendered/`
 
+Canonical names are unversioned and only one complete candidate generation may be
+active. Preserve superseded history in Git, PR review, compact dispositions, or CI
+artifacts rather than retaining `v1` through `vN` packets beside the active packet.
 JSON is canonical. Rendered Markdown is a disposable, freshness-checked view and never
 an independently editable source of truth.
 
@@ -83,23 +87,28 @@ an independently editable source of truth.
    `design-snapshot.json` from the exact
    raw bytes of requirements, effect inventory, invariant selection, architecture
    proof, and proof plan. Raw review output is excluded from the candidate hash.
-9. Dispatch architecture and security reviews concurrently. Both receive the same
+9. Run the deterministic pre-review command. It must pass placeholder and stable-ID
+   checks, reciprocal mappings, source bindings and generator compatibility, active
+   generation and packet budgets, rendered freshness, unresolved inventory, resolution
+   references, convergence state, process receipts, and reviewer transport preflight.
+   This gate consumes no model review round.
+10. Dispatch architecture and security reviews concurrently. Both receive the same
    baseline, candidate hash, requirements hash, selected invariants, inventories, and
    assigned questions. Preserve each provider/task run ID and transcript hash; record
    independently observed start/end candidate hashes rather than a bare self-attested
    boolean.
-10. Require binary `satisfied`, `violated`, or `not_verifiable` verdicts for every
+11. Require binary `satisfied`, `violated`, or `not_verifiable` verdicts for every
     assigned requirement from blocking reviewers. A reviewer that cannot reproduce the
     candidate hash is recorded with `authority: advisory`; its findings still enter
     exactly-once resolver fan-in but cannot supply required approval.
-11. Run the read-only review resolver. It validates identity, normalizes and clusters
+12. Run the read-only review resolver. It validates identity, normalizes and clusters
     findings, maps every source item exactly once, detects conflicts, applies the
     precedence policy, and emits one resolution contract.
-12. Sol remediates the design contract, not production code. A change to authority,
+13. Sol remediates the design contract, not production code. A change to authority,
     requirements, or the architecture decision creates a new candidate hash. Missing
     implementation coverage that fits the same design joins the consolidated code
     batch and does not reopen design.
-13. After architecture and security approval of the same exact candidate, compute the
+14. After architecture and security approval of the same exact candidate, compute the
     approved builder-packet hash from the candidate identity, exact review-coverage
     bytes, and a stable canonical form of the resolution contract with the hash field
     excluded. Store the result in the resolution. Only a reproducible packet may enter
@@ -107,16 +116,40 @@ an independently editable source of truth.
 
 ## Bounded convergence
 
-- First concurrent review produces one resolution contract.
-- The same architecture version may receive one remediation and re-review.
-- A second verdict with the same root-cause class invalidates that architecture version
-  and forces a replacement decision contract or smaller review unit.
+- `v1` is the initial candidate, `v2` is the sole remediation/re-review, and `v3` is a
+  final replacement decision contract or smaller review unit.
+- `v4` or later is refused unless `proof-review-state.json` contains a HITL continuation
+  binding actor, timestamp, reason, unresolved decision class, and newly authorized
+  direction. Reviewer or resolver prose cannot substitute for this record.
+- Repetition of an unresolved root-cause class fails closed instead of creating another
+  complete candidate.
 - A new trust root, effect boundary, lifecycle model, or requirement set creates a new
   architecture version. A sibling path does so only when it changes the approved
   authority or lifecycle model.
 - After three frozen design versions without approval, report `blocked` with the
   unresolved decision graph and require HITL before more review spend.
 - Stable finding and requirement IDs carry obligations forward across versions.
+
+The semantic authority identity covers requirements, trust roots, authority rules,
+effect boundaries, cardinality, lifecycle, persistence grammar, and denial semantics.
+The provenance identity covers review/run IDs, URLs, explanatory wording, rendered
+views, and correction-ledger metadata. Provenance-only correction changes the latter
+without revoking semantic approval; a semantic identity change requires fresh bound
+architecture/security approval.
+
+Default packet budgets are 5 MiB, 50,000 generated lines, one active complete
+generation, and a warning when generated artifacts exceed 70 percent of the proposed
+diff. The deterministic gate derives diff bytes from the bound repository, including
+untracked files; task state cannot self-report a smaller ratio. Exceeding a limit requires a narrow exception binding actor, timestamp, reason,
+budget name, and authorized limit. Legacy packets may receive an explicit read-only
+exemption; they are never regenerated merely to adopt this policy.
+
+Record time to first meaningful RED or production edit, candidate and full-review
+counts, broad-suite count/duration/boundary, generated size/diff ratio, and any SHAs
+invalidated by provenance-only changes. Emit a concise checkpoint after 90 minutes
+without RED/code, before a second remediation, or before a third unchanged-boundary
+broad run. The checkpoint names the unresolved decision, blocker, smallest next action,
+and whether HITL is actually required.
 
 ## Output contract
 
@@ -137,8 +170,10 @@ The implementation handoff contains the approved packet, not raw reviewer prompt
 ## Failure handling
 
 - Missing or stale artifacts: regenerate and refreeze; old verdicts remain historical.
-- Reviewer quota/auth/model failure: disclose it and stop or request HITL; never silently
-  weaken a project-pinned review role.
+- Reviewer transport preflight verifies tool availability, authentication, exact model,
+  effort, read-only capability, and provider/task-run identity capture before dispatch.
+  An equivalent authenticated transport with the same model and effort may replace an
+  unavailable wrapper; otherwise fail before waiting on review.
 - Conflicting valid directives: route the compact conflict to Sol plus the bound
   architecture role or user. Do not send both directives to an implementer.
 - A new design decision or contradiction discovered during implementation: revoke the

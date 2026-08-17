@@ -90,6 +90,14 @@ additionally have standalone specs (`research.md`, `prototype.md`) since they ar
 callable outside spec. Each spec defines trigger, steps, output contract, verification
 requirements, and failure handling.
 
+Design-proof review dispatch is guarded by `scripts/proof-review-preflight.mjs`. Its
+canonical `proof-review-state.json` separates semantic authority identity from
+review/provenance identity, limits complete candidates to v1/v2/v3 without an explicit
+HITL continuation, enforces one current unversioned packet and configured budgets, and
+accepts equivalent reviewer transports only when exact model, effort, read-only, auth,
+and provider/task-run capture all match. Immutable pre-v0.10 packets remain legacy
+read-only evidence under their project verifier.
+
 **Experimentation is first-class methodology** (added v0.2): Jake validates coding
 implementations by running the same bounded task across different LLMs/setups,
 comparing against identical acceptance checks, and documenting results in a

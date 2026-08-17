@@ -4,7 +4,7 @@
   "title": "Proof Harness Project Binding",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "task_artifact_root", "proof_harness_workflow", "schema_root", "invariant_registry", "generated_inventory", "inventory_config", "package_manager_source", "commands", "review_roles"],
+  "required": ["schema_version", "task_artifact_root", "proof_harness_workflow", "schema_root", "invariant_registry", "generated_inventory", "inventory_config", "package_manager_source", "commands", "review_roles", "bounded_convergence"],
   "properties": {
     "schema_version": { "const": 1 },
     "task_artifact_root": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
@@ -17,13 +17,14 @@
     "commands": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["generate_inventory", "build_invariant_index", "select_invariants", "hash_design", "hash_builder_packet", "extract_invariant", "promote_advisory", "validate_design", "validate_resolution", "render_views", "check_views"],
+      "required": ["generate_inventory", "build_invariant_index", "select_invariants", "hash_design", "hash_builder_packet", "preflight_review", "extract_invariant", "promote_advisory", "validate_design", "validate_resolution", "render_views", "check_views"],
       "properties": {
         "generate_inventory": { "type": "string", "minLength": 1 },
         "build_invariant_index": { "type": "string", "minLength": 1 },
         "select_invariants": { "type": "string", "minLength": 1 },
         "hash_design": { "type": "string", "minLength": 1 },
         "hash_builder_packet": { "type": "string", "minLength": 1 },
+        "preflight_review": { "type": "string", "minLength": 1 },
         "extract_invariant": { "type": "string", "minLength": 1 },
         "promote_advisory": { "type": "string", "minLength": 1 },
         "validate_design": { "type": "string", "minLength": 1 },
@@ -40,6 +41,61 @@
         "architecture": { "type": "string", "minLength": 1 },
         "security": { "type": "string", "minLength": 1 },
         "resolver": { "type": "string", "minLength": 1 }
+      }
+    },
+    "bounded_convergence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state_file", "max_active_packet_bytes", "max_generated_line_count", "max_generated_diff_ratio", "generated_diff_ratio_action", "max_active_candidate_generations", "supported_generator_profiles", "reviewer_policies", "legacy_read_only_roots"],
+      "properties": {
+        "state_file": { "const": "proof-review-state.json" },
+        "max_active_packet_bytes": { "type": "integer", "minimum": 1, "default": 5242880 },
+        "max_generated_line_count": { "type": "integer", "minimum": 1, "default": 50000 },
+        "max_generated_diff_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "default": 0.7 },
+        "generated_diff_ratio_action": { "enum": ["warn", "fail"], "default": "warn" },
+        "max_active_candidate_generations": { "const": 1 },
+        "legacy_read_only_roots": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" }
+        },
+        "reviewer_policies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["architecture", "security"],
+          "properties": {
+            "architecture": { "$ref": "#/$defs/reviewerPolicy" },
+            "security": { "$ref": "#/$defs/reviewerPolicy" }
+          }
+        },
+        "supported_generator_profiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "versions", "historical_versions"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "versions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+              "historical_versions": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "reviewerPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_route", "provider", "transport_families", "model", "effort"],
+      "properties": {
+        "model_route": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "transport_families": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "model": { "type": "string", "minLength": 1 },
+        "effort": { "type": "string", "minLength": 1 }
       }
     }
   }

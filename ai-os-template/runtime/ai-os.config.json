@@ -1,5 +1,5 @@
 {
-  "version": "0.9.0",
+  "version": "0.10.0",
   "project": "ai-os-template",
   "minimumNodeMajor": 22,
   "requiredPaths": [
@@ -8,6 +8,8 @@
     "routing/task-routes.json",
     "routing/model-evidence.json",
     "schemas/task-route-registry.schema.json",
+    "schemas/proof-review-state.schema.json",
+    "scripts/proof-review-preflight.mjs",
     "runtime/mcp.template.json"
   ],
   "routeRegistry": "routing/task-routes.json",
