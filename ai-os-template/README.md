@@ -58,6 +58,12 @@ their installed validator; repositories opt into v0.10 explicitly and may mark
 immutable historical packets with a narrow read-only legacy exemption rather than
 regenerating them.
 
+Final proof approval rechecks that every blocking coverage row retains the exact
+preflight probe identity and still matches the pinned route, provider, model, effort,
+and read-only transport policy. Post-review placeholders fail before builder authority,
+and diff accounting compares the frozen base directly with committed, staged,
+unstaged, and untracked repository state.
+
 The paired builder apparatus uses separate honest producers: Cursor Agent is restricted
 to Composer 2.5, while native Sol uses a deterministic prepare packet, one ephemeral
 high-reasoning `codex exec` process with multi-agent disabled, parent-captured launch and

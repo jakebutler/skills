@@ -7,6 +7,7 @@
     {
       "review_id": "REVIEW-ARCH-001",
       "review_run_id": "RUN-ARCH-001",
+      "transport_probe_run_id": "PROBE-ARCH-001",
       "lens": "architecture",
       "model_route": "fable",
       "transcript_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",

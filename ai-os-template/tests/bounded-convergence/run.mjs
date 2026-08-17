@@ -175,7 +175,7 @@ assert.throws(
 );
 
 const transport = preflightReviewerTransport(
-  { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true },
+  { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true, transport_probe_run_id: "claude-task-probe-001" },
   [
     {
       transport: "cursor-wrapper",
@@ -197,16 +197,28 @@ const transport = preflightReviewerTransport(
       model: "claude-opus-5",
       effort: "high",
       read_only: true,
+      provider_task_run_id: "claude-task-probe-reselected",
+    },
+    {
+      transport: "claude-cli",
+      provider: "anthropic",
+      model_route: "claude-opus5-high",
+      available: true,
+      authenticated: true,
+      model: "claude-opus-5",
+      effort: "high",
+      read_only: true,
       provider_task_run_id: "claude-task-probe-001",
     },
   ],
   { model_route: "claude-opus5-high", provider: "anthropic", transport_families: ["cursor-wrapper", "claude-cli"], model: "claude-opus-5", effort: "high" },
 );
 assert.equal(transport.selected.transport, "claude-cli");
+assert.equal(transport.selected.provider_task_run_id, "claude-task-probe-001");
 assert.equal(transport.fallback_from, "cursor-wrapper");
 assert.throws(
   () => preflightReviewerTransport(
-    { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true },
+    { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true, transport_probe_run_id: "wrong-provider" },
     [{ transport: "api-wrapper", provider: "anthropic-api", model_route: "claude-opus5-high", available: true, authenticated: true, model: "claude-opus-5", effort: "high", read_only: true, provider_task_run_id: "wrong-provider" }],
     { model_route: "claude-opus5-high", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-opus-5", effort: "high" },
   ),
@@ -214,7 +226,16 @@ assert.throws(
 );
 assert.throws(
   () => preflightReviewerTransport(
-    { lens: "security", model_route: "codex-luna-low", model: "gpt-5.6-luna", effort: "low", read_only: true },
+    { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true, transport_probe_run_id: "expected-probe" },
+    [{ transport: "claude-cli", provider: "anthropic", model_route: "claude-opus5-high", available: true, authenticated: true, model: "claude-opus-5", effort: "high", read_only: true, provider_task_run_id: "different-probe" }],
+    { model_route: "claude-opus5-high", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-opus-5", effort: "high" },
+  ),
+  /no authenticated read-only reviewer transport/i,
+  "preflight must reject an otherwise eligible probe with a different retained identity",
+);
+assert.throws(
+  () => preflightReviewerTransport(
+    { lens: "security", model_route: "codex-luna-low", model: "gpt-5.6-luna", effort: "low", read_only: true, transport_probe_run_id: "probe-downgraded" },
     [{
       transport: "codex-cli", provider: "openai", model_route: "codex-luna-low", available: true, authenticated: true,
       model: "gpt-5.6-luna", effort: "low", read_only: true, provider_task_run_id: "probe-downgraded",
@@ -294,6 +315,27 @@ try {
   const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
   coverage.reviews[0].review_run_id = "{{ARCHITECTURE_REVIEW_RUN_ID}}";
   fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const firstPlaceholderIdentity = computeProofIdentities(preReviewDirectory);
+  coverage.reviews[0].review_run_id = "{{ARCHITECTURE_REVIEW_RUN_ID_REISSUED}}";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const secondPlaceholderIdentity = computeProofIdentities(preReviewDirectory);
+  assert.notEqual(
+    secondPlaceholderIdentity.provenance_hash,
+    firstPlaceholderIdentity.provenance_hash,
+    "pre-review placeholder-bearing provenance must remain byte-sensitive",
+  );
+  const resolutionPath = path.join(preReviewDirectory, "design-review-resolution.json");
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, "utf8"));
+  const originalResolution = `${JSON.stringify(resolution, null, 2)}\n`;
+  resolution.status = "{{RESOLUTION_STATUS_REISSUED}}";
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`);
+  const resolutionPlaceholderIdentity = computeProofIdentities(preReviewDirectory);
+  assert.notEqual(
+    resolutionPlaceholderIdentity.provenance_hash,
+    secondPlaceholderIdentity.provenance_hash,
+    "resolution placeholder changes must remain byte-sensitive provenance",
+  );
+  fs.writeFileSync(resolutionPath, originalResolution);
   assert.equal(validateProofReviewPreflight(preReviewDirectory, { fixture_only: true }).ready_for_review, true);
 
   const architecturePath = path.join(preReviewDirectory, "architecture-proof.json");
@@ -327,6 +369,18 @@ try {
   const metrics = deriveGitDiffMetrics(diffRepository, path.join(diffRepository, "plans", "task"), base);
   assert.ok(metrics.total_diff_bytes > metrics.generated_diff_bytes);
   assert.ok(metrics.generated_diff_bytes > 0);
+  fs.appendFileSync(path.join(diffRepository, "plans", "task", "packet.json"), "tracked working-tree packet update\n".repeat(20));
+  runGit("add", "plans/task/packet.json");
+  fs.appendFileSync(path.join(diffRepository, "source.txt"), "tracked working-tree source update\n".repeat(20));
+  const workingTreeMetrics = deriveGitDiffMetrics(diffRepository, path.join(diffRepository, "plans", "task"), base);
+  assert.ok(
+    workingTreeMetrics.total_diff_bytes > metrics.total_diff_bytes,
+    "diff accounting must include staged and unstaged tracked working-tree changes",
+  );
+  assert.ok(
+    workingTreeMetrics.generated_diff_bytes > metrics.generated_diff_bytes,
+    "generated diff accounting must include tracked packet changes",
+  );
 } finally {
   fs.rmSync(diffRepository, { recursive: true, force: true });
 }
@@ -367,8 +421,8 @@ try {
     packet_budgets: {},
     check_rendered: true,
     review_requests: [
-      { lens: "architecture", model_route: "codex-sol-xhigh", model: "gpt-5.6-sol", effort: "xhigh", read_only: true },
-      { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true },
+      { lens: "architecture", model_route: "codex-sol-xhigh", model: "gpt-5.6-sol", effort: "xhigh", read_only: true, transport_probe_run_id: "codex-task-probe-001" },
+      { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true, transport_probe_run_id: "claude-task-probe-001" },
     ],
     reviewer_policies: {
       architecture: { model_route: "codex-sol-xhigh", provider: "openai", transport_families: ["codex-cli"], model: "gpt-5.6-sol", effort: "xhigh" },
@@ -418,7 +472,7 @@ try {
       fixture_only: true,
       ...{
         state: { schema_version: 1, task_id: "fixture-sensitive-write", candidate_generation: 1, candidate_kind: "initial", semantic_authority_hash: completeIdentities.semantic_authority_hash, provenance_hash: completeIdentities.provenance_hash, current_root_cause_classes: [], prior_generations: [] },
-        review_requests: [{ lens: "architecture", model_route: "codex-sol-xhigh", model: "gpt-5.6-sol", effort: "xhigh", read_only: true }],
+        review_requests: [{ lens: "architecture", model_route: "codex-sol-xhigh", model: "gpt-5.6-sol", effort: "xhigh", read_only: true, transport_probe_run_id: "codex-task-probe-001" }],
         reviewer_policies: { architecture: { model_route: "codex-sol-xhigh", provider: "openai", transport_families: ["codex-cli"], model: "gpt-5.6-sol", effort: "xhigh" }, security: { model_route: "claude-opus5-high", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-opus-5", effort: "high" } },
         transport_probes: {},
         process_receipts: { implementation_approved_at: "2026-08-17T10:00:00.000Z", observed_at: "2026-08-17T10:15:00.000Z", first_meaningful_red_at: "2026-08-17T10:05:00.000Z", first_production_code_change_at: null, design_candidate_count: 1, full_review_rounds: 0, broad_suite_runs: [], provenance_only_invalidated_shas: [] },

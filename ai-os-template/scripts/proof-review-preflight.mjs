@@ -32,10 +32,7 @@ function provenanceBytes(directory) {
     );
   }
   return Buffer.concat(
-    files.sort().filter((file) => {
-      const target = path.join(directory, file);
-      return fs.existsSync(target) && !PLACEHOLDER_PATTERN.test(fs.readFileSync(target, "utf8"));
-    }).flatMap((file) => [
+    files.sort().filter((file) => fs.existsSync(path.join(directory, file))).flatMap((file) => [
       Buffer.from(`${file}\0`, "utf8"),
       fs.readFileSync(path.join(directory, file)),
     ]),
@@ -376,7 +373,7 @@ export function deriveGitDiffMetrics(repository, directory, baseRef = "HEAD") {
   if (relativePacket.startsWith("..") || path.isAbsolute(relativePacket)) fail("task artifact directory must be inside the source repository");
   nonEmpty(baseRef, "diff base ref");
   execFileSync("git", ["rev-parse", "--verify", `${baseRef}^{commit}`], { cwd: repo, maxBuffer: 128 * 1024 * 1024 });
-  const diffBytes = (pathspec) => execFileSync("git", ["diff", "--no-ext-diff", "--binary", `${baseRef}...HEAD`, "--", ...(pathspec ? [pathspec] : [])], { cwd: repo, maxBuffer: 128 * 1024 * 1024 }).byteLength;
+  const diffBytes = (pathspec) => execFileSync("git", ["diff", "--no-ext-diff", "--binary", baseRef, "--", ...(pathspec ? [pathspec] : [])], { cwd: repo, maxBuffer: 128 * 1024 * 1024 }).byteLength;
   const untracked = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { cwd: repo })
     .toString("utf8").split("\0").filter(Boolean);
   const untrackedBytes = (filter) => untracked.filter(filter).reduce((total, file) => total + fs.statSync(path.join(repo, file)).size, 0);
@@ -399,7 +396,7 @@ function validateRequiredReviewerRequests(requests, policies) {
 }
 
 export function preflightReviewerTransport(request, probes, pinnedPolicy) {
-  for (const field of ["lens", "model", "effort", "model_route"]) nonEmpty(request?.[field], `review request.${field}`);
+  for (const field of ["lens", "model", "effort", "model_route", "transport_probe_run_id"]) nonEmpty(request?.[field], `review request.${field}`);
   if (request.read_only !== true) fail("review request must require read-only capability");
   if (pinnedPolicy && (request.model !== pinnedPolicy.model || request.effort !== pinnedPolicy.effort || request.model_route !== pinnedPolicy.model_route)) {
     fail(`${request.lens} reviewer request does not match pinned policy ${pinnedPolicy.model_route} ${pinnedPolicy.model} ${pinnedPolicy.effort}`);
@@ -415,7 +412,7 @@ export function preflightReviewerTransport(request, probes, pinnedPolicy) {
     Array.isArray(pinnedPolicy?.transport_families) && pinnedPolicy.transport_families.includes(probe.transport) &&
     probe.read_only === true &&
     typeof probe.provider === "string" && probe.provider.trim() !== "" &&
-    typeof probe.provider_task_run_id === "string" && probe.provider_task_run_id.trim() !== "",
+    probe.provider_task_run_id === request.transport_probe_run_id,
   );
   if (!eligible) {
     fail(`no authenticated read-only reviewer transport provides exact ${request.model} ${request.effort} with provider/task-run identity capture`);

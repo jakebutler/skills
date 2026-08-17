@@ -20,6 +20,7 @@ const REQUIRED_FILES = [
   "design-review-coverage.json",
   "design-review-resolution.json",
 ];
+const PLACEHOLDER_PATTERN = /(?:\bTODO\b|\bTBD\b|\bFIXME\b|\bXXX\b|\{\{[^}]+\}\}|<placeholder>|replace\s+(?:me|this))/i;
 
 function fail(message) {
   throw new Error(message);
@@ -46,6 +47,17 @@ function requireArray(value, label, { nonEmpty = false } = {}) {
   if (!Array.isArray(value)) fail(`${label} must be an array`);
   if (nonEmpty && value.length === 0) fail(`${label} must not be empty`);
   return value;
+}
+
+function rejectPlaceholders(value, file, location = "$.") {
+  if (typeof value === "string" && PLACEHOLDER_PATTERN.test(value)) {
+    fail(`prohibited placeholder in ${file} at ${location}`);
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => rejectPlaceholders(item, file, `${location}[${index}]`));
+  } else if (value && typeof value === "object") {
+    for (const [key, item] of Object.entries(value)) rejectPlaceholders(item, file, `${location}${key}.`);
+  }
 }
 
 function uniqueById(rows, label) {
@@ -80,6 +92,75 @@ function exactJson(actual, expected, label) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) fail(`${label} does not reproduce from bound source`);
 }
 
+function selectedReviewerTransport(request, probes, policy) {
+  if (!request || !policy) fail("blocking review binding requires a pinned review request and policy");
+  for (const field of ["lens", "model_route", "model", "effort", "transport_probe_run_id"]) {
+    requireString(request[field], `review request.${field}`);
+  }
+  for (const field of ["model_route", "model", "effort", "provider"]) {
+    requireString(policy[field], `${request.lens} reviewer policy.${field}`);
+  }
+  if (!Array.isArray(policy.transport_families) || policy.transport_families.length === 0 ||
+    policy.transport_families.some((transport) => typeof transport !== "string" || transport.trim() === "")) {
+    fail(`${request.lens} reviewer policy.transport_families must contain non-empty strings`);
+  }
+  if (request.model_route !== policy.model_route || request.model !== policy.model ||
+    request.effort !== policy.effort || request.read_only !== true) {
+    fail(`${request.lens} review request does not match pinned reviewer policy`);
+  }
+  const eligible = Array.isArray(probes) && probes.find((probe) =>
+    probe?.available === true &&
+    probe.authenticated === true &&
+    probe.model_route === request.model_route &&
+    probe.model === request.model &&
+    probe.effort === request.effort &&
+    probe.provider === policy.provider &&
+    Array.isArray(policy.transport_families) && policy.transport_families.includes(probe.transport) &&
+    probe.read_only === true &&
+    probe.provider_task_run_id === request.transport_probe_run_id
+  );
+  if (!eligible) fail(`no pinned reviewer transport remains eligible for ${request.lens}`);
+  return eligible;
+}
+
+function validateReviewBinding(binding) {
+  requireString(binding?.task_id, "final review binding.task_id");
+  if (!/^sha256:[a-f0-9]{64}$/.test(binding?.semantic_authority_hash ?? "")) {
+    fail("final review binding.semantic_authority_hash must be a SHA-256 identity");
+  }
+  const requests = Array.isArray(binding?.review_requests) ? binding.review_requests : [];
+  const lenses = requests.map((request) => request?.lens);
+  if (
+    requests.length !== 2 ||
+    new Set(lenses).size !== 2 ||
+    !lenses.includes("architecture") ||
+    !lenses.includes("security")
+  ) {
+    fail("final validation requires exactly architecture and security review bindings");
+  }
+  for (const lens of lenses) {
+    selectedReviewerTransport(
+      requests.find((request) => request.lens === lens),
+      binding?.transport_probes?.[lens],
+      binding?.reviewer_policies?.[lens],
+    );
+  }
+}
+
+function validateBlockingReviewBinding(review, binding) {
+  const requests = Array.isArray(binding?.review_requests) ? binding.review_requests : [];
+  const request = requests.find((item) => item?.lens === review.lens);
+  const policy = binding?.reviewer_policies?.[review.lens];
+  const selected = selectedReviewerTransport(request, binding?.transport_probes?.[review.lens], policy);
+  if (review.model_route !== request.model_route) {
+    fail(`${review.lens} blocking review route does not match pinned review request`);
+  }
+  if (review.transport_probe_run_id !== request.transport_probe_run_id ||
+    selected.provider_task_run_id !== request.transport_probe_run_id) {
+    fail(`${review.lens} blocking review does not retain the pinned transport probe identity`);
+  }
+}
+
 export function validateSourceBindings(directory, repository, registryPath, inventoryConfigPath) {
   const requirements = readJson(directory, "requirements.json");
   const recordedInventory = readJson(directory, "effect-surfaces.json");
@@ -106,7 +187,8 @@ export function validateSourceBindings(directory, repository, registryPath, inve
   return { head, tree, inventory_reproduced: true, selection_reproduced: true };
 }
 
-export function validate(directory) {
+export function validate(directory, reviewBinding = undefined) {
+  if (reviewBinding) validateReviewBinding(reviewBinding);
   for (const file of REQUIRED_FILES) {
     if (!fs.existsSync(path.join(directory, file))) {
       fail(`missing required artifact: ${file}`);
@@ -121,6 +203,8 @@ export function validate(directory) {
   const snapshot = readJson(directory, "design-snapshot.json");
   const coverage = readJson(directory, "design-review-coverage.json");
   const resolution = readJson(directory, "design-review-resolution.json");
+  rejectPlaceholders(coverage, "design-review-coverage.json");
+  rejectPlaceholders(resolution, "design-review-resolution.json");
 
   requireString(requirements.task_id, "requirements.task_id");
   requireString(requirements.baseline?.commit, "requirements.baseline.commit");
@@ -445,6 +529,13 @@ export function validate(directory) {
   if (JSON.stringify(snapshot.included_files) !== JSON.stringify(computedSnapshot.included_files)) {
     fail("design snapshot file manifest does not reproduce from the candidate files");
   }
+  if (
+    reviewBinding &&
+    (reviewBinding.task_id !== requirements.task_id ||
+      reviewBinding.semantic_authority_hash !== snapshot.design_candidate_hash)
+  ) {
+    fail("final review binding does not match the design candidate");
+  }
 
   sameTask(requirements.task_id, coverage, "design-review-coverage");
   sameCandidate(snapshot.design_candidate_hash, coverage, "design-review-coverage");
@@ -472,6 +563,10 @@ export function validate(directory) {
     }
     if (review.authority === "blocking" && review.snapshot_reproduced !== true) {
       fail(`${review.review_id} blocking review did not reproduce the design snapshot`);
+    }
+    if (review.authority === "blocking" && reviewBinding &&
+      reviewBinding.review_requests.some((request) => request?.lens === review.lens)) {
+      validateBlockingReviewBinding(review, reviewBinding);
     }
     if (review.snapshot_reproduced === true && (
       review.start_snapshot_hash !== snapshot.design_candidate_hash ||
@@ -553,14 +648,15 @@ export function validate(directory) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [directory, bindingMode, registryPath, inventoryConfigPath] = process.argv.slice(2);
+  const [directory, bindingMode, registryPath, inventoryConfigPath, configPathArgument] = process.argv.slice(2);
   if (!directory) {
-    console.error("usage: validate-proof-harness.mjs <task-artifact-directory> <repository> <registry-index.json> <inventory-config.json>");
+    console.error("usage: validate-proof-harness.mjs <task-artifact-directory> <repository> <registry-index.json> <inventory-config.json> [proof-harness-config.json]");
     process.exit(2);
   }
 
   try {
     let sourceBinding;
+    let reviewBinding;
     if (bindingMode === "--fixture-only") {
       sourceBinding = { fixture_only: true };
     } else {
@@ -573,8 +669,26 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         path.resolve(registryPath),
         path.resolve(inventoryConfigPath),
       );
+      const configPath = path.resolve(configPathArgument ?? path.join(bindingMode, ".ai", "proof-harness.json"));
+      if (!fs.existsSync(configPath)) fail("production validation requires a proof-harness config binding");
+      const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      const bounded = config.bounded_convergence;
+      if (!bounded?.reviewer_policies || !bounded.state_file) {
+        fail("production validation requires bounded reviewer policies and state binding");
+      }
+      const statePath = path.join(path.resolve(directory), bounded.state_file);
+      if (!fs.existsSync(statePath)) fail(`production validation requires ${bounded.state_file}`);
+      const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
+      rejectPlaceholders(state, bounded.state_file);
+      reviewBinding = {
+        task_id: state.task_id,
+        semantic_authority_hash: state.semantic_authority_hash,
+        review_requests: state.review_requests,
+        transport_probes: state.transport_probes,
+        reviewer_policies: bounded.reviewer_policies,
+      };
     }
-    const result = validate(path.resolve(directory));
+    const result = validate(path.resolve(directory), reviewBinding);
     console.log(JSON.stringify({ valid: true, source_binding: sourceBinding, ...result }, null, 2));
   } catch (error) {
     console.error(`proof-harness validation failed: ${error.message}`);

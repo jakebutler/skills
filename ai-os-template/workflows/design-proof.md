@@ -80,13 +80,12 @@ an independently editable source of truth.
 7. Write the proof plan mapping every reachable surface and every requirement in both
    directions to invariants, enforcement points, negative evidence, and integration
    evidence. Orphan effects or requirements block.
-8. Validate the candidate locally against the live clean repository: reproduce the
-   baseline commit/tree, regenerate the adapter inventory, and recompute invariant
-   selection from the bound index before structural validation. `--fixture-only` is
-   reserved for template contract tests and is not an instance gate. Then generate
-   `design-snapshot.json` from the exact
-   raw bytes of requirements, effect inventory, invariant selection, architecture
-   proof, and proof plan. Raw review output is excluded from the candidate hash.
+8. From the live clean baseline, regenerate the adapter inventory, recompute invariant
+   selection from the bound index, generate `design-snapshot.json` from the exact raw
+   bytes of the five semantic candidate files, and render the review views. Do not run
+   the post-review approval validator yet: it requires completed review coverage and
+   resolution. `--fixture-only` is reserved for template contract tests and is not an
+   instance gate. Raw review output is excluded from the candidate hash.
 9. Run the deterministic pre-review command. It must pass placeholder and stable-ID
    checks, reciprocal mappings, source bindings and generator compatibility, active
    generation and packet budgets, rendered freshness, unresolved inventory, resolution
@@ -95,8 +94,9 @@ an independently editable source of truth.
 10. Dispatch architecture and security reviews concurrently. Both receive the same
    baseline, candidate hash, requirements hash, selected invariants, inventories, and
    assigned questions. Preserve each provider/task run ID and transcript hash; record
-   independently observed start/end candidate hashes rather than a bare self-attested
-   boolean.
+    independently observed start/end candidate hashes rather than a bare self-attested
+    boolean. Pin the selected preflight probe identity in the review request and retain
+    the same `transport_probe_run_id` in each required blocking coverage row.
 11. Require binary `satisfied`, `violated`, or `not_verifiable` verdicts for every
     assigned requirement from blocking reviewers. A reviewer that cannot reproduce the
     candidate hash is recorded with `authority: advisory`; its findings still enter
@@ -111,8 +111,10 @@ an independently editable source of truth.
 14. After architecture and security approval of the same exact candidate, compute the
     approved builder-packet hash from the candidate identity, exact review-coverage
     bytes, and a stable canonical form of the resolution contract with the hash field
-    excluded. Store the result in the resolution. Only a reproducible packet may enter
-    `implement-tdd`.
+    excluded. Store the result in the resolution, then run the bound final validator.
+    It must reject placeholders and rebind every blocking review to the exact pinned
+    request, reviewer policy, eligible transport probe, and retained probe identity.
+    Only a reproducible validated packet may enter `implement-tdd`.
 
 ## Bounded convergence
 
@@ -173,7 +175,8 @@ The implementation handoff contains the approved packet, not raw reviewer prompt
 - Reviewer transport preflight verifies tool availability, authentication, exact model,
   effort, read-only capability, and provider/task-run identity capture before dispatch.
   An equivalent authenticated transport with the same model and effort may replace an
-  unavailable wrapper; otherwise fail before waiting on review.
+  unavailable wrapper; otherwise fail before waiting on review. Final validation
+  repeats that binding from current state and the retained coverage probe identity.
 - Conflicting valid directives: route the compact conflict to Sol plus the bound
   architecture role or user. Do not send both directives to an implementer.
 - A new design decision or contradiction discovered during implementation: revoke the

@@ -9,8 +9,8 @@
   "current_root_cause_classes": [],
   "prior_generations": [],
   "review_requests": [
-    { "lens": "architecture", "model_route": "{{ARCHITECTURE_MODEL_ROUTE}}", "model": "{{ARCHITECTURE_MODEL}}", "effort": "{{ARCHITECTURE_EFFORT}}", "read_only": true },
-    { "lens": "security", "model_route": "{{SECURITY_MODEL_ROUTE}}", "model": "{{SECURITY_MODEL}}", "effort": "{{SECURITY_EFFORT}}", "read_only": true }
+    { "lens": "architecture", "model_route": "{{ARCHITECTURE_MODEL_ROUTE}}", "model": "{{ARCHITECTURE_MODEL}}", "effort": "{{ARCHITECTURE_EFFORT}}", "read_only": true, "transport_probe_run_id": "{{ARCHITECTURE_TRANSPORT_PROBE_RUN_ID}}" },
+    { "lens": "security", "model_route": "{{SECURITY_MODEL_ROUTE}}", "model": "{{SECURITY_MODEL}}", "effort": "{{SECURITY_EFFORT}}", "read_only": true, "transport_probe_run_id": "{{SECURITY_TRANSPORT_PROBE_RUN_ID}}" }
   ],
   "transport_probes": {
     "architecture": [
