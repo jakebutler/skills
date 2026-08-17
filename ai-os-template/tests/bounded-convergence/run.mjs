@@ -226,6 +226,15 @@ assert.throws(
 );
 assert.throws(
   () => preflightReviewerTransport(
+    { lens: "security", model_route: "claude-opus5-high", model: "claude-opus-5", effort: "high", read_only: true, transport_probe_run_id: "expected-probe" },
+    [{ transport: "claude-cli", provider: "anthropic", model_route: "claude-opus5-high", available: true, authenticated: true, model: "claude-opus-5", effort: "high", read_only: true, provider_task_run_id: "different-probe" }],
+    { model_route: "claude-opus5-high", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-opus-5", effort: "high" },
+  ),
+  /no authenticated read-only reviewer transport/i,
+  "preflight must reject an otherwise eligible probe with a different retained identity",
+);
+assert.throws(
+  () => preflightReviewerTransport(
     { lens: "security", model_route: "codex-luna-low", model: "gpt-5.6-luna", effort: "low", read_only: true, transport_probe_run_id: "probe-downgraded" },
     [{
       transport: "codex-cli", provider: "openai", model_route: "codex-luna-low", available: true, authenticated: true,

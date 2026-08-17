@@ -117,14 +117,26 @@ assert.throws(
   }),
   /final review binding does not match the design candidate/i,
 );
-const malformedBinding = structuredClone(reviewBinding);
-delete malformedBinding.review_requests[0].model;
-delete malformedBinding.reviewer_policies.architecture.model;
-delete malformedBinding.transport_probes.architecture[0].model;
+const malformedRequestBinding = structuredClone(reviewBinding);
+delete malformedRequestBinding.review_requests[0].model;
 assert.throws(
-  () => validatePacket(path.join(here, "fixtures", "approved"), malformedBinding),
+  () => validatePacket(path.join(here, "fixtures", "approved"), malformedRequestBinding),
   /review request\.model must be a non-empty string/i,
-  "production validation must reject malformed request, policy, and probe identities",
+  "production validation must reject a malformed request identity",
+);
+const malformedPolicyBinding = structuredClone(reviewBinding);
+delete malformedPolicyBinding.reviewer_policies.architecture.model;
+assert.throws(
+  () => validatePacket(path.join(here, "fixtures", "approved"), malformedPolicyBinding),
+  /architecture reviewer policy\.model must be a non-empty string/i,
+  "production validation must reject a malformed policy identity",
+);
+const malformedProbeBinding = structuredClone(reviewBinding);
+delete malformedProbeBinding.transport_probes.architecture[0].model;
+assert.throws(
+  () => validatePacket(path.join(here, "fixtures", "approved"), malformedProbeBinding),
+  /no pinned reviewer transport remains eligible for architecture/i,
+  "production validation must reject a malformed probe identity",
 );
 
 const reselectedProbeDirectory = fs.mkdtempSync(
