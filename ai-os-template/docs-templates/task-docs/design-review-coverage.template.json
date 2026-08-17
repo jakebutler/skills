@@ -7,6 +7,7 @@
     {
       "review_id": "REVIEW-ARCH-001",
       "review_run_id": "{{ARCHITECTURE_REVIEW_RUN_ID}}",
+      "transport_probe_run_id": "{{ARCHITECTURE_TRANSPORT_PROBE_RUN_ID}}",
       "lens": "architecture",
       "model_route": "{{ARCHITECTURE_REVIEW_ROUTE}}",
       "transcript_sha256": "{{ARCHITECTURE_REVIEW_TRANSCRIPT_SHA256}}",
@@ -27,6 +28,7 @@
     {
       "review_id": "REVIEW-SEC-001",
       "review_run_id": "{{SECURITY_REVIEW_RUN_ID}}",
+      "transport_probe_run_id": "{{SECURITY_TRANSPORT_PROBE_RUN_ID}}",
       "lens": "security",
       "model_route": "{{SECURITY_REVIEW_ROUTE}}",
       "transcript_sha256": "{{SECURITY_REVIEW_TRANSCRIPT_SHA256}}",

@@ -294,6 +294,15 @@ try {
   const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
   coverage.reviews[0].review_run_id = "{{ARCHITECTURE_REVIEW_RUN_ID}}";
   fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const firstPlaceholderIdentity = computeProofIdentities(preReviewDirectory);
+  coverage.reviews[0].review_run_id = "{{ARCHITECTURE_REVIEW_RUN_ID_REISSUED}}";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const secondPlaceholderIdentity = computeProofIdentities(preReviewDirectory);
+  assert.notEqual(
+    secondPlaceholderIdentity.provenance_hash,
+    firstPlaceholderIdentity.provenance_hash,
+    "pre-review placeholder-bearing provenance must remain byte-sensitive",
+  );
   assert.equal(validateProofReviewPreflight(preReviewDirectory, { fixture_only: true }).ready_for_review, true);
 
   const architecturePath = path.join(preReviewDirectory, "architecture-proof.json");
@@ -327,6 +336,18 @@ try {
   const metrics = deriveGitDiffMetrics(diffRepository, path.join(diffRepository, "plans", "task"), base);
   assert.ok(metrics.total_diff_bytes > metrics.generated_diff_bytes);
   assert.ok(metrics.generated_diff_bytes > 0);
+  fs.appendFileSync(path.join(diffRepository, "plans", "task", "packet.json"), "tracked working-tree packet update\n".repeat(20));
+  runGit("add", "plans/task/packet.json");
+  fs.appendFileSync(path.join(diffRepository, "source.txt"), "tracked working-tree source update\n".repeat(20));
+  const workingTreeMetrics = deriveGitDiffMetrics(diffRepository, path.join(diffRepository, "plans", "task"), base);
+  assert.ok(
+    workingTreeMetrics.total_diff_bytes > metrics.total_diff_bytes,
+    "diff accounting must include staged and unstaged tracked working-tree changes",
+  );
+  assert.ok(
+    workingTreeMetrics.generated_diff_bytes > metrics.generated_diff_bytes,
+    "generated diff accounting must include tracked packet changes",
+  );
 } finally {
   fs.rmSync(diffRepository, { recursive: true, force: true });
 }

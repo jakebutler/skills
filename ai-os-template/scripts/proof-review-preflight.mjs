@@ -32,10 +32,7 @@ function provenanceBytes(directory) {
     );
   }
   return Buffer.concat(
-    files.sort().filter((file) => {
-      const target = path.join(directory, file);
-      return fs.existsSync(target) && !PLACEHOLDER_PATTERN.test(fs.readFileSync(target, "utf8"));
-    }).flatMap((file) => [
+    files.sort().filter((file) => fs.existsSync(path.join(directory, file))).flatMap((file) => [
       Buffer.from(`${file}\0`, "utf8"),
       fs.readFileSync(path.join(directory, file)),
     ]),
@@ -376,7 +373,7 @@ export function deriveGitDiffMetrics(repository, directory, baseRef = "HEAD") {
   if (relativePacket.startsWith("..") || path.isAbsolute(relativePacket)) fail("task artifact directory must be inside the source repository");
   nonEmpty(baseRef, "diff base ref");
   execFileSync("git", ["rev-parse", "--verify", `${baseRef}^{commit}`], { cwd: repo, maxBuffer: 128 * 1024 * 1024 });
-  const diffBytes = (pathspec) => execFileSync("git", ["diff", "--no-ext-diff", "--binary", `${baseRef}...HEAD`, "--", ...(pathspec ? [pathspec] : [])], { cwd: repo, maxBuffer: 128 * 1024 * 1024 }).byteLength;
+  const diffBytes = (pathspec) => execFileSync("git", ["diff", "--no-ext-diff", "--binary", baseRef, "--", ...(pathspec ? [pathspec] : [])], { cwd: repo, maxBuffer: 128 * 1024 * 1024 }).byteLength;
   const untracked = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { cwd: repo })
     .toString("utf8").split("\0").filter(Boolean);
   const untrackedBytes = (filter) => untracked.filter(filter).reduce((total, file) => total + fs.statSync(path.join(repo, file)).size, 0);

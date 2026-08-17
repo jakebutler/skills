@@ -4,6 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { hashBuilderPacket } from "../../scripts/hash-proof-harness-builder-packet.mjs";
+import { validate as validatePacket } from "../../scripts/validate-proof-harness.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const templateRoot = path.resolve(here, "../..");
@@ -76,6 +78,132 @@ try {
   );
 } finally {
   fs.rmSync(staleReviewDirectory, { recursive: true, force: true });
+}
+
+const reviewBinding = {
+  task_id: "fixture-sensitive-write",
+  semantic_authority_hash: "sha256:1f34a7b68f29df8fa3a5ea9536b1205b6bfa62cb3bce33c50b8b391566c70b06",
+  review_requests: [
+    { lens: "architecture", model_route: "fable", model: "claude-fable-5", effort: "high", read_only: true },
+    { lens: "security", model_route: "opus-4.8", model: "claude-opus-4-8", effort: "high", read_only: true },
+  ],
+  reviewer_policies: {
+    architecture: { model_route: "fable", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-fable-5", effort: "high" },
+    security: { model_route: "opus-4.8", provider: "anthropic", transport_families: ["claude-cli"], model: "claude-opus-4-8", effort: "high" },
+  },
+  transport_probes: {
+    architecture: [{ transport: "claude-cli", provider: "anthropic", model_route: "fable", available: true, authenticated: true, model: "claude-fable-5", effort: "high", read_only: true, provider_task_run_id: "PROBE-ARCH-001" }],
+    security: [{ transport: "claude-cli", provider: "anthropic", model_route: "opus-4.8", available: true, authenticated: true, model: "claude-opus-4-8", effort: "high", read_only: true, provider_task_run_id: "PROBE-SEC-001" }],
+  },
+};
+
+function refreshBuilderPacket(directory) {
+  const resolutionPath = path.join(directory, "design-review-resolution.json");
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, "utf8"));
+  resolution.approved_builder_packet_hash = "pending";
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`, "utf8");
+  resolution.approved_builder_packet_hash = hashBuilderPacket(directory).approved_builder_packet_hash;
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`, "utf8");
+}
+
+assert.doesNotThrow(
+  () => validatePacket(path.join(here, "fixtures", "approved"), reviewBinding),
+  "an exact final review binding should remain valid",
+);
+assert.throws(
+  () => validatePacket(path.join(here, "fixtures", "approved"), {
+    ...reviewBinding,
+    semantic_authority_hash: `sha256:${"f".repeat(64)}`,
+  }),
+  /final review binding does not match the design candidate/i,
+);
+
+const wrongProbeDirectory = fs.mkdtempSync(
+  path.join(os.tmpdir(), "proof-harness-wrong-probe-"),
+);
+try {
+  fs.cpSync(path.join(here, "fixtures", "approved"), wrongProbeDirectory, { recursive: true });
+  const coveragePath = path.join(wrongProbeDirectory, "design-review-coverage.json");
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  coverage.reviews[0].transport_probe_run_id = "PROBE-UNBOUND";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
+  refreshBuilderPacket(wrongProbeDirectory);
+  assert.throws(
+    () => validatePacket(wrongProbeDirectory, reviewBinding),
+    /architecture blocking review does not retain the selected transport probe identity/i,
+  );
+} finally {
+  fs.rmSync(wrongProbeDirectory, { recursive: true, force: true });
+}
+
+const downgradedReviewDirectory = fs.mkdtempSync(
+  path.join(os.tmpdir(), "proof-harness-downgraded-review-"),
+);
+try {
+  fs.cpSync(path.join(here, "fixtures", "approved"), downgradedReviewDirectory, { recursive: true });
+  const coveragePath = path.join(downgradedReviewDirectory, "design-review-coverage.json");
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  coverage.reviews[0].model_route = "weaker-fallback";
+  coverage.reviews[0].transport_probe_run_id = "PROBE-ARCH-001";
+  coverage.reviews[1].transport_probe_run_id = "PROBE-SEC-001";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
+  refreshBuilderPacket(downgradedReviewDirectory);
+  assert.throws(
+    () => validatePacket(downgradedReviewDirectory, reviewBinding),
+    /architecture blocking review route does not match pinned review request/i,
+    "final approval must reject a blocking review route that bypasses preflight policy",
+  );
+} finally {
+  fs.rmSync(downgradedReviewDirectory, { recursive: true, force: true });
+}
+
+const downgradedStateDirectory = fs.mkdtempSync(
+  path.join(os.tmpdir(), "proof-harness-downgraded-state-"),
+);
+try {
+  fs.cpSync(path.join(here, "fixtures", "approved"), downgradedStateDirectory, { recursive: true });
+  const coveragePath = path.join(downgradedStateDirectory, "design-review-coverage.json");
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  coverage.reviews[0].model_route = "weaker-fallback";
+  coverage.reviews[0].transport_probe_run_id = "PROBE-ARCH-WEAK";
+  coverage.reviews[1].transport_probe_run_id = "PROBE-SEC-001";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
+  refreshBuilderPacket(downgradedStateDirectory);
+  const downgradedBinding = structuredClone(reviewBinding);
+  downgradedBinding.review_requests[0] = {
+    lens: "architecture", model_route: "weaker-fallback", model: "gpt-5.6-luna", effort: "low", read_only: true,
+  };
+  downgradedBinding.transport_probes.architecture = [{
+    transport: "claude-cli", provider: "anthropic", model_route: "weaker-fallback", available: true,
+    authenticated: true, model: "gpt-5.6-luna", effort: "low", read_only: true,
+    provider_task_run_id: "PROBE-ARCH-WEAK",
+  }];
+  assert.throws(
+    () => validatePacket(downgradedStateDirectory, downgradedBinding),
+    /architecture review request does not match pinned reviewer policy/i,
+    "final approval must reject review state that downgrades the pinned model or effort",
+  );
+} finally {
+  fs.rmSync(downgradedStateDirectory, { recursive: true, force: true });
+}
+
+const placeholderReviewDirectory = fs.mkdtempSync(
+  path.join(os.tmpdir(), "proof-harness-placeholder-review-"),
+);
+try {
+  fs.cpSync(path.join(here, "fixtures", "approved"), placeholderReviewDirectory, { recursive: true });
+  const coveragePath = path.join(placeholderReviewDirectory, "design-review-coverage.json");
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  coverage.reviews[0].review_run_id = "{{ARCHITECTURE_REVIEW_RUN_ID}}";
+  fs.writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, "utf8");
+  refreshBuilderPacket(placeholderReviewDirectory);
+  assert.throws(
+    () => validatePacket(placeholderReviewDirectory),
+    /prohibited placeholder.*design-review-coverage\.json/i,
+    "post-review placeholders must not enter an approved builder packet",
+  );
+} finally {
+  fs.rmSync(placeholderReviewDirectory, { recursive: true, force: true });
 }
 
 const registry = path.join(here, "fixtures", "registry", "index.json");

@@ -16,10 +16,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["review_id", "review_run_id", "lens", "model_route", "transcript_sha256", "authority", "snapshot_reproduced", "start_snapshot_hash", "end_snapshot_hash", "verdicts", "findings"],
+        "required": ["review_id", "review_run_id", "transport_probe_run_id", "lens", "model_route", "transcript_sha256", "authority", "snapshot_reproduced", "start_snapshot_hash", "end_snapshot_hash", "verdicts", "findings"],
         "properties": {
           "review_id": { "type": "string", "minLength": 1 },
           "review_run_id": { "type": "string", "minLength": 1 },
+          "transport_probe_run_id": { "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
           "lens": { "enum": ["architecture", "security", "correctness", "residual", "specialist"] },
           "model_route": { "type": "string", "minLength": 1 },
           "transcript_sha256": { "$ref": "common.schema.json#/$defs/sha256" },

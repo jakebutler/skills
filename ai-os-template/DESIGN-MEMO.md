@@ -98,6 +98,11 @@ accepts equivalent reviewer transports only when exact model, effort, read-only,
 and provider/task-run capture all match. Immutable pre-v0.10 packets remain legacy
 read-only evidence under their project verifier.
 
+The final validator consumes the current bound policy and task review state again. A
+blocking coverage row must retain the selected `transport_probe_run_id`; changing the
+route, weakening the state, losing the probe identity, or leaving a post-review
+placeholder fails even when the builder packet hash was recomputed.
+
 **Experimentation is first-class methodology** (added v0.2): Jake validates coding
 implementations by running the same bounded task across different LLMs/setups,
 comparing against identical acceptance checks, and documenting results in a
