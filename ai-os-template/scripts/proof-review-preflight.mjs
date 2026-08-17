@@ -32,7 +32,10 @@ function provenanceBytes(directory) {
     );
   }
   return Buffer.concat(
-    files.sort().filter((file) => fs.existsSync(path.join(directory, file))).flatMap((file) => [
+    files.sort().filter((file) => {
+      const target = path.join(directory, file);
+      return fs.existsSync(target) && !PLACEHOLDER_PATTERN.test(fs.readFileSync(target, "utf8"));
+    }).flatMap((file) => [
       Buffer.from(`${file}\0`, "utf8"),
       fs.readFileSync(path.join(directory, file)),
     ]),
@@ -117,7 +120,14 @@ function validateSemanticMappings(documents) {
   for (const requirement of requirements.requirements) requireKnown(requirement.applies_to, surfaceIds, `${requirement.id}.applies_to`);
   for (const invariant of selection.selected) requireKnown(invariant.surface_ids, surfaceIds, `${invariant.id}.surface_ids`);
   if (Array.isArray(selection.unresolved_coverage) && selection.unresolved_coverage.length > 0) fail("source-binding coverage gap in invariant selection");
-  for (const decision of architecture.decisions) requireKnown(decision.requirement_ids, requirementIds, `${decision.id}.requirement_ids`);
+  const decisionRequirementIds = new Set();
+  for (const decision of architecture.decisions) {
+    requireKnown(decision.requirement_ids, requirementIds, `${decision.id}.requirement_ids`);
+    for (const requirementId of decision.requirement_ids) decisionRequirementIds.add(requirementId);
+  }
+  for (const requirementId of requirementIds) {
+    if (!decisionRequirementIds.has(requirementId)) fail(`orphaned requirement ${requirementId} has no architecture decision contract`);
+  }
   for (const sibling of architecture.sibling_paths) {
     requireKnown(sibling.effect_surface_ids, surfaceIds, `${sibling.id}.effect_surface_ids`);
     requireKnown(sibling.requirement_ids, requirementIds, `${sibling.id}.requirement_ids`);
@@ -155,7 +165,7 @@ export function validateProofReviewPreflight(directory, options = {}) {
     scanPlaceholders(value, file);
     documents[file] = value;
   }
-  for (const file of ["design-snapshot.json", "design-review-coverage.json", "design-review-resolution.json"]) {
+  for (const file of ["design-snapshot.json"]) {
     const target = path.join(resolved, file);
     if (fs.existsSync(target)) scanPlaceholders(JSON.parse(fs.readFileSync(target, "utf8")), file);
   }
@@ -167,6 +177,9 @@ export function validateProofReviewPreflight(directory, options = {}) {
   const proofPlan = documents["proof-plan.json"];
   validateGeneratorProfile(inventory, options, options.state);
   const mappings = validateSemanticMappings({ requirements, inventory, selection, architecture, proofPlan });
+  if (Array.isArray(architecture.unresolved_assumptions) && architecture.unresolved_assumptions.length > 0) fail("architecture proof has unresolved assumptions");
+  if (Array.isArray(proofPlan.orphan_requirements) && proofPlan.orphan_requirements.length > 0) fail("proof plan contains orphan requirements");
+  if (Array.isArray(proofPlan.orphan_effects) && proofPlan.orphan_effects.length > 0) fail("proof plan contains orphan effects");
   const identities = computeProofIdentities(resolved);
   const snapshotPath = path.join(resolved, "design-snapshot.json");
   if (!fs.existsSync(snapshotPath)) fail("missing required canonical artifact: design-snapshot.json");
@@ -226,7 +239,7 @@ export function validateProofReviewPreflight(directory, options = {}) {
       options.reviewer_policies?.[request.lens],
     );
   }
-  const receipts = options.process_receipts ? validateProcessReceipts(options.process_receipts) : null;
+  const receipts = options.process_receipts ? validateProcessReceipts(options.process_receipts, { now: options.now }) : null;
   return {
     ...identities,
     ...mappings,
@@ -285,15 +298,18 @@ export function validatePacketLayout(directory, policy = {}) {
     return { legacy_read_only: true, active_candidate_generations: 0 };
   }
   const active = [];
-  if (completeCandidate(root)) active.push(root);
-  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-    if (entry.isDirectory() && completeCandidate(path.join(root, entry.name))) {
-      active.push(path.join(root, entry.name));
+  const visit = (current) => {
+    if (completeCandidate(current)) active.push(current);
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      if ([".git", "rendered", "verification-receipts"].includes(entry.name)) continue;
+      const target = path.join(current, entry.name);
+      if (entry.isDirectory()) visit(target);
+      else if (entry.isFile() && /(?:^|[-_.])v\d+(?:[-_.]|\.json$)/i.test(entry.name)) {
+        fail(`versioned canonical artifact name is prohibited: ${path.relative(root, target)}`);
+      }
     }
-    if (entry.isFile() && /(?:^|[-_.])v\d+(?:[-_.]|\.json$)/i.test(entry.name)) {
-      fail(`versioned canonical artifact name is prohibited: ${entry.name}`);
-    }
-  }
+  };
+  visit(root);
   if (active.length > 1) {
     fail(`multiple active complete candidate generations found: ${active.map((item) => path.relative(root, item) || ".").join(", ")}`);
   }
@@ -353,12 +369,14 @@ export function validatePacketBudgets(directory, policy = {}) {
   return { active_packet_bytes: activePacketBytes, generated_line_count: generatedLineCount, generated_diff_ratio: generatedDiffRatio, warnings };
 }
 
-export function deriveGitDiffMetrics(repository, directory) {
+export function deriveGitDiffMetrics(repository, directory, baseRef = "HEAD") {
   const repo = path.resolve(repository);
   const packet = path.resolve(directory);
   const relativePacket = path.relative(repo, packet);
   if (relativePacket.startsWith("..") || path.isAbsolute(relativePacket)) fail("task artifact directory must be inside the source repository");
-  const diffBytes = (pathspec) => execFileSync("git", ["diff", "--no-ext-diff", "--binary", "HEAD", "--", ...(pathspec ? [pathspec] : [])], { cwd: repo }).byteLength;
+  nonEmpty(baseRef, "diff base ref");
+  execFileSync("git", ["rev-parse", "--verify", `${baseRef}^{commit}`], { cwd: repo, maxBuffer: 128 * 1024 * 1024 });
+  const diffBytes = (pathspec) => execFileSync("git", ["diff", "--no-ext-diff", "--binary", `${baseRef}...HEAD`, "--", ...(pathspec ? [pathspec] : [])], { cwd: repo, maxBuffer: 128 * 1024 * 1024 }).byteLength;
   const untracked = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { cwd: repo })
     .toString("utf8").split("\0").filter(Boolean);
   const untrackedBytes = (filter) => untracked.filter(filter).reduce((total, file) => total + fs.statSync(path.join(repo, file)).size, 0);
@@ -381,10 +399,10 @@ function validateRequiredReviewerRequests(requests, policies) {
 }
 
 export function preflightReviewerTransport(request, probes, pinnedPolicy) {
-  for (const field of ["lens", "model", "effort"]) nonEmpty(request?.[field], `review request.${field}`);
+  for (const field of ["lens", "model", "effort", "model_route"]) nonEmpty(request?.[field], `review request.${field}`);
   if (request.read_only !== true) fail("review request must require read-only capability");
-  if (pinnedPolicy && (request.model !== pinnedPolicy.model || request.effort !== pinnedPolicy.effort)) {
-    fail(`${request.lens} reviewer request does not match pinned policy ${pinnedPolicy.model} ${pinnedPolicy.effort}`);
+  if (pinnedPolicy && (request.model !== pinnedPolicy.model || request.effort !== pinnedPolicy.effort || request.model_route !== pinnedPolicy.model_route)) {
+    fail(`${request.lens} reviewer request does not match pinned policy ${pinnedPolicy.model_route} ${pinnedPolicy.model} ${pinnedPolicy.effort}`);
   }
   if (!Array.isArray(probes) || probes.length === 0) fail("review transport preflight requires at least one probe");
   const eligible = probes.find((probe) =>
@@ -392,6 +410,9 @@ export function preflightReviewerTransport(request, probes, pinnedPolicy) {
     probe.authenticated === true &&
     probe.model === request.model &&
     probe.effort === request.effort &&
+    probe.model_route === request.model_route &&
+    probe.provider === pinnedPolicy?.provider &&
+    Array.isArray(pinnedPolicy?.transport_families) && pinnedPolicy.transport_families.includes(probe.transport) &&
     probe.read_only === true &&
     typeof probe.provider === "string" && probe.provider.trim() !== "" &&
     typeof probe.provider_task_run_id === "string" && probe.provider_task_run_id.trim() !== "",
@@ -423,9 +444,11 @@ function validateCheckpoint(checkpoint, reasons) {
   if (typeof checkpoint.hitl_required !== "boolean") fail("checkpoint.hitl_required must be boolean");
 }
 
-export function validateProcessReceipts(receipts) {
+export function validateProcessReceipts(receipts, { now = Date.now(), max_observation_age_ms = 10 * 60 * 1_000 } = {}) {
   const approvedAt = validTimestamp(receipts?.implementation_approved_at, "implementation_approved_at");
   const observedAt = validTimestamp(receipts?.observed_at, "observed_at");
+  if (observedAt > now + 60_000) fail("observed_at cannot be in the future");
+  if (now - observedAt > max_observation_age_ms) fail("observed_at is stale; refresh process observation before preflight");
   const redAt = validTimestamp(receipts?.first_meaningful_red_at, "first_meaningful_red_at", { optional: true });
   const codeAt = validTimestamp(receipts?.first_production_code_change_at, "first_production_code_change_at", { optional: true });
   const reasons = [];
@@ -503,6 +526,12 @@ export function validateConvergenceState(state) {
   }
   for (const [index, generation] of priorGenerations.entries()) {
     if (generation.generation !== index + 1) fail("prior generation ledger must be contiguous and ordered");
+    if (index > 0 && generation.semantic_authority_hash === priorGenerations[index - 1].semantic_authority_hash) {
+      fail("provenance-only correction must remain in the same semantic candidate generation");
+    }
+  }
+  if (priorGenerations.length > 0 && state.semantic_authority_hash === priorGenerations.at(-1).semantic_authority_hash) {
+    fail("provenance-only correction must remain in the same semantic candidate generation");
   }
   if (state.candidate_generation === 1 && state.candidate_kind !== "initial") fail("v1 must be the initial candidate");
   if (state.candidate_generation === 2 && state.candidate_kind !== "remediation") fail("v2 must be the sole remediation/re-review");
@@ -598,7 +627,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     if (!fixtureOnly && !fs.existsSync(statePath)) fail("missing required canonical artifact: proof-review-state.json");
     const state = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, "utf8")) : undefined;
     if (!fixtureOnly) validateOperationalState(state);
-    const diffMetrics = repository ? deriveGitDiffMetrics(repository, resolved) : {};
+    const diffMetrics = repository ? deriveGitDiffMetrics(repository, resolved, bounded.diff_base_ref) : {};
     const packetBudgets = {
       max_active_packet_bytes: bounded.max_active_packet_bytes,
       max_generated_line_count: bounded.max_generated_line_count,

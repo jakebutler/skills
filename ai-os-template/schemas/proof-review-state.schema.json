@@ -85,9 +85,10 @@
     "reviewRequest": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["lens", "model", "effort", "read_only"],
+      "required": ["lens", "model_route", "model", "effort", "read_only"],
       "properties": {
         "lens": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "model_route": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "effort": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "read_only": { "const": true }
@@ -96,10 +97,11 @@
     "transportProbe": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["transport", "provider", "available", "authenticated", "model", "effort", "read_only", "provider_task_run_id"],
+      "required": ["transport", "provider", "model_route", "available", "authenticated", "model", "effort", "read_only", "provider_task_run_id"],
       "properties": {
         "transport": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "provider": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "model_route": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
         "available": { "type": "boolean" },
         "authenticated": { "type": "boolean" },
         "model": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
