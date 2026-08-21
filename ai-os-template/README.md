@@ -64,6 +64,20 @@ and read-only transport policy. Post-review placeholders fail before builder aut
 and diff accounting compares the frozen base directly with committed, staged,
 unstaged, and untracked repository state.
 
+The optional [`solo-operator-hitl-v1`](HITL-AUTHORITY.md) governance profile supports
+solo-operated projects without fabricating a second human identity. One authenticated
+owner may fill multiple internal human roles, while exact-candidate binding,
+independent review evidence for High-risk work, legacy semantics, audit history,
+environment separation, and withdrawal/rollback remain intact. The portable JSON
+template and schema are policy inputs only; an instance must bind real authentication,
+approval persistence, activation, and postflight verification before claiming the
+profile is active.
+
+Two instance-efficiency guards are also canonical: startup verifies a real Git
+worktree before trusting repository files, and manifests record exact source
+commit/tree plus reconciliation state. Package-manager identity comes from the
+repository's committed declaration rather than duplicated instruction text.
+
 The paired builder apparatus uses separate honest producers: Cursor Agent is restricted
 to Composer 2.5, while native Sol uses a deterministic prepare packet, one ephemeral
 high-reasoning `codex exec` process with multi-agent disabled, parent-captured launch and

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "policy_id": "solo-operator-hitl-v1",
+  "adoption": "explicit-opt-in",
+  "authority": {
+    "authenticated_human_required": true,
+    "single_principal_may_hold_multiple_human_roles": true,
+    "second_human_required": false,
+    "simulated_identity_forbidden": true
+  },
+  "candidate_binding": {
+    "immutable_candidate_hash_required": true,
+    "current_packet_only": true,
+    "superseded_packet_approval_forbidden": true
+  },
+  "review_evidence": {
+    "independent_fresh_context_required_for_high_risk": true,
+    "machine_review_is_human_authority": false,
+    "failed_evaluation_blocks": true,
+    "unresolved_blocking_findings_block": true
+  },
+  "lifecycle": {
+    "authorization_separate_from_activation": true,
+    "environment_authority_is_not_transitive": true,
+    "dry_run_default_for_provisioning": true,
+    "expected_manifest_hash_required_for_apply": true,
+    "postflight_readback_required": true,
+    "withdrawal_or_rollback_required": true
+  },
+  "history": {
+    "legacy_records_reinterpreted": false,
+    "migration_requires_successor_policy": true
+  },
+  "instance_bindings": {
+    "authentication_source": "{{AUTHENTICATION_SOURCE}}",
+    "authority_role": "{{AUTHORITY_ROLE}}",
+    "candidate_hash_source": "{{CANDIDATE_HASH_SOURCE}}",
+    "approval_record_store": "{{APPROVAL_RECORD_STORE}}",
+    "activation_action": "{{ACTIVATION_ACTION}}",
+    "postflight_readback": "{{POSTFLIGHT_READBACK}}",
+    "withdrawal_or_rollback_action": "{{WITHDRAWAL_OR_ROLLBACK_ACTION}}"
+  }
+}
