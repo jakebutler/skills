@@ -38,6 +38,10 @@ verification, and inconsistent planning.
 6. **Codex-first, harness-portable.** Harness-neutral content lives in `AGENTS.md`.
    Claude-specific mechanics remain in a thin `CLAUDE.md` adapter so Fable and Sonnet
    can be invoked when their lanes add value without owning the whole run.
+7. **Honest human authority.** Human approval cardinality is separate from independent
+   review evidence. A solo-operated instance may explicitly bind one authenticated
+   owner without manufacturing nominally distinct identities, while exact-candidate,
+   audit, environment, rollback, and legacy controls remain intact.
 
 ## 3. System architecture
 
@@ -158,6 +162,16 @@ not create unused artifacts.
 - **Tier C** staged for review: skills, `AGENTS.md`, `CLAUDE.md`, hooks. Autoskill
   proposals land as diffs in `dev/skill-proposals/` with evidence; never auto-applied in v1.
 
+### 7.5 Human authority
+
+`solo-operator-hitl-v1` is optional and must be bound explicitly in an instance
+manifest. It permits one authenticated human to hold multiple internal human roles;
+it does not make machine review authoritative or transfer approval across candidates,
+environments, activation, deployment, spend, publication, customer consent, or
+cross-organization boundaries. Instances preserve legacy record semantics and bind
+real authentication, immutable decision subjects, audit storage, exact-hash apply,
+postflight readback, and withdrawal/rollback. See `HITL-AUTHORITY.md`.
+
 ## 8. Model routing
 
 `routing/task-routes.json` is the machine source of truth, validated by
@@ -187,6 +201,7 @@ as still running.
 ```
 ai-os-template/
   README.md               — what this is, how to instantiate
+  HITL-AUTHORITY.md       — optional solo-operator human-authority profile
   DESIGN-MEMO.md          — this file
   PRODUCT.md              — users, purpose, principles, and interface anti-references
   DESIGN.md               — visual and interaction system for walkthrough artifacts
@@ -268,6 +283,9 @@ ai-os-template/
 | D20 | Code review uses two independent standard lanes against one frozen candidate: fresh-context native GPT-5.6 Sol at xhigh and Claude Opus 5. Fable is an optional third principal-engineer/architect escalation only after a concrete trigger and never replaces either lane. |
 | D21 | Skill improvement remains proposal/PR-only at every maturity level: validation gates may authorize a reviewable candidate, never direct live-file adoption or merge. Scheduled proposal runs require a separate human activation decision and cannot edit root instructions, hooks, or routes. See `SKILL-IMPROVEMENT.md` v0.2 and epic #2. |
 | D22 | Tier B solution learning uses one versioned candidate contract and stable semantic-slug identity. Commit and wrap-session reuse one fingerprint; newer current evidence outranks stale sessions; independent grounding blocks contradicted claims; headless discoverability gaps are report-only. Legacy date-prefixed paths migrate only in reviewed PRs. See `SOLUTION-LEARNING.md` and issue #4. |
+| D23 | Routine reversible work uses breadth-first discovery, one coherent batch, focused checks, and no mandatory delegated review; broad verification and review run once only when the affected boundary warrants them. |
+| D24 | A solo-operated instance may explicitly adopt `solo-operator-hitl-v1`: one authenticated human owns the decision, independent machine/fresh-context review remains evidence only, and legacy records keep their original semantics. |
+| D25 | Startup verifies a real Git worktree, package-manager identity comes from a committed repo declaration, and instance manifests pin exact source commit/tree plus reconciliation state rather than treating a moving `main` link as installed identity. |
 
 ### v0.2 context additions (same session)
 

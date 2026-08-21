@@ -910,26 +910,29 @@
     </section>
 
     <section id="instances">
-      <h2>12 · Instance status</h2>
+      <h2>12 · Instance adoption</h2>
+
+      <p class="lede">The original installation rows were a historical snapshot and
+      are not live authority. For current state, inspect each repository's
+      <code>docs/ai-os-manifest.md</code>, including its exact template commit/tree,
+      reconciliation date, installed overlays, and deferred components.</p>
 
       <table>
         <tr><th>Repo</th><th>Status</th><th>Branch</th><th>What's there</th></tr>
-        <tr><td>Lower dB</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Your repo-overlay installed verbatim (kernel + operations docs + skills) + <code>docs/ai-os-manifest.md</code> + dated changelog entry. 16 files staged by name per house rules.</td></tr>
-        <tr><td>FreshProof</td><td class="status-good">Committed (not pushed)</td><td><code>codex/ai-os-instance</code> in <code>.worktrees/ai-os-instance</code></td><td>Expanded <code>AGENTS.md</code> (nextjs-agent-rules marker block preserved byte-identical), thin <code>CLAUDE.md</code> adapter, new <code>PROJECT-STATUS.md</code> + <code>CHANGELOG.md</code> (missing roles), manifest, bound Codex skills. 8 files.</td></tr>
-        <tr><td>corvo-labs-dot-com</td><td class="status-pending">Queued</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Composer is the bounded frontend default; a smaller slice may revalidate the experimental GLM route.</td></tr>
-        <tr><td>ai-os-template itself</td><td class="status-live">v0.9 throughput policy validation</td><td><code>codex/agent-throughput-policy</code></td><td>Breadth-first discovery, one correction batch, focused checks, risk-based review, and one broad gate are executable policy. Historical routing experiments remain under <code>experiments/</code>.</td></tr>
+        <tr><td>Lower dB</td><td class="status-good">Instance-owned</td><td>See its manifest</td><td>House conventions and the repository's exact source pins remain authoritative; template updates require deliberate adoption.</td></tr>
+        <tr><td>FreshProof</td><td class="status-good">Instance-owned</td><td>See <code>docs/ai-os-manifest.md</code></td><td>Batched delivery and bounded proof convergence are installed with FreshProof-specific overlays. Its solo-builder release policy supplied the first production example for the generic solo-operator profile.</td></tr>
+        <tr><td>corvo-labs-dot-com</td><td class="status-pending">Planned</td><td>—</td><td>Plan at <code>ai-os-template/instances/corvo-labs-dot-com-plan.md</code>. Any activation must re-ground in that repository's current state.</td></tr>
+        <tr><td>ai-os-template itself</td><td class="status-live">Runtime v0.10 / routing v0.9</td><td><code>main</code> plus reviewed PRs</td><td>Batch-first delivery, bounded convergence, exact reviewer binding, and the optional <code>solo-operator-hitl-v1</code> profile are template policy. Historical routing experiments remain under <code>experiments/</code>.</td></tr>
       </table>
-
-      <p>Neither instance branch is pushed. Review the worktree diffs at your leisure. Lower dB has its own <code>/publish-slice</code>; FreshProof can go via <code>gh pr create</code>.</p>
     </section>
 
     <section id="decisions">
       <h2>13 · Decisions and routing rebalance</h2>
-      <p class="lede">The original decisions remain as history. D20 records the paired-review policy adopted on 2026-07-24; D22 supersedes it on 2026-08-13 after repeated ceremony and serial build/review loops caused major throughput loss.</p>
+      <p class="lede">The original decisions remain as history. D20 records the paired-review policy adopted on 2026-07-24; D23 supersedes it for routine work after repeated ceremony and serial build/review loops caused major throughput loss. D24 adds honest solo-operator human authority without weakening independent evidence.</p>
 
       <div class="callout judgment">
-        <span class="tag">Routing decisions · D13–D20</span>
-        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the unavailable provider family. <strong>D19:</strong> the identical-slice experiment demoted GLM to experimental. <strong>D20 (superseded):</strong> routine code review paired Sol and Opus. <strong>D22:</strong> routine reversible work uses no mandatory delegated review; discovery and findings complete before one implementation batch, focused checks precede one broad gate, and High-risk/proof work retains concurrent independent lenses.</p>
+        <span class="tag">Routing and authority decisions · D13–D25</span>
+        <p><strong>D13:</strong> Sol High is the orchestrator; Fable is a consultation lane. <strong>D14:</strong> quota and auth failures disable the unavailable provider family. <strong>D19:</strong> the identical-slice experiment demoted GLM to experimental. <strong>D20 (superseded for routine work):</strong> code review paired Sol and Opus. <strong>D23:</strong> routine reversible work uses no mandatory delegated review; discovery and findings complete before one implementation batch, focused checks precede one broad gate, and High-risk/proof work retains concurrent independent lenses. <strong>D24:</strong> an explicitly opted-in solo operator may hold multiple human roles, while machine review remains evidence only. <strong>D25:</strong> manifests and startup bind exact repository and template identity.</p>
       </div>
 
       <ol class="decisions-list">
@@ -1019,7 +1022,7 @@
       <h2>16 · Next steps</h2>
 
       <ol>
-        <li><strong>Propagate routing v0.9 deliberately</strong> to each app instance, preserving hard external-effect boundaries while removing blanket review/build/planning triggers.</li>
+        <li><strong>Adopt template updates deliberately</strong> in each app instance, recording exact source commit/tree and preserving instance overlays and hard external-effect boundaries.</li>
         <li><strong>Implement the Fable consultation wrapper</strong> around local <code>claude -p</code> with auth preflight, streaming output, quota circuit breaker, and a read-only compact packet.</li>
         <li><strong>Revalidate GLM only after a smaller packet or diff protocol</strong>; require two consecutive sub-ten-minute passes before promotion.</li>
         <li><strong>Hook implementation next</strong> in the D11 priority order after the routing wrappers have observable status.</li>

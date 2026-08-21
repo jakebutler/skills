@@ -7,9 +7,10 @@ the manifest records the winner, it never renames existing files.
 
 ## Required sections
 
-1. **Header** — template version + date, portable template source URL and optional
-   local `AI_OS_HOME` configuration, one line on the
-   instance's character (e.g. "overlay package", "fresh scaffold").
+1. **Header** — reconciliation date, template/runtime version, exact source commit and
+   tree, portable template source URL and optional local `AI_OS_HOME` configuration,
+   and one line on the instance's character (e.g. "overlay package", "fresh
+   scaffold"). A moving `main` URL is for discovery; it is not the installed identity.
 2. **Role bindings table** — one row per template role, columns: `Template role`,
    `Bound to`, `Notes`. Every role must appear; unbound roles say
    `not installed in v1` with a reason. Roles:
@@ -27,6 +28,8 @@ the manifest records the winner, it never renames existing files.
    - subagent roles
    - Codex delegation skills
    - model routing, including exact standard code-review routes
+   - HITL authority policy (`solo-operator-hitl-v1` only when explicitly adopted;
+     otherwise `not installed` with the retained human-authority rule)
    - FEATURE-LIST module (default: not installed)
 3. **Follow-ups** — numbered list of deferred decisions and unwired pieces, each with
    enough context that a future session can act without re-deriving it.
@@ -91,10 +94,15 @@ must also record a portable source URL, such as
 - Root instructions must contain a self-contained summary that remains usable when
   `AI_OS_HOME` is unset, the template checkout is absent, or the network is unavailable.
 - Missing optional shared specs must not block ordinary repository work.
+- Record exact source commit/tree for every selectively vendored executable component.
+  Distinguish `installed`, `adopted with instance overlay`, `referenced`, and `deferred`;
+  never imply that a newer template `main` has been absorbed automatically.
 
 ## Instantiation checklist
 
-1. Recon packet from codemap + existing docs (Codex, read-only).
+1. Confirm `git rev-parse --is-inside-work-tree` succeeds, then create the recon packet
+   from codemap + existing docs (Codex, read-only). Never treat a bare repository
+   storage directory as the editable checkout.
 2. Codex Sol High makes binding decisions; anything unresolvable goes to the user.
 3. Isolated worktree, branch `codex/ai-os-instance` off `origin/main` — never the
    (possibly dirty) root checkout.

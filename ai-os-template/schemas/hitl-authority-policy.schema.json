@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-os.local/schemas/hitl-authority-policy.schema.json",
+  "title": "Solo-operator HITL Authority Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_id",
+    "adoption",
+    "authority",
+    "candidate_binding",
+    "review_evidence",
+    "lifecycle",
+    "history",
+    "instance_bindings"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "policy_id": { "const": "solo-operator-hitl-v1" },
+    "adoption": { "const": "explicit-opt-in" },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authenticated_human_required",
+        "single_principal_may_hold_multiple_human_roles",
+        "second_human_required",
+        "simulated_identity_forbidden"
+      ],
+      "properties": {
+        "authenticated_human_required": { "const": true },
+        "single_principal_may_hold_multiple_human_roles": { "const": true },
+        "second_human_required": { "const": false },
+        "simulated_identity_forbidden": { "const": true }
+      }
+    },
+    "candidate_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "immutable_candidate_hash_required",
+        "current_packet_only",
+        "superseded_packet_approval_forbidden"
+      ],
+      "properties": {
+        "immutable_candidate_hash_required": { "const": true },
+        "current_packet_only": { "const": true },
+        "superseded_packet_approval_forbidden": { "const": true }
+      }
+    },
+    "review_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "independent_fresh_context_required_for_high_risk",
+        "machine_review_is_human_authority",
+        "failed_evaluation_blocks",
+        "unresolved_blocking_findings_block"
+      ],
+      "properties": {
+        "independent_fresh_context_required_for_high_risk": { "const": true },
+        "machine_review_is_human_authority": { "const": false },
+        "failed_evaluation_blocks": { "const": true },
+        "unresolved_blocking_findings_block": { "const": true }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization_separate_from_activation",
+        "environment_authority_is_not_transitive",
+        "dry_run_default_for_provisioning",
+        "expected_manifest_hash_required_for_apply",
+        "postflight_readback_required",
+        "withdrawal_or_rollback_required"
+      ],
+      "properties": {
+        "authorization_separate_from_activation": { "const": true },
+        "environment_authority_is_not_transitive": { "const": true },
+        "dry_run_default_for_provisioning": { "const": true },
+        "expected_manifest_hash_required_for_apply": { "const": true },
+        "postflight_readback_required": { "const": true },
+        "withdrawal_or_rollback_required": { "const": true }
+      }
+    },
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy_records_reinterpreted",
+        "migration_requires_successor_policy"
+      ],
+      "properties": {
+        "legacy_records_reinterpreted": { "const": false },
+        "migration_requires_successor_policy": { "const": true }
+      }
+    },
+    "instance_bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authentication_source",
+        "authority_role",
+        "candidate_hash_source",
+        "approval_record_store",
+        "activation_action",
+        "postflight_readback",
+        "withdrawal_or_rollback_action"
+      ],
+      "properties": {
+        "authentication_source": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "authority_role": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "candidate_hash_source": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "approval_record_store": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "activation_action": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "postflight_readback": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "withdrawal_or_rollback_action": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}

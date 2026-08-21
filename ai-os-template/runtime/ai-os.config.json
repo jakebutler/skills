@@ -9,6 +9,9 @@
     "routing/model-evidence.json",
     "schemas/task-route-registry.schema.json",
     "schemas/proof-review-state.schema.json",
+    "schemas/hitl-authority-policy.schema.json",
+    "docs-templates/hitl-authority-policy.template.json",
+    "HITL-AUTHORITY.md",
     "scripts/proof-review-preflight.mjs",
     "runtime/mcp.template.json"
   ],

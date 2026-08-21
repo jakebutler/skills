@@ -17,8 +17,11 @@ routing) live in the adapter file for that harness (`CLAUDE.md` for Claude Code)
 Scale startup to the task. For repo-mutating work:
 
 1. Confirm the working directory (`pwd`) — especially inside worktrees.
-2. Read files named by the user and the source/tests directly in scope.
-3. Read `{{PROJECT_STATUS_FILE}}`, recent history, and task docs only when resuming,
+2. Confirm `git rev-parse --is-inside-work-tree` succeeds before trusting repository
+   files. A repository storage path may be bare and may contain stale physical files;
+   use a registered checkout or worktree for edits.
+3. Read files named by the user and the source/tests directly in scope.
+4. Read `{{PROJECT_STATUS_FILE}}`, recent history, and task docs only when resuming,
    overlapping, or reporting on tracked work. Stale or unrelated status does not
    impose gates on a new task.
 
@@ -27,8 +30,8 @@ For larger sessions or autonomous continuation, additionally:
 5. Read `{{SPEC_FILE}}` and the relevant `docs/` pages from the Doc Map.
 6. Run the bootstrap/smoke check ({{BOOTSTRAP_COMMAND}}) to confirm a known-good start state.
 
-A trivial, well-scoped edit does not need the full sequence — but never skip step 1,
-and never edit a file you have not read.
+A trivial, well-scoped edit does not need the full sequence — but never skip steps
+1–2, and never edit a file you have not read.
 
 ## Behavior rules
 
@@ -149,6 +152,11 @@ once when the actual blast radius requires them. A build is not a generic code-c
 gate; reserve it for build/runtime/configuration boundaries, a requested release
 preflight, or a reproduced build-only failure. {{VERIFICATION_SCOPING_NOTES}}
 
+Derive package-manager and runtime identity from the repository's committed source of
+truth (for example `package.json#packageManager`, a lockfile, or a toolchain file).
+Instruction tables may mirror those values for operators, but must not become a second
+authority that silently drifts.
+
 ## Complexity and ceremony
 
 Classify by consequence, ambiguity, and reversibility rather than file count (full
@@ -166,6 +174,31 @@ rubric: {{RUBRIC_LOCATION}}):
 User-facing scope, multiple files, cross-repo coordination, a sensitive-path label, or
 the word "security" does not promote a task by itself. A narrow fix preserving an
 approved boundary is not High merely because the boundary is sensitive.
+
+## Human authority policy <!-- OPTIONAL: bind explicitly in the instance manifest -->
+
+When the instance opts into `solo-operator-hitl-v1`, one authenticated human owner may
+hold multiple internal human roles, including builder, operator, reviewer, and
+approver. Do not manufacture a second account, approval record, or nominally distinct
+human merely to satisfy role separation. This changes human cardinality, not evidence
+or safety requirements:
+
+- bind the decision to the exact current immutable candidate and recorded policy;
+- keep required independent fresh-context review as evidence for High-risk work;
+- treat machine review as evidence only, never as human approval or activation
+  authority;
+- reject failed evaluation, unresolved blocking findings, stale or superseded
+  packets, unauthenticated actors, and simulated identity;
+- keep authorization separate from activation, deployment, spend, publication, and
+  environment-specific promotion; and
+- preserve legacy records under their original policy. A successor policy never
+  rewrites or reinterprets historical approvals.
+
+The instance must bind authentication, approval storage, candidate hashing,
+activation, and withdrawal/rollback in its manifest. The generic template does not
+grant authority by itself. Use `HITL-AUTHORITY.md` and the policy template/schema for
+the complete adoption contract. Delete this section when the repository does not opt
+in.
 
 Proof-required work is the subset that introduces or materially changes authority,
 trust boundaries, destructive/external effects, migration semantics, concurrency
